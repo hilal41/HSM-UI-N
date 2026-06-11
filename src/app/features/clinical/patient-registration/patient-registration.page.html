@@ -1,0 +1,295 @@
+<app-register-patient-flow-dialog
+  [(visible)]="registerDialogOpen"
+  (patientReady)="onPatientRegistered($event)"
+/>
+
+<app-patient-register-log-dialog
+  [(visible)]="historyDialogOpen"
+  [highlightPatientId]="currentPatient?.id ?? null"
+/>
+
+<div class="print-area patient-registration-layout">
+  <div class="pr-workflow-ui no-print">
+  @if (pageError) {
+    <p-message severity="error" [text]="pageError" styleClass="no-print w-full" />
+  }
+
+  <div class="pr-main-columns flex flex-1 min-h-0 flex-col lg:flex-row lg:items-stretch">
+      <!-- Left 70%: services -->
+      <div class="pr-services-col order-2 min-w-0 lg:order-1 services-panel pr-services-lift">
+        <div class="svc-search-wrap no-print">
+          <div class="svc-search-head">
+            <div class="svc-search-input-row">
+              <span class="svc-search-icon" aria-hidden="true">
+                <i class="pi pi-search"></i>
+              </span>
+              <p-autocomplete
+                inputId="svc-search"
+                [(ngModel)]="servicePick"
+                [suggestions]="serviceSuggestions"
+                (completeMethod)="completeServices($event)"
+                (onSelect)="onServiceSelected($event)"
+                optionLabel="title"
+                [dropdown]="true"
+                [minLength]="0"
+                placeholder="Search service..."
+                [disabled]="!currentPatient"
+                appendTo="body"
+                styleClass="svc-search-autocomplete w-full"
+              >
+                <ng-template let-item pTemplate="item">
+                  <span class="font-medium">{{ item.title }}</span>
+                  <span class="ml-2 text-xs text-[#718096]">{{ item.code }}</span>
+                </ng-template>
+              </p-autocomplete>
+            </div>
+            <div class="svc-search-actions">
+              <button
+                pButton
+                type="button"
+                label="Recently registered patients"
+                icon="pi pi-history"
+                class="pr-pill-white"
+                (click)="showHistory()"
+              ></button>
+              <button
+                pButton
+                type="button"
+                label="Register patient"
+                icon="pi pi-user-plus"
+                class="pr-pill-white"
+                (click)="openRegisterDialog()"
+              ></button>
+            </div>
+          </div>
+        </div>
+
+        <p-table
+          [value]="lines"
+          [tableStyle]="{ 'min-width': '100%' }"
+          [class.services-table-empty]="lines.length === 0"
+          styleClass="p-datatable-sm services-visit-table"
+        >
+          <ng-template #header>
+            <tr>
+              <th>Service</th>
+              <th class="min-w-[8rem]">Doctor</th>
+              <th class="text-end w-[5rem]">Price</th>
+              <th class="text-end w-[5rem]">Discount</th>
+              <th class="min-w-[5.5rem]">Remarks</th>
+              <th class="no-print w-14 text-end">Actions</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-row>
+            <tr>
+              <td>
+                <div class="text-sm font-semibold leading-tight text-[#2d3748]">{{ row.serviceTitle }}</div>
+                <div class="text-[11px] leading-tight text-[#718096]">{{ row.serviceCode }}</div>
+              </td>
+              <td>
+                <p-select
+                  [options]="doctorOptions"
+                  [(ngModel)]="row.doctorId"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Doctor"
+                  styleClass="w-full"
+                  [appendTo]="'body'"
+                />
+              </td>
+              <td class="text-end align-middle">
+                <p-inputNumber
+                  [(ngModel)]="row.servicePrice"
+                  [min]="0"
+                  mode="decimal"
+                  [minFractionDigits]="0"
+                  [maxFractionDigits]="2"
+                  inputStyleClass="svc-table-num w-full text-end"
+                />
+              </td>
+              <td class="text-end align-middle">
+                <p-inputNumber
+                  [(ngModel)]="row.serviceDiscount"
+                  [min]="0"
+                  mode="decimal"
+                  [minFractionDigits]="0"
+                  [maxFractionDigits]="2"
+                  inputStyleClass="svc-table-num w-full text-end"
+                />
+              </td>
+              <td>
+                <input
+                  pInputText
+                  class="svc-table-text w-full"
+                  [(ngModel)]="row.remarks"
+                />
+              </td>
+              <td class="no-print text-end">
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-trash"
+                  [text]="true"
+                  severity="danger"
+                  (click)="removeLine(row.key)"
+                  aria-label="Remove line"
+                ></button>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template #emptymessage>
+            <tr class="no-print">
+              <td colspan="6" class="services-empty-cta-cell">
+                <button
+                  type="button"
+                  class="services-empty-cta"
+                  (click)="openRegisterDialog()"
+                  aria-label="Register patient — add services to this visit"
+                >
+                  <i class="pi pi-user-plus services-empty-cta__icon" aria-hidden="true"></i>
+                  <span class="services-empty-cta__hint">Tap to register a patient</span>
+                </button>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+      <!-- Right 30%: patient, remarks, visit summary & actions -->
+      <aside class="pr-aside-stack pr-aside-col order-1 w-full shrink-0 lg:order-2">
+        @if (currentPatient) {
+          <div class="patient-record-card print:border print:bg-white print:shadow-none">
+            <div class="patient-record-card__accent" aria-hidden="true"></div>
+            <div class="patient-record-card__body">
+              <h2 class="patient-record-card__title">Patient information</h2>
+              <div class="patient-record-card__row">
+                <div class="patient-record-card__field patient-record-card__field--grow">
+                  <span class="patient-record-card__label">Name</span>
+                  <div class="patient-record-card__value patient-record-card__value--name">
+                    {{ currentPatient.firstName }} {{ currentPatient.lastName }}
+                  </div>
+                </div>
+                <div class="patient-record-card__field">
+                  <span class="patient-record-card__label">Mob</span>
+                  <div class="patient-record-card__value patient-record-card__value--mono">
+                    {{ currentPatient.phone || '—' }}
+                  </div>
+                </div>
+                <div class="patient-record-card__field">
+                  <span class="patient-record-card__label">Reg No</span>
+                  <div class="patient-record-card__value patient-record-card__value--mono">
+                    {{ currentPatient.patientNumber }}
+                  </div>
+                </div>
+              </div>
+              <div class="patient-record-card__divider"></div>
+              <div class="patient-record-card__row patient-record-card__row--second">
+                <div class="patient-record-card__field patient-record-card__field--narrow">
+                  <span class="patient-record-card__label">Age</span>
+                  <div class="patient-record-card__value patient-record-card__value--age">
+                    {{ ageDisplay(currentPatient) }}<span class="patient-record-card__age-suffix">yr</span>
+                  </div>
+                </div>
+                <div class="patient-record-card__field patient-record-card__field--narrow">
+                  <span class="patient-record-card__label">Gender</span>
+                  <div class="patient-record-card__value">
+                    {{ currentPatient.gender || '—' }}
+                  </div>
+                </div>
+                <div class="patient-record-card__field patient-record-card__field--grow">
+                  <span class="patient-record-card__label">Address</span>
+                  <div class="patient-record-card__value patient-record-card__value--address">
+                    {{ currentPatient.address || '—' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        } @else {
+          <div class="patient-record-card patient-record-card--empty">
+            <div class="patient-record-card__empty-shell">
+              <div class="patient-record-card__empty-icon-wrap" aria-hidden="true">
+                <i class="pi pi-user-plus patient-record-card__empty-icon"></i>
+              </div>
+              <h3 class="patient-record-card__empty-title">No patient selected</h3>
+              <p class="patient-record-card__empty-text">
+                Register a patient to add services and save this visit.
+              </p>
+            </div>
+          </div>
+        }
+
+        <div class="pr-raised-card pr-raised-card--remarks flex flex-col gap-[var(--hms-page-gutter)]">
+          <label class="text-xs font-medium text-[#4a5568]" for="visit-remarks">Remarks</label>
+          <textarea
+            pTextarea
+            id="visit-remarks"
+            [(ngModel)]="visitRemarks"
+            rows="2"
+            class="visit-remarks-input w-full"
+            placeholder="Visit notes…"
+            [disabled]="!currentPatient"
+          ></textarea>
+        </div>
+
+        <div class="pr-raised-card pr-raised-card--totals grid grid-cols-2 gap-[var(--hms-page-gutter)]">
+          <div>
+            <span class="text-[10px] font-medium uppercase tracking-wide text-[#718096]">Total</span>
+            <div class="text-base font-semibold tabular-nums text-[#1a202c]">{{ totalAmount }}</div>
+          </div>
+          <div>
+            <span class="text-[10px] font-medium uppercase tracking-wide text-[#718096]">Discount</span>
+            <div class="text-base font-semibold tabular-nums text-[#1a202c]">{{ discountAmount }}</div>
+          </div>
+        </div>
+
+        <div class="pr-raised-card pr-raised-card--actions no-print flex flex-col gap-[var(--hms-page-gutter)]">
+          <button
+            pButton
+            type="button"
+            label="Save"
+            icon="pi pi-save"
+            class="pr-pill-white w-full"
+            (click)="saveVisit(false)"
+            [loading]="savingVisit"
+            [disabled]="!currentPatient || lines.length === 0 || savingVisit"
+          ></button>
+          <button
+            pButton
+            type="button"
+            label="Save & print"
+            icon="pi pi-print"
+            class="pr-pill-white w-full"
+            (click)="saveVisit(true)"
+            [loading]="savingVisit"
+            [disabled]="!currentPatient || lines.length === 0 || savingVisit"
+          ></button>
+          <button
+            pButton
+            type="button"
+            label="Print slip"
+            icon="pi pi-print"
+            severity="secondary"
+            [outlined]="true"
+            class="pr-pill-white w-full"
+            (click)="printSlipOrSaveAndPrint()"
+            [loading]="savingVisit"
+            [disabled]="!canPrintSlip || savingVisit"
+          ></button>
+        </div>
+      </aside>
+  </div>
+  </div>
+
+  <app-patient-registration-slip
+    class="pr-registration-slip"
+    [patient]="currentPatient"
+    [hospital]="myHospital"
+    [template]="slipTemplate"
+    [lines]="slipLinesForSlip"
+    [visitRemarks]="slipRemarksForSlip"
+    [totalAmount]="slipTotalForSlip"
+    [discountAmount]="slipDiscountForSlip"
+    [ageYears]="currentPatient ? ageDisplay(currentPatient) : 0"
+  />
+</div>

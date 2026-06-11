@@ -1,0 +1,85 @@
+<div class="prs-body">
+  <div class="prs-search-row">
+    <span class="prs-search-icon" aria-hidden="true">
+      <i class="pi pi-search"></i>
+    </span>
+    <input
+      pInputText
+      type="search"
+      class="prs-search-input w-full"
+      [(ngModel)]="term"
+      (ngModelChange)="onTermChange()"
+      placeholder="Search name, phone, reg no…"
+      autocomplete="off"
+      id="prs-term"
+    />
+  </div>
+
+  @if (searchError) {
+    <p class="prs-error">{{ searchError }}</p>
+  }
+
+  <div class="prs-list-wrap">
+    @if (loading && items.length === 0) {
+      <div class="prs-state-fill">
+        <div class="prs-loading">
+          <app-hms-block-skeleton [lines]="8" ariaLabel="Searching patients" />
+          <span class="prs-loading-text">Searching…</span>
+        </div>
+      </div>
+    } @else if (term.trim().length === 0) {
+      <div class="prs-state-fill prs-register-prompt">
+        <button
+          type="button"
+          class="prs-register-prompt__cta"
+          (click)="registerNew.emit()"
+          aria-label="Tap to register a patient"
+        >
+          <i class="pi pi-user-plus prs-register-prompt__icon" aria-hidden="true"></i>
+          <span class="prs-register-prompt__hint">Tap to register a patient</span>
+        </button>
+      </div>
+    } @else if (items.length === 0 && !loading) {
+      <div class="prs-state-fill">
+        <p class="prs-hint">No patients match that search.</p>
+      </div>
+    } @else {
+      <div class="prs-list-scroll">
+        <ul class="prs-list" role="listbox" aria-label="Patient search results">
+          @for (hit of items; track hit.patient.id) {
+            <li>
+              <button type="button" class="prs-hit" (click)="pick(hit)">
+                <span class="prs-hit__name">{{ displayName(hit.patient) }}</span>
+                <span class="prs-hit__meta">
+                  <span class="prs-hit__reg">{{ hit.patient.patientNumber }}</span>
+                  <span class="prs-hit__sep">·</span>
+                  <span class="prs-hit__dob">{{ formatDob(hit.patient.dateOfBirth) }}</span>
+                  @if (hit.patient.phone) {
+                    <span class="prs-hit__sep">·</span>
+                    <span class="prs-hit__phone">{{ hit.patient.phone }}</span>
+                  }
+                </span>
+                @if (hit.patient.city) {
+                  <span class="prs-hit__city">{{ hit.patient.city }}</span>
+                }
+              </button>
+            </li>
+          }
+        </ul>
+        @if (hasNext) {
+          <div class="prs-more">
+            <button
+              pButton
+              type="button"
+              label="Load more"
+              [text]="true"
+              [loading]="loading"
+              (click)="loadMore()"
+              class="prs-load-more"
+            ></button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,450 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Users"
+  subtitle="Accounts, roles, and access"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <button
+      pButton
+      type="button"
+      label="New user"
+      icon="pi pi-plus"
+      severity="secondary"
+      class="hms-toolbar-solid"
+      (click)="openCreate()"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+  @if (errorMessage) {
+    <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+  }
+  <p-table
+    [showLoader]="false"
+    [value]="rows"
+    [lazy]="true"
+    [paginator]="true"
+    [rows]="pageSize"
+    [totalRecords]="totalCount"
+    [loading]="loading"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    (onLazyLoad)="onLazyLoad($event)"
+    [tableStyle]="{ 'min-width': '100%' }"
+    styleClass="p-datatable-sm"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Active</th>
+        <th class="min-w-[16rem] text-end">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-row>
+      <tr>
+        <td class="font-mono text-xs">{{ row.userName }}</td>
+        <td>{{ row.email }}</td>
+        <td>{{ row.roleName ?? '—' }}</td>
+        <td>
+          <p-tag [value]="row.isActive ? 'Yes' : 'No'" [severity]="row.isActive ? 'success' : 'secondary'" />
+        </td>
+        <td class="text-end">
+          <div class="flex flex-wrap justify-end gap-1">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-eye"
+              [text]="true"
+              severity="secondary"
+              (click)="openUserDetail(row)"
+              title="View detail"
+              aria-label="View detail"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-pencil"
+              [text]="true"
+              severity="secondary"
+              (click)="openEdit(row)"
+              title="Edit"
+              aria-label="Edit"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-shield"
+              [text]="true"
+              severity="success"
+              (click)="openRoleDialog(row)"
+              title="Assign role"
+              aria-label="Assign role"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-building"
+              [text]="true"
+              severity="secondary"
+              (click)="openDeptDialog(row)"
+              title="Departments"
+              aria-label="Departments"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-th-large"
+              [text]="true"
+              severity="secondary"
+              (click)="openModulesDialog(row)"
+              title="Modules"
+              aria-label="Modules"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (click)="confirmDelete(row)"
+              title="Delete"
+              aria-label="Delete"
+            ></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5" class="hms-table-empty-cell text-center text-sm text-slate-500">
+          <div class="flex flex-col items-center justify-center gap-2 py-4">
+            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
+            <span>No users found.</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="loadingbody" let-columns>
+      <app-hms-table-loading-body [cols]="columns?.length || 5" />
+    </ng-template>
+  </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog
+  [header]="editingId == null ? 'New user' : 'Edit user'"
+  [(visible)]="dialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 36rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+  (onHide)="closeDialog()"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="u-fn">First name</label>
+        <input pInputText id="u-fn" class="w-full" [(ngModel)]="formFirstName" name="uFn" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="u-ln">Last name</label>
+        <input pInputText id="u-ln" class="w-full" [(ngModel)]="formLastName" name="uLn" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="u-un">Username</label>
+        <input pInputText id="u-un" class="w-full" [(ngModel)]="formUserName" name="uUn" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="u-em">Email</label>
+        <input pInputText id="u-em" type="email" class="w-full" [(ngModel)]="formEmail" name="uEm" />
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label
+          class="hms-field-label"
+          [class.hms-field-label--required]="editingId == null"
+          for="u-pw"
+        >Password</label>
+        <p-password
+          inputId="u-pw"
+          [(ngModel)]="formPassword"
+          name="uPw"
+          [feedback]="editingId == null"
+          [toggleMask]="true"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+          [placeholder]="editingId == null ? 'Required' : 'Leave blank to keep'"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="u-ph">Phone</label>
+        <input pInputText id="u-ph" class="w-full" [(ngModel)]="formPhone" name="uPh" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="u-rl">Role</label>
+        <p-select
+          inputId="u-rl"
+          [(ngModel)]="formRoleId"
+          name="uRl"
+          [options]="roleOptions"
+          optionLabel="label"
+          optionValue="value"
+          [showClear]="true"
+          placeholder="Role"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label" for="u-ad">Address</label>
+        <textarea pTextarea id="u-ad" [(ngModel)]="formAddress" name="uAd" rows="2" class="w-full"></textarea>
+      </div>
+      <div class="flex items-center gap-2 sm:col-span-2">
+        <p-toggleswitch inputId="u-ac" [(ngModel)]="formIsActive" name="uAc" />
+        <label for="u-ac" class="text-sm text-slate-600">Active</label>
+      </div>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="closeDialog()"></button>
+      <button
+        pButton
+        type="button"
+        label="Save"
+        icon="pi pi-check"
+        severity="success"
+        [loading]="saving"
+        (click)="saveUser()"
+      ></button>
+    </div>
+  </div>
+</p-dialog>
+
+<p-dialog
+  header="Assign role"
+  [(visible)]="roleDialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 24rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div class="flex flex-col gap-1 sm:col-span-2">
+      <label class="hms-field-label hms-field-label--required" for="ar-rl">Role</label>
+      <p-select
+        inputId="ar-rl"
+        [(ngModel)]="assignRoleId"
+        name="arRl"
+        [options]="roleOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Role"
+        styleClass="w-full"
+        appendTo="body"
+      />
+    </div>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="roleDialogOpen = false"></button>
+      <button
+        pButton
+        type="button"
+        label="Save"
+        icon="pi pi-check"
+        severity="success"
+        [loading]="saving"
+        (click)="saveRole()"
+      ></button>
+    </div>
+  </div>
+</p-dialog>
+
+<p-dialog
+  header="User departments"
+  [(visible)]="deptDialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 28rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div class="flex flex-col gap-1 sm:col-span-2">
+      <label class="hms-field-label" for="u-depts">Departments</label>
+      <p-multiselect
+        inputId="u-depts"
+        [(ngModel)]="selectedDeptIds"
+        name="uDepts"
+        [options]="departmentOptions"
+        optionLabel="label"
+        optionValue="value"
+        display="chip"
+        placeholder="Departments"
+        styleClass="w-full"
+        appendTo="body"
+      />
+    </div>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="deptDialogOpen = false"></button>
+      <button
+        pButton
+        type="button"
+        label="Save"
+        icon="pi pi-check"
+        severity="success"
+        [loading]="saving"
+        (click)="saveDepartments()"
+      ></button>
+    </div>
+  </div>
+</p-dialog>
+
+<p-dialog
+  header="User detail"
+  [(visible)]="detailDialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 36rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+  (onHide)="closeUserDetail()"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+  @if (detailLoading) {
+    <app-hms-block-skeleton [lines]="12" ariaLabel="Loading user detail" />
+  } @else if (userDetail) {
+    <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+      <div>
+        <span class="text-xs font-medium text-slate-500">First name</span>
+        <p class="text-slate-800">{{ userDetail.firstName ?? '—' }}</p>
+      </div>
+      <div>
+        <span class="text-xs font-medium text-slate-500">Last name</span>
+        <p class="text-slate-800">{{ userDetail.lastName ?? '—' }}</p>
+      </div>
+      <div>
+        <span class="text-xs font-medium text-slate-500">ID</span>
+        <p class="font-mono text-slate-800">{{ userDetail.id }}</p>
+      </div>
+      <div>
+        <span class="text-xs font-medium text-slate-500">Username</span>
+        <p class="text-slate-800">{{ userDetail.userName }}</p>
+      </div>
+      <div class="sm:col-span-2">
+        <span class="text-xs font-medium text-slate-500">Email</span>
+        <p class="text-slate-800">{{ userDetail.email }}</p>
+      </div>
+      <div>
+        <span class="text-xs font-medium text-slate-500">Role</span>
+        <p class="text-slate-800">{{ userDetail.roleName ?? '—' }}</p>
+      </div>
+      <div>
+        <span class="text-xs font-medium text-slate-500">Phone</span>
+        <p class="text-slate-800">{{ userDetail.phone ?? '—' }}</p>
+      </div>
+      <div class="sm:col-span-2">
+        <span class="text-xs font-medium text-slate-500">Address</span>
+        <p class="text-slate-600">{{ userDetail.address ?? '—' }}</p>
+      </div>
+      <div>
+        <span class="text-xs font-medium text-slate-500">Active</span>
+        <p class="text-slate-800">{{ userDetail.isActive ? 'Yes' : 'No' }}</p>
+      </div>
+      <div>
+        <span class="text-xs font-medium text-slate-500">Hospital ID</span>
+        <p class="text-slate-800">{{ userDetail.hospitalId ?? '—' }}</p>
+      </div>
+      <div class="text-xs text-slate-500 sm:col-span-2">
+        Created: {{ userDetail.createdAt | date: 'medium' }} · Updated:
+        {{ userDetail.updatedAt | date: 'medium' }}
+      </div>
+      <div class="sm:col-span-2">
+        <span class="mb-2 block text-xs font-medium text-slate-500">Departments</span>
+        <div class="flex flex-wrap gap-2">
+          @for (d of userDetail.departments; track d.id) {
+            <p-chip [label]="d.name" icon="pi pi-building" />
+          } @empty {
+            <span class="text-slate-500">None</span>
+          }
+        </div>
+      </div>
+      <div class="sm:col-span-2">
+        <span class="mb-2 block text-xs font-medium text-slate-500">Allowed modules</span>
+        <div class="flex flex-wrap gap-2">
+          @for (m of userDetail.allowedModules; track m.id) {
+            <p-tag severity="success" [value]="m.name" />
+          } @empty {
+            <span class="text-slate-500">None</span>
+          }
+        </div>
+      </div>
+    </div>
+  }
+    </div>
+  </div>
+  <ng-template #footer>
+    <button pButton type="button" label="Close" severity="secondary" (click)="closeUserDetail()"></button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="User modules"
+  [(visible)]="modDialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 28rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div class="flex flex-col gap-1 sm:col-span-2">
+      <label class="hms-field-label" for="u-md">Department scope (optional)</label>
+      <p-inputNumber
+        inputId="u-md"
+        [(ngModel)]="modulesDeptId"
+        name="uMd"
+        [useGrouping]="false"
+        placeholder="Department id"
+        styleClass="w-full"
+      />
+    </div>
+    <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label" for="u-mods">Modules</label>
+      <p-multiselect
+        inputId="u-mods"
+        [(ngModel)]="selectedModuleIds"
+        name="uMods"
+        [options]="moduleOptions"
+        optionLabel="label"
+        optionValue="value"
+        display="chip"
+        placeholder="Modules"
+        styleClass="w-full"
+        appendTo="body"
+      />
+    </div>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="modDialogOpen = false"></button>
+      <button
+        pButton
+        type="button"
+        label="Save"
+        icon="pi pi-check"
+        severity="success"
+        [loading]="saving"
+        (click)="saveUserModules()"
+      ></button>
+    </div>
+  </div>
+</p-dialog>

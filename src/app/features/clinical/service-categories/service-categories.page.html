@@ -1,0 +1,124 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Service categories"
+  subtitle="Group services for catalog and pricing"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <button
+      pButton
+      type="button"
+      label="New category"
+      icon="pi pi-plus"
+      severity="secondary"
+      class="hms-toolbar-solid"
+      (click)="openCreate()"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+  @if (errorMessage) {
+    <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+  }
+  <p-table
+    [showLoader]="false"
+    [value]="rows"
+    [lazy]="true"
+    [paginator]="true"
+    [rows]="pageSize"
+    [totalRecords]="totalCount"
+    [loading]="loading"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    (onLazyLoad)="onLazyLoad($event)"
+    [tableStyle]="{ 'min-width': '100%' }"
+    styleClass="p-datatable-sm hms-crud-table"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Updated</th>
+        <th class="w-36 text-end">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-row>
+      <tr>
+        <td class="font-mono text-xs">{{ row.code }}</td>
+        <td>{{ row.name }}</td>
+        <td class="text-sm text-slate-600">{{ row.updatedAt ?? row.createdAt | date: 'short' }}</td>
+        <td class="text-end">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-pencil"
+            [text]="true"
+            severity="secondary"
+            class="mr-1"
+            (click)="openEdit(row)"
+            aria-label="Edit"
+          ></button>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-trash"
+            [text]="true"
+            severity="danger"
+            (click)="confirmDelete(row)"
+            aria-label="Delete"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="4" class="hms-table-empty-cell text-center text-sm text-slate-500">
+          <div class="flex flex-col items-center justify-center gap-2 py-4">
+            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
+            <span>No categories found.</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="loadingbody" let-columns>
+      <app-hms-table-loading-body [cols]="columns?.length || 4" />
+    </ng-template>
+  </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog
+  [header]="editingId == null ? 'New category' : 'Edit category'"
+  [(visible)]="dialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 28rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+  (onHide)="closeDialog()"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="sc-code">Code</label>
+        <input pInputText id="sc-code" class="w-full" [(ngModel)]="formCode" name="scCode" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="sc-name">Name</label>
+        <input pInputText id="sc-name" class="w-full" [(ngModel)]="formName" name="scName" />
+      </div>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="closeDialog()"></button>
+      <button
+        pButton
+        type="button"
+        label="Save"
+        icon="pi pi-check"
+        severity="success"
+        [loading]="saving"
+        (click)="save()"
+      ></button>
+    </div>
+  </div>
+</p-dialog>

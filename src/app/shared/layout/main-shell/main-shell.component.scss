@@ -1,0 +1,133 @@
+/* Same vertical rhythm as main content: gap above blue bar (page bg shows through) */
+.app-shell-root {
+  box-sizing: border-box;
+  padding-top: var(--hms-space);
+}
+
+/* Full-width bar: vertical rhythm only (`--hms-space` top/bottom); edge inset for brand/actions */
+.app-shell-header__bar {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  padding-top: var(--hms-space);
+  padding-bottom: var(--hms-space);
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.app-shell-brand {
+  padding-left: var(--hms-space);
+}
+
+.app-shell-end {
+  padding-right: var(--hms-space);
+}
+
+/* Root bar on blue: light text (do not use broad .p-menubar-item-link — it hits dropdown rows too) */
+:host ::ng-deep .app-shell-header .p-menubar {
+  color: rgba(255, 255, 255, 0.95);
+  min-height: 0 !important;
+}
+
+:host ::ng-deep .app-shell-header .app-shell-menubar.p-menubar {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+$shell-root: '.app-shell-header .p-menubar-root-list > .p-menubar-item > .p-menubar-item-content';
+
+:host ::ng-deep #{$shell-root} {
+  padding: 0.28rem 0.42rem !important;
+}
+
+:host ::ng-deep #{$shell-root} .p-menubar-item-link {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+:host ::ng-deep #{$shell-root} .p-menubar-item-icon {
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-size: 0.72rem !important;
+}
+
+:host ::ng-deep #{$shell-root} .p-menubar-submenu-icon {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+:host ::ng-deep #{$shell-root} .p-menubar-item-label {
+  color: rgba(255, 255, 255, 0.95) !important;
+  font-size: 0.72rem !important;
+}
+
+:host ::ng-deep .app-shell-header .p-menubar-root-list > .p-menubar-item:not(.p-disabled) > .p-menubar-item-content:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+:host ::ng-deep #{$shell-root} .p-menubar-item-link.p-menubar-item-link-active {
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+
+:host ::ng-deep .app-shell-header .p-menubar-root-list > .p-menubar-item.p-focus > .p-menubar-item-content,
+:host ::ng-deep .app-shell-header .p-menubar-root-list > .p-menubar-item.p-menubar-item-active > .p-menubar-item-content {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Dropdown / flyout panels: dark text on white */
+:host ::ng-deep .app-shell-header .p-menubar-submenu {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  border-radius: 0.5rem !important;
+  box-shadow:
+    0 4px 6px rgba(15, 23, 42, 0.06),
+    0 12px 28px rgba(15, 23, 42, 0.12) !important;
+  padding: 0.25rem 0 !important;
+}
+
+:host ::ng-deep .app-shell-header .p-menubar-submenu .p-menubar-item-link {
+  color: #0f172a !important;
+  padding: 0.35rem 0.65rem !important;
+}
+
+:host ::ng-deep .app-shell-header .p-menubar-submenu .p-menubar-item-label {
+  color: #0f172a !important;
+  font-size: 0.78rem !important;
+}
+
+:host ::ng-deep .app-shell-header .p-menubar-submenu .p-menubar-item-icon,
+:host ::ng-deep .app-shell-header .p-menubar-submenu .p-menubar-submenu-icon {
+  color: #475569 !important;
+}
+
+:host ::ng-deep .app-shell-header .p-menubar-submenu .p-menubar-item:not(.p-disabled) > .p-menubar-item-content:hover {
+  background: #f1f5f9 !important;
+}
+
+:host ::ng-deep .app-shell-header .p-menubar-submenu .p-menubar-item.p-focus > .p-menubar-item-content {
+  background: #e2e8f0 !important;
+}
+
+:host ::ng-deep .app-shell-header .p-menubar-submenu .p-menubar-item-link.p-menubar-item-link-active {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+:host ::ng-deep .app-shell-header .p-menubar-button {
+  color: #ffffff !important;
+}
+
+:host ::ng-deep .app-shell-header .p-menubar-button:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+:host ::ng-deep .app-shell-header button.shell-sign-out.p-button {
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.55) !important;
+  background: transparent !important;
+  min-height: 1.55rem !important;
+  padding: 0.18rem 0.55rem !important;
+  font-size: 0.7rem !important;
+}
+
+:host ::ng-deep .app-shell-header button.shell-sign-out.p-button:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.85) !important;
+}

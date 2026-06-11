@@ -1,0 +1,197 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Clinical departments"
+  subtitle="Wards, beds, and department codes"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <button
+      pButton
+      type="button"
+      label="New department"
+      icon="pi pi-plus"
+      severity="secondary"
+      class="hms-toolbar-solid"
+      (click)="openCreate()"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+  @if (errorMessage) {
+    <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+  }
+  <p-table
+    [showLoader]="false"
+    [value]="rows"
+    [loading]="loading"
+    [tableStyle]="{ 'min-width': '100%' }"
+    styleClass="p-datatable-sm hms-crud-table"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Beds</th>
+        <th>Status</th>
+        <th class="w-40 text-end">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-row>
+      <tr>
+        <td class="font-mono text-xs">{{ row.departmentCode }}</td>
+        <td>{{ row.name }}</td>
+        <td class="text-sm text-slate-600">{{ row.availableBeds ?? 0 }} / {{ row.totalBeds ?? 0 }}</td>
+        <td>
+          <p-tag
+            [value]="row.status"
+            [severity]="row.status === 'Active' ? 'success' : 'secondary'"
+          />
+        </td>
+        <td class="text-end">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-pencil"
+            [text]="true"
+            severity="secondary"
+            class="mr-1"
+            (click)="openEdit(row)"
+            aria-label="Edit"
+          ></button>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-trash"
+            [text]="true"
+            severity="danger"
+            (click)="confirmDelete(row)"
+            aria-label="Delete"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5" class="hms-table-empty-cell text-center text-sm text-slate-500">
+          <div class="flex flex-col items-center justify-center gap-2 py-4">
+            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
+            <span>No departments found.</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="loadingbody" let-columns>
+      <app-hms-table-loading-body [cols]="columns?.length || 5" />
+    </ng-template>
+  </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog
+  [header]="editingId == null ? 'New department' : 'Edit department'"
+  [(visible)]="dialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 32rem)' }"
+  [closable]="true"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+  (onHide)="closeDialog()"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="d-code">Code</label>
+        <input pInputText id="d-code" class="w-full" [(ngModel)]="formCode" name="dCode" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="d-name">Name</label>
+        <input pInputText id="d-name" class="w-full" [(ngModel)]="formName" name="dName" />
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label" for="d-head">Head doctor ID (optional)</label>
+        <p-inputNumber
+          inputId="d-head"
+          [(ngModel)]="formHeadDoctorId"
+          name="dHead"
+          [useGrouping]="false"
+          styleClass="w-full"
+          placeholder="Optional"
+        />
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label" for="d-desc">Description</label>
+        <textarea
+          pTextarea
+          id="d-desc"
+          [(ngModel)]="formDescription"
+          name="dDesc"
+          rows="2"
+          class="w-full"
+        ></textarea>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="d-tb">Total beds</label>
+        <p-inputNumber
+          inputId="d-tb"
+          [(ngModel)]="formTotalBeds"
+          name="dTb"
+          [min]="0"
+          [useGrouping]="false"
+          styleClass="w-full"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="d-ab">Available</label>
+        <p-inputNumber
+          inputId="d-ab"
+          [(ngModel)]="formAvailableBeds"
+          name="dAb"
+          [min]="0"
+          [useGrouping]="false"
+          styleClass="w-full"
+        />
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label" for="d-sc">Staff</label>
+        <p-inputNumber
+          inputId="d-sc"
+          [(ngModel)]="formStaffCount"
+          name="dSc"
+          [min]="0"
+          [useGrouping]="false"
+          styleClass="w-full"
+        />
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label" for="d-st">Status</label>
+        <p-select
+          inputId="d-st"
+          [(ngModel)]="formStatus"
+          name="dSt"
+          [options]="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      </div>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="closeDialog()"></button>
+      <button
+        pButton
+        type="button"
+        label="Save"
+        icon="pi pi-check"
+        severity="success"
+        [loading]="saving"
+        (click)="save()"
+      ></button>
+    </div>
+  </div>
+</p-dialog>

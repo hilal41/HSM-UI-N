@@ -1,0 +1,791 @@
+/* Service search combobox — match `pr-pill-white` / registration inputs */
+$svc-pill-border: #0f172a;
+$svc-pill-text: #0f2744;
+$svc-pill-hover-bg: #f1f5f9;
+$svc-pill-hover-border: #020617;
+$svc-pill-hover-text: #020617;
+
+/* Table inline controls (doctor, numbers, remarks) */
+$svc-fill: #f0f0f0;
+$svc-radius: 0.375rem;
+
+/* Card / page rhythm: global `--hms-space` → `--hms-main-pad`, `--hms-page-gutter`, `--hms-card-padding` */
+
+$pr-card-radius: 0.65rem;
+
+@mixin pr-card-surface {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: $pr-card-radius;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 4px 14px rgba(15, 23, 42, 0.06),
+    0 10px 28px rgba(15, 23, 42, 0.07);
+}
+
+@mixin pr-card-surface-hover {
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.05),
+    0 8px 22px rgba(15, 23, 42, 0.08),
+    0 18px 40px rgba(15, 23, 42, 0.1);
+}
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  box-sizing: border-box;
+  /* Outer inset = page gutter on every side (same as space between cards) */
+  margin: calc(-1 * var(--hms-main-pad));
+  padding: var(--hms-page-gutter);
+}
+
+.print-area.patient-registration-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: calc(100dvh - var(--hms-shell-header-offset));
+  min-width: 0;
+  width: 100%;
+}
+
+.pr-workflow-ui {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/*
+ * Slip is kept off-screen (not display:none) so the browser still lays it out.
+ * display:none caused empty / stale print output; print media resets position for the dialog.
+ */
+app-patient-registration-slip.pr-registration-slip {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: min(28rem, 100vw);
+  max-width: 100vw;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.pr-main-columns {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  align-items: stretch;
+  gap: var(--hms-page-gutter);
+}
+
+.pr-aside-stack {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  gap: var(--hms-page-gutter);
+  min-width: 0;
+}
+
+.pr-services-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+@media (min-width: 1024px) {
+  .pr-services-col {
+    flex: 1 1 0%;
+    align-self: stretch;
+  }
+
+  .pr-aside-col {
+    flex: 0 0 auto;
+    width: 30%;
+    align-self: stretch;
+  }
+}
+
+/* Flat white pill, black hairline border, navy text + black icon (clean neutral CTA) */
+:host ::ng-deep button.pr-pill-white.p-button {
+  background: #ffffff !important;
+  border: 1px solid #0f172a !important;
+  color: #0f2744 !important;
+  border-radius: 9999px !important;
+  box-shadow: none !important;
+  font-weight: 500;
+  font-size: 0.8125rem !important;
+  padding-block: 0.4rem !important;
+  padding-inline: 1rem !important;
+  gap: 0.35rem;
+}
+
+:host ::ng-deep button.pr-pill-white.p-button .p-button-icon {
+  color: #0f172a !important;
+}
+
+:host ::ng-deep button.pr-pill-white.p-button .p-button-label {
+  color: #0f2744 !important;
+}
+
+:host ::ng-deep button.pr-pill-white.p-button:not(:disabled):hover {
+  background: #f1f5f9 !important;
+  border-color: #020617 !important;
+  color: #020617 !important;
+}
+
+:host ::ng-deep button.pr-pill-white.p-button:not(:disabled):hover .p-button-icon {
+  color: #020617 !important;
+}
+
+:host ::ng-deep button.pr-pill-white.p-button:focus-visible {
+  outline: 2px solid #0f172a;
+  outline-offset: 2px;
+}
+
+:host ::ng-deep button.pr-pill-white.p-button:disabled {
+  opacity: 0.42;
+}
+
+:host ::ng-deep button.pr-pill-white.p-button.p-button-loading .p-icon-spin {
+  color: #0f172a !important;
+}
+
+.patient-registration-layout > p-message {
+  display: block;
+  margin-bottom: var(--hms-page-gutter);
+}
+
+/* Services panel — fills column height; table body scrolls */
+.pr-services-lift {
+  @include pr-card-surface;
+  display: flex;
+  flex-direction: column;
+  gap: var(--hms-page-gutter);
+  padding: var(--hms-card-padding);
+  margin: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+:host ::ng-deep .pr-services-lift > p-table {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+:host ::ng-deep .pr-services-lift > p-table .p-datatable {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+:host ::ng-deep .pr-services-lift > p-table .p-datatable-wrapper {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+}
+
+/* Empty table: tall scroll area + CTA centered in card (neutral hover below) */
+:host ::ng-deep .pr-services-lift .services-table-empty .p-datatable-wrapper {
+  flex: 1 1 auto !important;
+  min-height: min(48vh, 22rem) !important;
+  overflow: auto !important;
+}
+
+:host ::ng-deep .services-table-empty .p-datatable-table-container {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+:host ::ng-deep .pr-services-lift .services-table-empty .p-datatable-table-container,
+:host ::ng-deep .pr-services-lift .services-table-empty .p-datatable-table {
+  min-height: min(48vh, 22rem);
+}
+
+:host ::ng-deep .pr-services-lift .services-table-empty table {
+  height: 100%;
+  border-collapse: collapse;
+}
+
+:host ::ng-deep .pr-services-lift .services-table-empty tbody tr {
+  height: 100%;
+}
+
+/* Sidebar stacked cards — same elevation as services tile */
+.pr-raised-card {
+  @include pr-card-surface;
+  position: relative;
+  padding: var(--hms-card-padding);
+  transition: box-shadow 0.2s ease;
+}
+
+.pr-raised-card:hover {
+  @include pr-card-surface-hover;
+}
+
+.visit-remarks-input {
+  min-height: 2.35rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+:host ::ng-deep .pr-raised-card--remarks textarea {
+  border-radius: 0.5rem !important;
+  border: 1px solid rgba(226, 232, 240, 0.95) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) inset;
+  padding: var(--hms-card-padding) !important;
+  min-height: 2.35rem !important;
+}
+
+/* Patient record — same tile shell; accent strip only brand hint */
+.patient-record-card {
+  @include pr-card-surface;
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(148, 163, 184, 0.26);
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.9) 0%, rgba(255, 255, 255, 0.98) 100%),
+    #ffffff;
+  transition: box-shadow 0.2s ease;
+}
+
+.patient-record-card:hover {
+  @include pr-card-surface-hover;
+}
+
+.patient-record-card__accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  border-radius: $pr-card-radius 0 0 $pr-card-radius;
+  background: linear-gradient(180deg, #16a34a 0%, #059669 50%, #0ea5a5 100%);
+  box-shadow: 1px 0 12px rgba(5, 150, 105, 0.22);
+}
+
+.patient-record-card__body {
+  position: relative;
+  padding: var(--hms-card-padding);
+  padding-left: calc(var(--hms-card-padding) + 5px);
+  margin-left: 5px;
+}
+
+.patient-record-card__title {
+  margin: 0 0 var(--hms-page-gutter);
+  padding: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  color: #0b2540;
+}
+
+.patient-record-card__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--hms-page-gutter);
+}
+
+.patient-record-card__row--second {
+  margin-top: 0;
+}
+
+.patient-record-card__divider {
+  height: 1px;
+  margin: var(--hms-page-gutter) 0;
+  background: rgba(203, 213, 225, 0.85);
+}
+
+.patient-record-card__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.23rem;
+  min-width: 0;
+  padding: 0.22rem 0.06rem;
+  border-radius: 0.45rem;
+}
+
+.patient-record-card__field--grow {
+  flex: 1 1 6rem;
+}
+
+.patient-record-card__field--narrow {
+  flex: 0 0 auto;
+  min-width: 4.1rem;
+}
+
+.patient-record-card__label {
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #5b7088;
+}
+
+.patient-record-card__value {
+  font-size: 0.96rem;
+  line-height: 1.28;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.patient-record-card__value--name {
+  font-size: 1.06rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #0b2540;
+}
+
+.patient-record-card__value--mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+.patient-record-card__value--age {
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #0f766e;
+}
+
+.patient-record-card__age-suffix {
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-left: 0.125rem;
+  color: #5b7088;
+}
+
+.patient-record-card__value--address {
+  font-weight: 600;
+  color: #334155;
+  word-break: break-word;
+}
+
+.patient-record-card--empty {
+  @include pr-card-surface;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  flex: 1 1 auto;
+  min-height: clamp(11rem, 24vh, 15rem);
+  padding: var(--hms-card-padding);
+  text-align: center;
+  border-style: solid;
+  border-color: rgba(148, 163, 184, 0.3);
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.95) 0%, rgba(255, 255, 255, 0.98) 100%),
+    #ffffff;
+  transition: box-shadow 0.2s ease;
+}
+
+.patient-record-card--empty:hover {
+  @include pr-card-surface-hover;
+}
+
+.patient-record-card__empty-text {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: #5b7088;
+}
+
+.patient-record-card__empty-shell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--hms-page-gutter);
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.patient-record-card__empty-icon-wrap {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.24);
+}
+
+.patient-record-card__empty-icon {
+  font-size: 1.05rem;
+  color: #047857;
+}
+
+.patient-record-card__empty-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: #0b2540;
+}
+
+.pr-raised-card--actions {
+  margin-top: auto;
+}
+
+/* Search row: compact field + History / Register on same line */
+.svc-search-wrap {
+  width: 100%;
+  align-self: flex-start;
+  flex-shrink: 0;
+}
+
+.svc-search-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hms-page-gutter);
+  width: 100%;
+}
+
+.svc-search-input-row {
+  display: flex;
+  align-items: center;
+  flex: 1 1 12rem;
+  width: 100%;
+  max-width: min(100%, 22rem);
+  min-width: 8.5rem;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid $svc-pill-border;
+  border-radius: 9999px;
+  overflow: hidden;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.svc-search-input-row:hover:not(:focus-within):not(:has(.p-disabled)) {
+  background: $svc-pill-hover-bg;
+  border-color: $svc-pill-hover-border;
+}
+
+.svc-search-input-row:focus-within:not(:has(.p-disabled)) {
+  border-color: $svc-pill-hover-border;
+}
+
+.svc-search-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem 0.5rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.svc-search-icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  padding-left: 0.85rem;
+  padding-right: 0.25rem;
+  color: $svc-pill-border;
+
+  .pi {
+    font-size: 0.875rem;
+  }
+}
+
+.svc-search-input-row:has(.p-autocomplete.p-disabled) {
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+/* Search combobox: flush inside pill row */
+:host ::ng-deep .svc-search-input-row .svc-search-autocomplete {
+  flex: 1 1 0;
+  min-width: 0;
+
+  &.p-autocomplete,
+  .p-autocomplete {
+    width: 100%;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  .p-autocomplete-input-multiple,
+  .p-autocomplete-input,
+  .p-inputtext,
+  input.p-inputtext {
+    width: 100%;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0;
+    padding: 0.4rem 0.35rem 0.4rem 0;
+    font-size: 0.8125rem !important;
+    font-weight: 500;
+    color: $svc-pill-text !important;
+  }
+
+  .p-autocomplete-input::placeholder,
+  input.p-inputtext::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+  }
+
+  .p-autocomplete-dropdown {
+    align-self: stretch;
+    width: 2.35rem;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
+    background: transparent !important;
+    border: none !important;
+    border-left: 1px solid rgba(15, 23, 42, 0.08) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: $svc-pill-border !important;
+    transition:
+      color 0.15s ease,
+      background 0.15s ease;
+  }
+
+  .p-autocomplete-dropdown:not(:disabled):hover {
+    color: $svc-pill-hover-text !important;
+    background: rgba(15, 23, 42, 0.04) !important;
+  }
+
+  .p-autocomplete-dropdown:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px rgba(15, 23, 42, 0.15);
+  }
+
+  &.p-disabled .p-autocomplete-dropdown {
+    opacity: 0.6;
+  }
+}
+
+/* Empty services table: large CTA centered in card — neutral hover (no green) */
+:host ::ng-deep .services-visit-table .services-empty-cta-cell {
+  padding: 0 !important;
+  border: none !important;
+  border-bottom: none !important;
+  vertical-align: middle;
+  height: 100%;
+}
+
+.services-empty-cta {
+  display: flex;
+  width: 100%;
+  min-height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--hms-page-gutter);
+  margin: 0;
+  padding: var(--hms-card-padding);
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  cursor: pointer;
+  color: #64748b;
+  font: inherit;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.services-empty-cta:focus-visible {
+  outline: 2px solid rgba(15, 23, 42, 0.35);
+  outline-offset: 2px;
+}
+
+.services-empty-cta__icon {
+  font-size: 3.75rem;
+  line-height: 1;
+  color: #94a3b8;
+}
+
+.services-empty-cta__hint {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+/* Service table: tight rows, horizontal rules only, filled cell controls */
+:host ::ng-deep .services-visit-table {
+  .p-datatable-table {
+    border-collapse: collapse;
+  }
+
+  .p-datatable-thead > tr > th {
+    padding: 0.25rem 0.35rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    color: #4a5568;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #e8e8e8;
+  }
+
+  .p-datatable-tbody > tr > td {
+    padding: 0.22rem 0.35rem;
+    border: none;
+    border-bottom: 1px solid #ececec;
+    vertical-align: middle;
+  }
+
+  .p-datatable-tbody > tr:last-child > td {
+    border-bottom: 1px solid #ececec;
+  }
+
+  /* Doctor select */
+  .p-datatable-tbody .p-select {
+    background: $svc-fill !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: $svc-radius;
+    min-height: 1.85rem;
+  }
+
+  .p-datatable-tbody .p-select .p-select-label,
+  .p-datatable-tbody .p-select .p-select-dropdown {
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+    font-size: 0.8125rem;
+  }
+
+  .p-datatable-tbody .p-select:not(.p-disabled):hover {
+    border-color: transparent !important;
+  }
+
+  /* Price / discount */
+  .p-inputnumber {
+    width: 100%;
+  }
+
+  .p-inputnumber .p-inputnumber-input {
+    width: 100%;
+    background: $svc-fill !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: $svc-radius;
+    padding: 0.3rem 0.45rem;
+    font-size: 0.8125rem;
+  }
+
+  /* Remarks */
+  input.svc-table-text.p-inputtext,
+  .svc-table-text {
+    background: $svc-fill !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: $svc-radius;
+    padding: 0.3rem 0.45rem;
+    font-size: 0.8125rem;
+  }
+}
+
+@media print {
+  :host {
+    margin: 0;
+    padding: 0;
+    display: block !important;
+    flex: none !important;
+    min-height: 0 !important;
+  }
+
+  app-patient-registration-slip.pr-registration-slip {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: auto !important;
+    max-width: none !important;
+    pointer-events: auto !important;
+    z-index: auto !important;
+    overflow: visible !important;
+  }
+
+  .print-area.patient-registration-layout {
+    display: block !important;
+    flex: none !important;
+    min-height: 0 !important;
+  }
+
+  .pr-main-columns {
+    flex: none !important;
+    min-height: 0 !important;
+  }
+
+  .pr-services-col {
+    flex: none !important;
+    min-height: 0 !important;
+  }
+
+  .pr-services-lift {
+    flex: none !important;
+    min-height: 0 !important;
+  }
+
+  :host ::ng-deep .pr-services-lift > p-table,
+  :host ::ng-deep .pr-services-lift > p-table .p-datatable,
+  :host ::ng-deep .pr-services-lift > p-table .p-datatable-wrapper {
+    display: block !important;
+    flex: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-area {
+    box-shadow: none;
+  }
+
+  .pr-raised-card,
+  .pr-services-lift {
+    box-shadow: none !important;
+    background: #fff !important;
+    border-color: #e2e8f0 !important;
+  }
+
+  .patient-registration-layout .order-2 {
+    width: 100% !important;
+  }
+
+  .pr-aside-col {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .patient-record-card {
+    background: #fff !important;
+    box-shadow: none !important;
+    border-color: #e2e8f0 !important;
+  }
+
+  .patient-record-card__accent {
+    box-shadow: none;
+  }
+}

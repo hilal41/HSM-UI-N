@@ -1,0 +1,204 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Doctor checkup (OPD patients)"
+  subtitle="Patients assigned OPD services"
+>
+  <div surfacePanelActions class="hms-crud-actions dc-toolbar">
+    <button
+      pButton
+      type="button"
+      label="Today"
+      class="hms-toolbar-chip"
+      [class.hms-toolbar-chip--active]="activeDateFilter === 'today'"
+      severity="secondary"
+      [outlined]="activeDateFilter !== 'today'"
+      (click)="applyToday()"
+    ></button>
+    <button
+      pButton
+      type="button"
+      label="Yesterday"
+      class="hms-toolbar-chip"
+      [class.hms-toolbar-chip--active]="activeDateFilter === 'yesterday'"
+      severity="secondary"
+      [outlined]="activeDateFilter !== 'yesterday'"
+      (click)="applyYesterday()"
+    ></button>
+    <div class="dc-date-range-slot" [class.dc-date-range-slot--open]="showDateRangeRow">
+      @if (!showDateRangeRow) {
+        <button
+          pButton
+          type="button"
+          label="Range"
+          icon="pi pi-calendar"
+          class="hms-toolbar-chip"
+          [class.hms-toolbar-chip--active]="activeDateFilter === 'range'"
+          severity="secondary"
+          [outlined]="activeDateFilter !== 'range'"
+          [attr.aria-expanded]="false"
+          (click)="openDateRangeRow()"
+        ></button>
+      } @else {
+        <p-datepicker
+          [(ngModel)]="fromDate"
+          dateFormat="yy-mm-dd"
+          [showIcon]="true"
+          iconDisplay="input"
+          appendTo="body"
+          styleClass="dc-date"
+        />
+        <p-datepicker
+          [(ngModel)]="toDate"
+          dateFormat="yy-mm-dd"
+          [showIcon]="true"
+          iconDisplay="input"
+          appendTo="body"
+          styleClass="dc-date"
+        />
+        <button
+          pButton
+          type="button"
+          label="Apply"
+          class="hms-toolbar-chip"
+          [class.hms-toolbar-chip--active]="activeDateFilter === 'range'"
+          severity="secondary"
+          [outlined]="activeDateFilter !== 'range'"
+          (click)="applyRange()"
+        ></button>
+        <button
+          pButton
+          type="button"
+          icon="pi pi-times"
+          class="hms-toolbar-chip hms-toolbar-chip--icon"
+          severity="secondary"
+          [outlined]="true"
+          [attr.aria-label]="'Hide date range'"
+          (click)="closeDateRangeRow()"
+        ></button>
+      }
+    </div>
+    <input
+      pInputText
+      type="text"
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="applySearch()"
+      placeholder="Search patient / phone / service..."
+      class="hms-toolbar-search dc-toolbar-search"
+    />
+    <p-select
+      inputId="dcStatusFilter"
+      name="dcStatusFilter"
+      [(ngModel)]="checkupStatusFilter"
+      (ngModelChange)="applySearch()"
+      [options]="checkupStatusOptions"
+      optionLabel="label"
+      optionValue="value"
+      appendTo="body"
+      styleClass="dc-status-select"
+      ariaLabel="Checkup status filter"
+    />
+    <button
+      pButton
+      type="button"
+      icon="pi pi-refresh"
+      severity="secondary"
+      class="hms-toolbar-chip hms-toolbar-chip--icon"
+      [outlined]="true"
+      [loading]="loading"
+      [attr.aria-label]="'Refresh'"
+      (click)="loadOpdPatients(fromDate, toDate)"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+  @if (errorMessage) {
+    <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+  }
+
+  <p-table
+    [showLoader]="false"
+    [value]="rows"
+    [loading]="loading"
+    [paginator]="true"
+    [rows]="20"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    [tableStyle]="{ 'min-width': '100%' }"
+    styleClass="p-datatable-sm hms-crud-table"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Visit date</th>
+        <th>Patient</th>
+        <th>Phone</th>
+        <th class="text-end">Age / gender</th>
+        <th>Doctor</th>
+        <th>Service 1</th>
+        <th>Status</th>
+        <th class="text-end w-[1%] whitespace-nowrap">Checkup</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-row>
+      <tr>
+        <td class="text-sm leading-snug text-slate-800">{{ formatVisitDate(row.visitDate) }}</td>
+        <td>{{ row.patientName }}</td>
+        <td class="font-mono text-xs">{{ row.phone || '—' }}</td>
+        <td class="text-end text-sm text-slate-800">
+          <span class="tabular-nums font-medium">{{ row.ageYears }}</span><span class="text-slate-400"> · </span><span>{{ row.gender || '—' }}</span>
+        </td>
+        <td>
+          {{ row.doctorSummary || '—' }}
+          @if (row.extraDoctorCount > 0) {
+            <div class="text-xs text-slate-500">+{{ row.extraDoctorCount }} more</div>
+          }
+        </td>
+        <td>
+          @if (row.serviceSummary1) {
+            <div>{{ row.serviceSummary1 }}</div>
+          }
+          @if (row.serviceSummary2) {
+            <div [class.text-xs]="!!row.serviceSummary1" [class.text-slate-600]="!!row.serviceSummary1">
+              {{ row.serviceSummary2 }}
+            </div>
+          }
+          @if (!row.serviceSummary1 && !row.serviceSummary2) {
+            —
+          }
+          @if (row.extraServiceCount > 0) {
+            <div class="text-xs text-slate-500">+{{ row.extraServiceCount }} more</div>
+          }
+        </td>
+        <td>
+          <span class="dc-checkup-status" [class.dc-checkup-status--checked]="row.hasCheckup">
+            {{ row.hasCheckup ? 'Checked' : 'Unchecked' }}
+          </span>
+        </td>
+        <td class="text-end">
+          <button
+            pButton
+            type="button"
+            [label]="row.hasCheckup ? 'Open' : 'Checkup'"
+            icon="pi pi-file-edit"
+            severity="success"
+            class="!text-xs !py-1"
+            (click)="openCheckupSession(row)"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="8" class="hms-table-empty-cell py-6 text-center text-sm text-slate-500">
+          <div class="flex flex-col items-center justify-center gap-2 py-4">
+            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
+            <span>No patients found with OPD services.</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="loadingbody" let-columns>
+      <app-hms-table-loading-body [cols]="columns?.length || 8" />
+    </ng-template>
+  </p-table>
+  </div>
+</app-surface-panel>

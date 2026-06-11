@@ -1,0 +1,354 @@
+<app-surface-panel
+  class="hms-crud-surface rsd-surface--bare"
+  title="Registration slip designer"
+  subtitle="Pick a template, then fine-tune spacing, alignment, logo, typography, and sections. Saved for your hospital and used on patient registration printouts."
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    @if (!loading && hospital) {
+      <button
+        pButton
+        type="button"
+        label="Reset all to defaults"
+        severity="secondary"
+        [outlined]="true"
+        class="hms-toolbar-chip"
+        [disabled]="saving"
+        (click)="resetDefaults()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Save to hospital"
+        icon="pi pi-save"
+        severity="success"
+        class="hms-toolbar-solid"
+        [loading]="saving"
+        (click)="save()"
+      ></button>
+    }
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    @if (loading) {
+      <app-hms-block-skeleton [lines]="16" ariaLabel="Loading slip designer" />
+    } @else if (!hospital) {
+      <p class="text-sm text-red-700">No hospital profile is available for this account.</p>
+    } @else {
+  <div class="rsd-layout">
+    <div class="rsd-form">
+      <section class="rsd-card rsd-card--templates">
+        <h2 class="rsd-card__title">Templates</h2>
+        <p class="rsd-hint">Each preset is a different starting look. Your section order and visibility are kept when you switch.</p>
+        <div class="rsd-presets">
+          @for (p of presetOptions; track p.id) {
+            <button
+              type="button"
+              class="rsd-preset"
+              [class.rsd-preset--active]="isPresetActive(p.id)"
+              (click)="applyPreset(p.id)"
+            >
+              <span class="rsd-preset__name">{{ p.name }}</span>
+              <span class="rsd-preset__blurb">{{ p.blurb }}</span>
+            </button>
+          }
+        </div>
+      </section>
+
+      <section class="rsd-card">
+        <h2 class="rsd-card__title">Typography</h2>
+        <div class="rsd-grid2">
+          <div class="rsd-field">
+            <label for="rsd-font">Font family</label>
+            <p-select
+              inputId="rsd-font"
+              [options]="fontChoices"
+              [(ngModel)]="draft.fontFamily"
+              optionLabel="label"
+              optionValue="value"
+              styleClass="w-full"
+              [appendTo]="'body'"
+            />
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-lh">Line height</label>
+            <p-inputNumber
+              inputId="rsd-lh"
+              [(ngModel)]="draft.lineHeight"
+              [min]="1"
+              [max]="2.2"
+              [step]="0.05"
+              mode="decimal"
+              [maxFractionDigits]="2"
+              styleClass="w-full"
+            />
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-base">Body size (px)</label>
+            <p-inputNumber inputId="rsd-base" [(ngModel)]="draft.baseFontSizePx" [min]="8" [max]="22" styleClass="w-full" />
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-title">Title size (px)</label>
+            <p-inputNumber inputId="rsd-title" [(ngModel)]="draft.titleFontSizePx" [min]="10" [max]="32" styleClass="w-full" />
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-head">Section headings (px)</label>
+            <p-inputNumber inputId="rsd-head" [(ngModel)]="draft.headingFontSizePx" [min]="8" [max]="18" styleClass="w-full" />
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-table">Table text (px)</label>
+            <p-inputNumber inputId="rsd-table" [(ngModel)]="draft.tableFontSizePx" [min]="8" [max]="18" styleClass="w-full" />
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-scale">Overall text scale</label>
+            <p-inputNumber
+              inputId="rsd-scale"
+              [(ngModel)]="draft.globalTextScale"
+              [min]="0.75"
+              [max]="1.35"
+              [step]="0.05"
+              mode="decimal"
+              [maxFractionDigits]="2"
+              styleClass="w-full"
+            />
+            <span class="rsd-field__help">Multiplies all slip font sizes (compact ↔ larger).</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="rsd-card">
+        <h2 class="rsd-card__title">Colours</h2>
+        <div class="rsd-grid2">
+          <div class="rsd-field rsd-field--color">
+            <label for="c-body">Body text</label>
+            <input id="c-body" type="color" [(ngModel)]="draft.bodyColor" class="rsd-color" />
+          </div>
+          <div class="rsd-field rsd-field--color">
+            <label for="c-title">Titles</label>
+            <input id="c-title" type="color" [(ngModel)]="draft.titleColor" class="rsd-color" />
+          </div>
+          <div class="rsd-field rsd-field--color">
+            <label for="c-muted">Muted / labels</label>
+            <input id="c-muted" type="color" [(ngModel)]="draft.mutedColor" class="rsd-color" />
+          </div>
+          <div class="rsd-field rsd-field--color">
+            <label for="c-border">Borders &amp; rules</label>
+            <input id="c-border" type="color" [(ngModel)]="draft.borderColor" class="rsd-color" />
+          </div>
+        </div>
+      </section>
+
+      <section class="rsd-card">
+        <h2 class="rsd-card__title">Slip spacing (mm)</h2>
+        <p class="rsd-hint">Inner padding is inside the slip card; outer margin offsets the whole slip on the page.</p>
+        <div class="rsd-grid2">
+          <div class="rsd-field">
+            <label for="rsd-pt">Padding top</label>
+            <p-inputNumber inputId="rsd-pt" [(ngModel)]="draft.paddingTopMm" [min]="0" [max]="20" styleClass="w-full" />
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-pr">Padding right</label>
+            <p-inputNumber inputId="rsd-pr" [(ngModel)]="draft.paddingRightMm" [min]="0" [max]="20" styleClass="w-full" />
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-pb">Padding bottom</label>
+            <p-inputNumber inputId="rsd-pb" [(ngModel)]="draft.paddingBottomMm" [min]="0" [max]="20" styleClass="w-full" />
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-pl">Padding left</label>
+            <p-inputNumber inputId="rsd-pl" [(ngModel)]="draft.paddingLeftMm" [min]="0" [max]="20" styleClass="w-full" />
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-mt">Margin top</label>
+            <p-inputNumber inputId="rsd-mt" [(ngModel)]="draft.marginTopMm" [min]="0" [max]="16" styleClass="w-full" />
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-mr">Margin right</label>
+            <p-inputNumber inputId="rsd-mr" [(ngModel)]="draft.marginRightMm" [min]="0" [max]="16" styleClass="w-full" />
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-mb">Margin bottom</label>
+            <p-inputNumber inputId="rsd-mb" [(ngModel)]="draft.marginBottomMm" [min]="0" [max]="16" styleClass="w-full" />
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-ml">Margin left</label>
+            <p-inputNumber inputId="rsd-ml" [(ngModel)]="draft.marginLeftMm" [min]="0" [max]="16" styleClass="w-full" />
+          </div>
+        </div>
+      </section>
+
+      <section class="rsd-card">
+        <h2 class="rsd-card__title">Layout &amp; logo</h2>
+        <div class="rsd-grid2">
+          <div class="rsd-field">
+            <label for="rsd-halign">Hospital block</label>
+            <p-select
+              inputId="rsd-halign"
+              [options]="alignOptions"
+              [(ngModel)]="draft.hospitalBlockAlign"
+              optionLabel="label"
+              optionValue="value"
+              styleClass="w-full"
+              [appendTo]="'body'"
+            />
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-headalign">Slip title row</label>
+            <p-select
+              inputId="rsd-headalign"
+              [options]="alignOptions"
+              [(ngModel)]="draft.headerTextAlign"
+              optionLabel="label"
+              optionValue="value"
+              styleClass="w-full"
+              [appendTo]="'body'"
+            />
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-bodyalign">Patient, services, totals, footer</label>
+            <p-select
+              inputId="rsd-bodyalign"
+              [options]="alignOptions"
+              [(ngModel)]="draft.bodySectionsAlign"
+              optionLabel="label"
+              optionValue="value"
+              styleClass="w-full"
+              [appendTo]="'body'"
+            />
+          </div>
+          <div class="rsd-field rsd-field--check rsd-field--check-block">
+            <p-checkbox inputId="rsd-showlogo" [(ngModel)]="draft.hospitalShowLogo" [binary]="true" />
+            <label for="rsd-showlogo">Show hospital logo on slip</label>
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-logoplace">Logo position</label>
+            <p-select
+              inputId="rsd-logoplace"
+              [options]="logoPlacementOptions"
+              [(ngModel)]="draft.logoPlacement"
+              optionLabel="label"
+              optionValue="value"
+              styleClass="w-full"
+              [appendTo]="'body'"
+              [disabled]="!draft.hospitalShowLogo"
+            />
+          </div>
+          <div class="rsd-field">
+            <label for="rsd-logoh">Logo max height (px)</label>
+            <p-inputNumber
+              inputId="rsd-logoh"
+              [(ngModel)]="draft.logoMaxHeightPx"
+              [min]="24"
+              [max]="120"
+              styleClass="w-full"
+              [disabled]="!draft.hospitalShowLogo || draft.logoPlacement === 'none'"
+            />
+          </div>
+        </div>
+        <p class="rsd-hint rsd-hint--tight">
+          Upload your real logo under My hospital. The preview uses a sample logo if none is set.
+        </p>
+      </section>
+
+      <section class="rsd-card">
+        <h2 class="rsd-card__title">Table</h2>
+        <div class="rsd-field rsd-field--check">
+          <p-checkbox inputId="rsd-grid" [(ngModel)]="draft.showTableGrid" [binary]="true" />
+          <label for="rsd-grid">Show service table grid lines</label>
+        </div>
+      </section>
+
+      <section class="rsd-card">
+        <h2 class="rsd-card__title">Text content</h2>
+        <div class="rsd-field">
+          <label for="rsd-slip-title">Slip title</label>
+          <input pInputText id="rsd-slip-title" class="w-full" [(ngModel)]="draft.slipTitle" maxlength="200" />
+        </div>
+        <div class="rsd-field">
+          <label for="rsd-footer">Footer (supports multiple lines)</label>
+          <textarea
+            pTextarea
+            id="rsd-footer"
+            class="w-full"
+            [(ngModel)]="draft.footerText"
+            rows="5"
+            maxlength="2000"
+          ></textarea>
+        </div>
+      </section>
+
+      <section class="rsd-card">
+        <h2 class="rsd-card__title">Sections — order &amp; visibility</h2>
+        <p class="rsd-hint">Drag rows to change print order. Use the checkbox to show or hide each block.</p>
+        <div
+          cdkDropList
+          class="rsd-order"
+          [cdkDropListData]="draft.sectionOrder"
+          (cdkDropListDropped)="onSectionDrop($event)"
+        >
+          @for (id of draft.sectionOrder; track id) {
+            <div cdkDrag class="rsd-order__row">
+              <span class="rsd-order__handle" cdkDragHandle aria-label="Reorder">
+                <i class="pi pi-bars" aria-hidden="true"></i>
+              </span>
+              <span class="rsd-order__label">{{ sectionLabels[id] }}</span>
+              <p-checkbox
+                [binary]="true"
+                [inputId]="'rsd-sec-' + id"
+                [ngModel]="isSectionShown(id)"
+                (ngModelChange)="setSectionShown(id, $event)"
+              />
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="rsd-card">
+        <h2 class="rsd-card__title">Hospital block</h2>
+        <div class="rsd-checklist">
+          <div class="rsd-field--check">
+            <p-checkbox inputId="h-n" [(ngModel)]="draft.hospitalShowName" [binary]="true" />
+            <label for="h-n">Name</label>
+          </div>
+          <div class="rsd-field--check">
+            <p-checkbox inputId="h-c" [(ngModel)]="draft.hospitalShowCode" [binary]="true" />
+            <label for="h-c">Code</label>
+          </div>
+          <div class="rsd-field--check">
+            <p-checkbox inputId="h-a" [(ngModel)]="draft.hospitalShowAddress" [binary]="true" />
+            <label for="h-a">Address</label>
+          </div>
+          <div class="rsd-field--check">
+            <p-checkbox inputId="h-p" [(ngModel)]="draft.hospitalShowPhone" [binary]="true" />
+            <label for="h-p">Phone</label>
+          </div>
+          <div class="rsd-field--check">
+            <p-checkbox inputId="h-e" [(ngModel)]="draft.hospitalShowEmail" [binary]="true" />
+            <label for="h-e">Email</label>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="rsd-preview">
+      <div class="rsd-preview__card">
+        <div class="rsd-preview__label no-print">Live preview (sample patient)</div>
+        <div class="rsd-preview__surface">
+          <app-patient-registration-slip
+            [patient]="samplePatient"
+            [hospital]="previewHospital"
+            [template]="draft"
+            [lines]="sampleLines"
+            [visitRemarks]="sampleRemarks"
+            [totalAmount]="sampleTotal"
+            [discountAmount]="sampleDiscount"
+            [ageYears]="sampleAge"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+    }
+  </div>
+</app-surface-panel>

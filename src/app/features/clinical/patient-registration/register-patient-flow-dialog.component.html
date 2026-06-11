@@ -1,0 +1,54 @@
+<p-dialog
+  [modal]="true"
+  [style]="{ width: 'min(96vw, calc(38rem * 1.4))' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="pr-flow-dialog hms-crud-dialog"
+  [visible]="visible"
+  (visibleChange)="onVisibleChange($event)"
+  [draggable]="false"
+  [dismissableMask]="true"
+>
+  <ng-template #header>
+    <div class="pr-flow-header" [class.pr-flow-header--register]="mode === 'register'">
+      @if (mode === 'search') {
+        <span class="pr-flow-header__title">Existing patient</span>
+        <button
+          pButton
+          type="button"
+          label="Register new patient"
+          icon="pi pi-user-plus"
+          class="pr-flow-header__register pr-pill-white"
+          (click)="goRegisterNew()"
+        ></button>
+      } @else {
+        <button
+          pButton
+          type="button"
+          label="Back to search"
+          icon="pi pi-arrow-left"
+          severity="secondary"
+          [text]="true"
+          class="pr-flow-header__back"
+          (click)="backToSearch()"
+        ></button>
+        <span class="pr-flow-header__title pr-flow-header__title--end">Register patient</span>
+      }
+    </div>
+  </ng-template>
+
+  @if (mode === 'search') {
+    <div class="pr-flow-search-shell">
+      <app-patient-register-search
+        (patientPicked)="onExistingPatient($event)"
+        (registerNew)="goRegisterNew()"
+      />
+    </div>
+  } @else {
+    <div class="pr-flow-register">
+      <app-quick-patient-form
+        (patientRegistered)="onNewPatientSaved($event)"
+        (cancelled)="backToSearch()"
+      />
+    </div>
+  }
+</p-dialog>

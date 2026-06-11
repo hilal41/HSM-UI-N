@@ -1,0 +1,387 @@
+$pr-header-line: rgba(15, 81, 50, 0.1);
+
+.pr-register-log-scroll {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: clamp(16rem, 52vh, 25rem);
+  padding-bottom: 0.35rem !important;
+}
+
+.pr-register-log-headrow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.pr-register-log-headrow__left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.pr-register-log-headrow__title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.pr-register-log-headrow__sub {
+  margin: 0;
+  font-size: 0.66rem;
+  line-height: 1.25;
+  color: #64748b;
+}
+
+.pr-register-log-headrow__sub strong {
+  color: #334155;
+  font-weight: 600;
+}
+
+.pr-register-log-headrow__filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.32rem;
+  margin-left: auto;
+}
+
+.pr-register-log-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.45rem 0.75rem;
+  margin-bottom: 0.65rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid $pr-header-line;
+}
+
+.pr-register-log-toolbar__hint {
+  margin: 0;
+  flex: 1 1 12rem;
+  min-width: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.pr-register-log-toolbar__hint strong {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.pr-register-log-toolbar__more {
+  flex-shrink: 0;
+}
+
+.pr-register-log-toolbar__chip {
+  min-height: 1.48rem !important;
+}
+
+.pr-register-log-toolbar__more {
+  min-height: 1.48rem !important;
+}
+
+.pr-register-log-filters {
+  margin-bottom: 0.875rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid $pr-header-line;
+}
+
+.pr-register-log-filters__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.65rem 1rem;
+}
+
+.pr-register-log-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.pr-register-log-filters__only {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+  font-size: 0.78rem;
+  color: #475569;
+}
+
+.pr-register-log-filters__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}
+
+@media (max-width: 900px) {
+  .pr-register-log-headrow {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .pr-register-log-headrow__title {
+    white-space: normal;
+    font-size: 0.95rem;
+  }
+
+  .pr-register-log-headrow__sub {
+    font-size: 0.62rem;
+  }
+
+  .pr-register-log-headrow__filters {
+    justify-content: flex-start;
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+.pr-register-log-muted {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.pr-register-log-content-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pr-register-log-state {
+  flex: 1 1 auto;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 0.5rem;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.pr-register-log-table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 0.5rem;
+  background: #fafafa;
+}
+
+.pr-register-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.pr-register-log-table th,
+.pr-register-log-table td {
+  padding: 0.35rem 0.45rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #ececec;
+}
+
+.pr-register-log-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  color: #4a5568;
+  background: #f8fafc;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.pr-register-log-table__narrow {
+  white-space: nowrap;
+  width: 1%;
+}
+
+.pr-register-log-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pr-register-log-table__row--hl {
+  background: rgba(236, 253, 245, 0.65);
+}
+
+.pr-register-log-table__dt {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 0.78rem;
+}
+
+.pr-register-log-table__name {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.pr-register-log-table__mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.72rem;
+  color: #475569;
+}
+
+.pr-register-log-svc {
+  display: block;
+  color: #334155;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.pr-register-log-extra {
+  margin-top: 0.2rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.pr-register-log-print {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.12rem 0.45rem;
+  border-radius: 9999px;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  background: #fff;
+}
+
+.pr-register-log-print--yes {
+  border-color: rgba(5, 150, 105, 0.35);
+  color: #065f46;
+  background: rgba(236, 253, 245, 0.9);
+}
+
+.pr-register-log-print--no {
+  border-color: #e2e8f0;
+}
+
+.pr-register-log-paginator {
+  margin-top: 0.65rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid $pr-header-line;
+}
+
+:host ::ng-deep .pr-register-log-paginator .p-paginator {
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0 0;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+:host ::ng-deep .pr-register-log-paginator .p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+  background: #064e3b;
+  color: #fff;
+}
+
+:host ::ng-deep .pr-register-log-dialog.hms-crud-dialog.p-dialog {
+  max-height: calc(100dvh - 1.25rem) !important;
+}
+
+:host ::ng-deep .pr-register-log-dialog.hms-crud-dialog .p-dialog-content {
+  padding: 0 !important;
+}
+
+:host ::ng-deep .pr-register-log-dialog.hms-crud-dialog .hms-dialog-body {
+  min-height: clamp(22rem, 64vh, 33rem);
+  display: flex;
+  flex-direction: column;
+}
+
+:host ::ng-deep .pr-register-log-dialog.hms-crud-dialog .hms-dialog-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+:host ::ng-deep .pr-register-log-dialog button.pr-pill-white.p-button {
+  background: #ffffff !important;
+  border: 1px solid #0f172a !important;
+  color: #0f2744 !important;
+  border-radius: 50px !important;
+  box-shadow: none !important;
+  font-weight: 500;
+  font-size: 0.8125rem !important;
+  padding-block: 0.4rem !important;
+  padding-inline: 1rem !important;
+}
+
+:host ::ng-deep .pr-register-log-dialog button.pr-pill-white.p-button:not(:disabled):hover {
+  background: #f1f5f9 !important;
+  border-color: #020617 !important;
+  color: #020617 !important;
+}
+
+:host ::ng-deep .pr-register-log-dialog button.pr-pill-white.p-button:not(.p-button-outlined) {
+  background: #ecfdf5 !important;
+  border-color: #6ee7b7 !important;
+  color: #065f46 !important;
+}
+
+:host ::ng-deep .pr-register-log-dialog button.pr-pill-white.p-button:not(.p-button-outlined):not(:disabled):hover {
+  background: #dcfce7 !important;
+  border-color: #34d399 !important;
+  color: #065f46 !important;
+}
+
+:host ::ng-deep .pr-register-log-dialog button.pr-register-log-toolbar__chip--active.p-button {
+  background: #ecfdf5 !important;
+  border-color: #6ee7b7 !important;
+  color: #065f46 !important;
+}
+
+:host ::ng-deep .pr-register-log-dialog button.pr-register-log-toolbar__chip--active.p-button:not(:disabled):hover {
+  background: #dcfce7 !important;
+  border-color: #34d399 !important;
+  color: #065f46 !important;
+}
+
+:host
+  ::ng-deep
+  .pr-register-log-dialog
+  .pr-register-log-headrow__filters
+  > button.pr-pill-white.p-button.pr-register-log-toolbar__chip,
+:host
+  ::ng-deep
+  .pr-register-log-dialog
+  .pr-register-log-headrow__filters
+  > button.pr-pill-white.p-button.pr-register-log-toolbar__more {
+  font-size: 0.58rem !important;
+  padding-block: 0.02rem !important;
+  padding-inline: 0.34rem !important;
+  min-height: 1.48rem !important;
+}
+
+:host
+  ::ng-deep
+  .pr-register-log-dialog
+  .pr-register-log-headrow__filters
+  > button.p-button
+  .p-button-label {
+  font-size: 0.58rem !important;
+  font-weight: 600 !important;
+}
+
+:host
+  ::ng-deep
+  .pr-register-log-dialog
+  .pr-register-log-headrow__filters
+  > button.p-button
+  .p-button-icon {
+  font-size: 0.56rem !important;
+}

@@ -1,0 +1,101 @@
+<div class="cte-root">
+  @if (loadError) {
+    <p-message severity="error" [text]="loadError" styleClass="w-full shrink-0" />
+  }
+
+  @if (loading) {
+    <app-hms-block-skeleton [lines]="14" ariaLabel="Loading template" />
+  } @else if (!showEditorForm) {
+    <p class="m-0 text-sm text-slate-600">Open <strong>Checkup template studio</strong> from the menu.</p>
+  } @else {
+    @if (loadError) {
+      <p-message severity="warn" [text]="loadError" styleClass="w-full shrink-0" />
+    }
+
+    <div class="cte-page">
+      @if (editingBuiltIn) {
+        <div class="cte-banner cte-banner--amber">
+          <strong>Library:</strong> code is fixed. Edit name/layout here, or <strong>Save as custom</strong> in the list
+          for a new code.
+        </div>
+      }
+
+      @if (showHospitalPickerOnCreate()) {
+        <div class="cte-hospital-row">
+          <label class="hms-field-label hms-field-label--required" for="cte-hosp">Hospital</label>
+          @if (hospitalsPickLoading) {
+            <p class="m-0 text-xs text-slate-500">Loading hospitals…</p>
+          }
+          <p-select
+            inputId="cte-hosp"
+            name="cteHosp"
+            [options]="hospitalsForPick"
+            optionLabel="name"
+            optionValue="id"
+            [showClear]="hospitalsForPick.length > 1"
+            placeholder="Select hospital"
+            [(ngModel)]="targetHospitalId"
+            styleClass="w-full"
+            appendTo="body"
+            [disabled]="hospitalsPickLoading"
+          />
+          <p class="cte-hint-line m-0">Multi-hospital account — pick where this template is stored.</p>
+        </div>
+      }
+
+      <section class="cte-title-card" aria-labelledby="hms-cte-header-title">
+        <div class="cte-title-card__row">
+          <div class="cte-title-card__lead">
+            <h1 id="hms-cte-header-title" class="cte-title-card__title">{{ pageTitle }}</h1>
+            <p class="cte-title-card__sub">{{ pageSubtitle }}</p>
+          </div>
+          <div class="cte-title-card__fields">
+            <div class="cte-title-card__field">
+              <label class="cte-title-card__lbl hms-field-label hms-field-label--required" for="cte-code">Code</label>
+              <input
+                pInputText
+                id="cte-code"
+                class="cte-field cte-field--header cte-field--code"
+                [(ngModel)]="formCode"
+                name="cteCode"
+                [readonly]="editingBuiltIn"
+                autocomplete="off"
+              />
+            </div>
+            <div class="cte-title-card__field cte-title-card__field--name">
+              <label class="cte-title-card__lbl hms-field-label hms-field-label--required" for="cte-name">Display name</label>
+              <input
+                pInputText
+                id="cte-name"
+                class="cte-field cte-field--header"
+                [(ngModel)]="formName"
+                name="cteName"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <app-checkup-form-designer
+        [doc]="formDoc"
+        (docChange)="onFormDocChange($event)"
+        [templateTitle]="formName"
+      />
+
+      <div class="cte-footer">
+        <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" size="small" (click)="cancel()"></button>
+        <button
+          pButton
+          type="button"
+          class="cts-primary-btn"
+          label="Save"
+          icon="pi pi-check"
+          severity="success"
+          size="small"
+          [loading]="saving"
+          (click)="save()"
+        ></button>
+      </div>
+    </div>
+  }
+</div>

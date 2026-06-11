@@ -1,0 +1,173 @@
+/* No `app-surface-panel` — cards sit on shell body; cancel main pad so inset matches card rhythm */
+:host {
+  --cte-card-pad: var(--hms-card-padding);
+
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: calc(-1 * var(--hms-main-pad));
+  padding: var(--cte-card-pad);
+}
+
+.cte-root {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--cte-card-pad);
+  min-height: 0;
+  min-width: 0;
+}
+
+.cte-page {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--cte-card-pad);
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Card 1 — title, subtitle, code, name (uniform `--hms-card-padding` inset) */
+.cte-title-card {
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226 232 240 / 0.95);
+  background: #fff;
+  padding: var(--cte-card-pad);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+  box-sizing: border-box;
+}
+
+/* One row: title + subtitle | Code | Display name (wraps on small screens) */
+.cte-title-card__row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  gap: 0.55rem 0.65rem;
+  min-width: 0;
+}
+
+/* Row 1: title — row 2: subtitle */
+.cte-title-card__lead {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cte-title-card__title {
+  margin: 0;
+  flex-shrink: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: #0f172a;
+}
+
+.cte-title-card__sub {
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.cte-title-card__fields {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  align-items: flex-end;
+  gap: 0.45rem;
+}
+
+@media (max-width: 1023.98px) {
+  .cte-title-card__row {
+    flex-wrap: wrap;
+  }
+
+  .cte-title-card__lead {
+    flex: 1 1 100%;
+  }
+
+}
+
+.cte-title-card__field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.cte-title-card__field--name {
+  width: 10.5rem;
+  max-width: min(18rem, 100%);
+}
+
+.cte-title-card__lbl {
+  font-size: 0.58rem !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0.04em;
+}
+
+:host ::ng-deep .cte-field--header.p-inputtext {
+  width: 100%;
+  padding: 0.28rem 0.4rem !important;
+  font-size: 0.75rem !important;
+  line-height: 1.25 !important;
+  border-radius: 0.35rem !important;
+}
+
+:host ::ng-deep .cte-field--code.p-inputtext {
+  width: 5.25rem;
+  min-width: 5.25rem;
+}
+
+.cte-banner {
+  margin: 0;
+  border-radius: 0.45rem;
+  padding: 0.4rem 0.55rem;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.cte-banner--amber {
+  border: 1px solid rgb(254 243 199 / 0.95);
+  background: rgb(255 251 235 / 0.95);
+  color: rgb(69 26 3);
+}
+
+.cte-hospital-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.cte-hint-line {
+  font-size: 0.65rem;
+  line-height: 1.3;
+  color: #64748b;
+}
+
+.cte-field.p-inputtext {
+  border-radius: 0.45rem !important;
+}
+
+.cte-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+:host ::ng-deep .cts-primary-btn.p-button.p-button-success:not(.p-button-outlined):not(.p-button-text) {
+  box-shadow: 0 1px 2px rgb(15 23 42 / 8%);
+}

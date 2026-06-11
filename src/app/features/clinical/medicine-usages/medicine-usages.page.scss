@@ -1,0 +1,165 @@
+/* Body: tinted gutter + white section cards (header uses shared app-surface-panel shell). */
+.mud-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--hms-main-pad);
+  padding-top: 0;
+  padding-bottom: var(--hms-main-pad);
+  padding-inline: 0;
+  min-width: 0;
+  background: #e6e9f3;
+  border-radius: 0.65rem;
+}
+
+@media (min-width: 1024px) {
+  .mud-layout {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+    align-items: start;
+    gap: calc(var(--hms-main-pad) * 1.1);
+  }
+}
+
+.mud-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hms-main-pad);
+  min-width: 0;
+}
+
+.mud-aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hms-main-pad);
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .mud-aside {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+.mud-templates-hint {
+  margin: calc(var(--hms-main-pad) * -0.5) 0 calc(var(--hms-main-pad) * 1.15);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.mud-details-hint {
+  margin: calc(var(--hms-main-pad) * -0.35) 0 var(--hms-main-pad);
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: #64748b;
+}
+
+.mud-card--details .mud-card__title {
+  margin-bottom: 0.35rem;
+}
+
+.mud-details-stack {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--hms-main-pad) * 1.1);
+}
+
+.mud-card {
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 0.65rem;
+  padding: var(--hms-card-padding) calc(var(--hms-card-padding) * 1.15);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.mud-card--templates {
+  padding: calc(var(--hms-main-pad) * 1.85) calc(var(--hms-main-pad) * 1.5);
+}
+
+.mud-card__title {
+  margin: 0 0 var(--hms-main-pad);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+.mud-card--templates .mud-card__title {
+  margin-bottom: calc(var(--hms-main-pad) * 1.1);
+}
+
+.mud-presets {
+  display: grid;
+  gap: calc(var(--hms-main-pad) * 1.15);
+  grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+}
+
+.mud-preset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: calc(var(--hms-main-pad) * 1.1) calc(var(--hms-main-pad) * 1.05);
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.45rem;
+  background: #fafafa;
+  cursor: pointer;
+  font: inherit;
+  color: #0f172a;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.mud-preset:hover {
+  border-color: #cbd5e1;
+  background: #fff;
+}
+
+.mud-preset--active {
+  border-color: #0f766e;
+  background: #f0fdfa;
+  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.2);
+}
+
+.mud-preset__name {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.mud-preset__blurb {
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: #64748b;
+}
+
+.mud-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.mud-field label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.mud-field--check {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mud-saved-table-card .mud-card__title {
+  margin-bottom: var(--hms-main-pad);
+}
+
+:host ::ng-deep tr.hms-row-editing > td {
+  background: rgba(15, 118, 110, 0.06);
+}

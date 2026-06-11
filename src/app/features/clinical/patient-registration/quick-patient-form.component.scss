@@ -1,0 +1,467 @@
+$qp-pill-border: #0f172a;
+$qp-pill-text: #0f2744;
+$qp-pill-hover-bg: #f1f5f9;
+$qp-pill-hover-border: #020617;
+$qp-pill-hover-text: #020617;
+$qp-border-soft: rgba(15, 81, 50, 0.1);
+$qp-required: #b91c1c;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.qp-dialog-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.qp-form-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0.75rem 1.1rem 0.5rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Desktop: 4 columns total -> 3 form columns + 1 picture column */
+.qp-form-wide {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.2rem 0.55rem;
+  align-content: start;
+}
+
+.qp-field--fn,
+.qp-field--ln,
+.qp-field--mob,
+.qp-field--reg,
+.qp-field--gender,
+.qp-field--blood,
+.qp-field--city,
+.qp-field--state {
+  grid-column: span 1;
+}
+
+.qp-field--dob {
+  grid-column: span 1;
+}
+
+.qp-field--pic {
+  grid-column: 4;
+  grid-row: 1 / span 3;
+  align-self: start;
+}
+
+.qp-field--age-ymd {
+  grid-column: span 1;
+}
+
+.qp-field--zip,
+.qp-field--em-name,
+.qp-field--em-phone,
+.qp-field--em-rel,
+.qp-field--addr,
+.qp-field--email {
+  grid-column: span 1;
+}
+
+.qp-field--ins-p,
+.qp-field--ins-n {
+  grid-column: span 1;
+}
+
+@media (max-width: 900px) {
+  .qp-form-wide {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .qp-field--fn,
+  .qp-field--ln,
+  .qp-field--mob,
+  .qp-field--reg,
+  .qp-field--gender,
+  .qp-field--blood,
+  .qp-field--city,
+  .qp-field--state {
+    grid-column: span 3;
+  }
+
+  .qp-field--dob,
+  .qp-field--pic,
+  .qp-field--age-ymd {
+    grid-column: span 6;
+  }
+
+  .qp-field--pic {
+    grid-row: auto;
+  }
+
+  .qp-field--zip,
+  .qp-field--em-name,
+  .qp-field--em-phone,
+  .qp-field--em-rel,
+  .qp-field--addr,
+  .qp-field--email {
+    grid-column: span 3;
+  }
+
+  .qp-field--ins-p,
+  .qp-field--ins-n {
+    grid-column: span 3;
+  }
+}
+
+@media (max-width: 520px) {
+  .qp-form-wide {
+    grid-template-columns: 1fr;
+  }
+
+  .qp-field--fn,
+  .qp-field--ln,
+  .qp-field--mob,
+  .qp-field--reg,
+  .qp-field--dob,
+  .qp-field--pic,
+  .qp-field--age-ymd,
+  .qp-field--gender,
+  .qp-field--blood,
+  .qp-field--city,
+  .qp-field--state,
+  .qp-field--zip,
+  .qp-field--em-name,
+  .qp-field--em-phone,
+  .qp-field--em-rel,
+  .qp-field--addr,
+  .qp-field--email,
+  .qp-field--ins-p,
+  .qp-field--ins-n {
+    grid-column: 1 / -1;
+  }
+
+  .qp-field--pic {
+    grid-row: auto;
+  }
+}
+
+.qp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.qp-pic-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.qp-pic-preview {
+  width: 100%;
+  max-width: 152px;
+  aspect-ratio: 1 / 1;
+  border: 1px dashed #94a3b8;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.qp-pic-preview__icon {
+  font-size: 3rem;
+  color: #64748b;
+}
+
+.qp-pic-preview__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.qp-pic-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+}
+
+:host ::ng-deep .qp-pic-action-icon.p-button {
+  width: 2.2rem !important;
+  height: 2.2rem !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  border-radius: 0.4rem !important;
+}
+
+.qp-cam-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.qp-cam-card {
+  width: min(92vw, 26rem);
+  background: #fff;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+}
+
+.qp-cam-video {
+  width: 100%;
+  display: block;
+  aspect-ratio: 4 / 3;
+  background: #000;
+  object-fit: cover;
+}
+
+.qp-cam-error {
+  padding: 0.45rem 0.7rem;
+  font-size: 0.75rem;
+  color: #b91c1c;
+  background: #fef2f2;
+  border-top: 1px solid #fecaca;
+}
+
+.qp-cam-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 0.75rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.qp-label {
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.qp-label--required::after {
+  content: ' *';
+  color: $qp-required;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+:host ::ng-deep .qp-input.p-inputtext,
+:host ::ng-deep input.qp-input.p-inputtext {
+  width: 100%;
+  box-sizing: border-box;
+  background: #ffffff !important;
+  border: 1px solid rgb(203 213 225 / 0.95) !important;
+  border-radius: 0.35rem !important;
+  padding: 0.18rem 0.32rem !important;
+  font-size: 0.68rem !important;
+  line-height: 1.25 !important;
+  min-height: 1.5rem !important;
+  max-height: 2.25rem !important;
+  font-weight: 400;
+  color: #0f172a !important;
+  box-shadow: none !important;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+:host ::ng-deep .qp-input.p-inputtext:enabled:hover,
+:host ::ng-deep input.qp-input.p-inputtext:enabled:hover {
+  background: #ffffff !important;
+  border-color: #047857 !important;
+  color: #0f172a !important;
+}
+
+:host ::ng-deep .qp-input.p-inputtext:enabled:focus,
+:host ::ng-deep input.qp-input.p-inputtext:enabled:focus {
+  outline: none;
+  background: #ffffff !important;
+  border-color: #047857 !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep .qp-input.p-inputtext:focus-visible,
+:host ::ng-deep input.qp-input.p-inputtext:focus-visible {
+  outline: none;
+}
+
+:host ::ng-deep input.qp-input.p-inputtext::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+/*
+ * DOB: PrimeNG v20 keeps the calendar trigger in .p-datepicker-input-icon-container
+ * with position:absolute on the end of the root — it does NOT wrap the text input.
+ * Pill + full width: style the root; leave the icon overlay as Prime intends.
+ */
+:host ::ng-deep .qp-datepicker.p-datepicker {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  background: #ffffff !important;
+  border: 1px solid rgb(203 213 225 / 0.95) !important;
+  border-radius: 0.35rem !important;
+  box-shadow: none !important;
+  min-height: 1.5rem;
+  overflow: hidden;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+:host ::ng-deep .qp-datepicker.p-datepicker .p-datepicker-input.p-inputtext {
+  flex: 1 1 auto;
+  width: 1%;
+  min-width: 0;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border-radius: 0.35rem !important;
+  padding: 0.18rem 0.32rem !important;
+  font-size: 0.68rem !important;
+  line-height: 1.25 !important;
+  font-weight: 400;
+  color: #0f172a !important;
+  min-height: 1.5rem;
+  box-sizing: border-box;
+}
+
+:host ::ng-deep .qp-datepicker .p-datepicker-input-icon-container {
+  position: absolute !important;
+  top: 50% !important;
+  inset-inline-end: 0.65rem !important;
+  margin-block-start: 0 !important;
+  transform: translateY(-50%);
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: auto !important;
+  height: auto !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  color: #64748b !important;
+}
+
+:host ::ng-deep .qp-datepicker .p-datepicker-input-icon {
+  color: inherit !important;
+}
+
+:host ::ng-deep .qp-datepicker:not(.p-disabled):hover {
+  background: #ffffff !important;
+  border-color: #047857 !important;
+}
+
+:host ::ng-deep .qp-datepicker:not(.p-disabled):hover .p-datepicker-input.p-inputtext {
+  color: #0f172a !important;
+}
+
+:host ::ng-deep .qp-datepicker .p-datepicker-input.p-inputtext:enabled:focus {
+  outline: none;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep .qp-datepicker.p-datepicker.p-focus:not(.p-disabled),
+:host ::ng-deep .qp-datepicker.p-inputwrapper-focus:not(.p-disabled) {
+  border-color: #047857 !important;
+  outline: none;
+  box-shadow: none !important;
+}
+
+.qp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  flex-shrink: 0;
+  padding: 0.85rem 1.25rem 1rem;
+  margin-top: 0;
+  border-top: 1px solid $qp-border-soft;
+  background: #ffffff;
+  box-shadow: 0 -6px 16px rgba(15, 23, 42, 0.06);
+}
+
+:host ::ng-deep .qp-select {
+  width: 100%;
+}
+
+:host ::ng-deep .qp-select.p-select {
+  background: #ffffff !important;
+  border: 1px solid rgb(203 213 225 / 0.95) !important;
+  border-radius: 0.35rem !important;
+  min-height: 1.5rem;
+  box-shadow: none !important;
+  overflow: hidden;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+:host ::ng-deep .qp-select.p-select:not(.p-disabled):hover {
+  background: #ffffff !important;
+  border-color: #047857 !important;
+}
+
+:host ::ng-deep .qp-select.p-select.p-focus {
+  outline: none;
+  background: #ffffff !important;
+  border-color: #047857 !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep .qp-select.p-select:focus-within {
+  border-color: #047857 !important;
+  outline: none;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep .qp-select .p-select-label {
+  color: #0f172a !important;
+  font-weight: 400;
+  font-size: 0.68rem !important;
+  line-height: 1.25 !important;
+}
+
+:host ::ng-deep .qp-select.p-select:not(.p-disabled):hover .p-select-label {
+  color: #0f172a !important;
+}
+
+:host ::ng-deep .qp-select .p-select-dropdown {
+  color: #64748b !important;
+  width: 1.5rem;
+}
+
+:host ::ng-deep .qp-select .p-select-label,
+:host ::ng-deep .qp-select .p-select-dropdown {
+  padding-top: 0.18rem;
+  padding-bottom: 0.18rem;
+  padding-inline: 0.32rem;
+}
+
+:host ::ng-deep .qp-select .p-select-label {
+  padding-left: 0.32rem;
+}

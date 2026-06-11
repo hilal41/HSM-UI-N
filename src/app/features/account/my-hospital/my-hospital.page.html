@@ -1,0 +1,112 @@
+<app-surface-panel title="My hospital">
+  @if (loading) {
+    <app-hms-block-skeleton [lines]="12" ariaLabel="Loading hospital" />
+  } @else if (errorMessage) {
+    <p-message severity="warn" [text]="errorMessage" styleClass="w-full" />
+  } @else if (hospital) {
+    <div class="flex max-w-xl flex-col gap-4">
+      <div class="flex flex-wrap gap-2 text-sm text-slate-600">
+        <span class="font-mono text-xs text-slate-500">#{{ hospital.id }}</span>
+        <span>{{ hospital.code }}</span>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-slate-600" for="mh-name">Name</label>
+        <input pInputText id="mh-name" class="w-full" [(ngModel)]="name" name="hName" />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-slate-600" for="mh-address">Address</label>
+        <input pInputText id="mh-address" class="w-full" [(ngModel)]="address" name="hAddress" />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-slate-600" for="mh-phone">Phone</label>
+        <input pInputText id="mh-phone" class="w-full" [(ngModel)]="phone" name="hPhone" />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-slate-600" for="mh-email">Email</label>
+        <input pInputText id="mh-email" type="email" class="w-full" [(ngModel)]="email" name="hEmail" />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-slate-600" for="mh-website">Website</label>
+        <input pInputText id="mh-website" type="url" class="w-full" [(ngModel)]="website" name="hWebsite" placeholder="https://…" />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-slate-600" for="mh-reg">Business / registration number</label>
+        <input
+          pInputText
+          id="mh-reg"
+          class="w-full"
+          [(ngModel)]="businessRegistrationNumber"
+          name="hReg"
+          placeholder="Tax ID, NTN, trade licence…"
+        />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-slate-600" for="mh-tag">Tagline</label>
+        <input pInputText id="mh-tag" class="w-full" [(ngModel)]="tagline" name="hTag" placeholder="Short line shown on letterhead / slips" />
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <span class="text-xs font-medium text-slate-600">Logo (stored as base64)</span>
+        @if (logoBase64) {
+          <img [src]="logoBase64" alt="Hospital logo preview" class="max-h-24 max-w-xs rounded border border-slate-200 object-contain" />
+        } @else {
+          <span class="text-xs text-slate-500">No logo uploaded.</span>
+        }
+        <div class="flex flex-wrap items-center gap-2">
+          <input
+            type="file"
+            accept="image/*"
+            class="text-xs text-slate-600 file:mr-2 file:rounded file:border file:border-slate-300 file:bg-white file:px-2 file:py-1"
+            (change)="onLogoFileChange($event)"
+          />
+          @if (logoBase64) {
+            <button pButton type="button" label="Remove logo" severity="secondary" [text]="true" (click)="clearLogo()"></button>
+          }
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-slate-600" for="mh-status">Status</label>
+        <p-select
+          inputId="mh-status"
+          [(ngModel)]="status"
+          name="hStatus"
+          [options]="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Status"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      </div>
+
+      @if (hospital.enabledModules.length) {
+        <div>
+          <h3 class="mb-2 text-sm font-medium text-slate-500">Enabled modules</h3>
+          <div class="flex flex-wrap gap-2">
+            @for (m of hospital.enabledModules; track m.id) {
+              <p-tag severity="success" [value]="m.name" />
+            }
+          </div>
+        </div>
+      }
+
+      <button
+        pButton
+        type="button"
+        label="Save changes"
+        icon="pi pi-save"
+        severity="success"
+        [loading]="saving"
+        (click)="save()"
+      ></button>
+    </div>
+  }
+</app-surface-panel>

@@ -1,0 +1,92 @@
+<div class="flex min-h-screen flex-col bg-[#e6e9f3] md:flex-row">
+  <!-- Photo: Unsplash (healthcare) — left 50% on desktop, top strip on mobile -->
+  <div class="relative h-40 shrink-0 overflow-hidden md:h-auto md:min-h-screen md:w-1/2">
+    @for (slide of heroSlides; track slide.src; let i = $index) {
+      <img
+        [src]="slide.src"
+        width="1600"
+        height="1067"
+        [alt]="slide.alt"
+        class="absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-in-out"
+        [class.opacity-100]="i === activeHeroIndex"
+        [class.opacity-0]="i !== activeHeroIndex"
+        [attr.loading]="i === 0 ? 'eager' : 'lazy'"
+        decoding="async"
+        [attr.fetchpriority]="i === 0 ? 'high' : null"
+        [attr.aria-hidden]="i === activeHeroIndex ? null : true"
+      />
+    }
+    <div
+      class="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent md:bg-gradient-to-r md:from-transparent md:to-slate-900/20"
+      aria-hidden="true"
+    ></div>
+  </div>
+
+  <div
+    class="flex flex-1 items-center justify-center px-4 py-8 md:w-1/2 md:px-8 md:py-12"
+  >
+    <p-card styleClass="w-full max-w-md border border-[#e6e9f3] bg-[#FFFFFF] shadow-sm">
+      <ng-template #title>
+        <div class="text-center">
+          <span class="text-2xl font-semibold text-slate-800">HMS</span>
+          <span class="text-2xl font-semibold text-emerald-800"> Sign in</span>
+        </div>
+      </ng-template>
+      <ng-template #subtitle>
+        <p class="text-center text-sm text-slate-600">Use your platform account.</p>
+      </ng-template>
+
+      <div class="flex flex-col gap-4">
+        @if (errorMessage) {
+          <p-message severity="error" [text]="errorMessage" styleClass="w-full" />
+        }
+
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-slate-600" for="login-user">Username or email</label>
+          <input
+            pInputText
+            id="login-user"
+            class="w-full"
+            name="userNameOrEmail"
+            [(ngModel)]="userNameOrEmail"
+            autocomplete="username"
+            [disabled]="loading"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-slate-600" for="login-pass">Password</label>
+          <p-password
+            inputId="login-pass"
+            [(ngModel)]="password"
+            name="password"
+            [feedback]="false"
+            [toggleMask]="true"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+            [disabled]="loading"
+            autocomplete="current-password"
+          />
+        </div>
+
+        <button
+          pButton
+          type="button"
+          label="Sign in"
+          icon="pi pi-sign-in"
+          class="w-full"
+          severity="success"
+          [loading]="loading"
+          [disabled]="loading"
+          (click)="submit()"
+        ></button>
+
+        <div class="text-center text-sm">
+          <a routerLink="/auth/forgot-password" class="text-emerald-900 underline decoration-emerald-800/40">
+            Forgot password?
+          </a>
+        </div>
+      </div>
+    </p-card>
+  </div>
+</div>

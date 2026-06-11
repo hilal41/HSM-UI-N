@@ -1,0 +1,185 @@
+:host {
+  display: block;
+}
+
+.dcf-root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.dcf-section {
+  margin: 0;
+}
+
+.dcf-section-title {
+  margin: 0 0 0.2rem;
+  padding-bottom: 0.12rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #475569;
+  border-bottom: 1px solid rgb(226 232 240 / 0.9);
+}
+
+.dcf-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.28rem 0.38rem;
+  padding-top: 0.2rem;
+}
+
+@media (max-width: 1100px) {
+  .dcf-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .dcf-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .dcf-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dcf-field--radio {
+    grid-column: auto;
+  }
+}
+
+.dcf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.dcf-field--checkbox {
+  justify-content: flex-end;
+  padding-top: 0.85rem;
+}
+
+.dcf-field--radio {
+  grid-column: span 2;
+}
+
+.dcf-label {
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: #64748b;
+  line-height: 1.15;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 1.3em;
+}
+
+.dcf-req {
+  color: #dc2626;
+}
+
+.dcf-check-row {
+  display: flex;
+  align-items: center;
+  gap: 0.28rem;
+  min-height: 1.5rem;
+}
+
+.dcf-check-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.dcf-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.45rem;
+  min-height: 1.5rem;
+  align-items: center;
+}
+
+.dcf-radio-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.62rem;
+  line-height: 1.2;
+}
+
+.dcf-radio-item label {
+  cursor: pointer;
+}
+
+/* Compact PrimeNG controls */
+:host ::ng-deep .dcf-control.p-inputtext,
+:host ::ng-deep .dcf-control.p-inputtextarea,
+:host ::ng-deep .dcf-control.p-select,
+:host ::ng-deep .dcf-control.p-inputnumber,
+:host ::ng-deep .dcf-control.p-inputnumber-input {
+  width: 100%;
+  min-height: 1.5rem;
+  max-height: 2.25rem;
+}
+
+:host ::ng-deep .dcf-control.p-inputtext,
+:host ::ng-deep textarea.dcf-control--ta {
+  font-size: 0.68rem !important;
+  line-height: 1.25 !important;
+  padding: 0.18rem 0.32rem !important;
+  min-height: 1.5rem !important;
+  max-height: 2.25rem !important;
+  resize: none;
+}
+
+:host ::ng-deep .dcf-control.p-select {
+  min-height: 1.5rem;
+}
+
+:host ::ng-deep .dcf-control .p-select-label {
+  font-size: 0.68rem !important;
+  padding: 0.18rem 0.32rem !important;
+  line-height: 1.25 !important;
+}
+
+:host ::ng-deep .dcf-control.p-select .p-select-dropdown {
+  width: 1.5rem;
+}
+
+:host ::ng-deep .dcf-control.p-select .p-select-dropdown-icon {
+  font-size: 0.65rem;
+}
+
+:host ::ng-deep .dcf-control.p-inputnumber .p-inputnumber-input {
+  font-size: 0.68rem !important;
+  padding: 0.18rem 0.32rem !important;
+}
+
+:host ::ng-deep .dcf-field .p-checkbox {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+:host ::ng-deep .dcf-field .p-checkbox .p-checkbox-box {
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 0.2rem;
+}
+
+:host ::ng-deep .dcf-field .p-radiobutton {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+:host ::ng-deep .dcf-field .p-radiobutton .p-radiobutton-box {
+  width: 0.95rem;
+  height: 0.95rem;
+}

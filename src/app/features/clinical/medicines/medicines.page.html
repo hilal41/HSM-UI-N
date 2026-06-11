@@ -1,0 +1,168 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Medicines"
+  subtitle="Catalog for prescribing and inventory"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <div class="flex min-w-0 max-w-full flex-1 items-center gap-2 sm:max-w-md sm:flex-initial">
+      <input
+        pInputText
+        type="search"
+        class="hms-toolbar-search hms-toolbar-search--grow min-w-0"
+        [(ngModel)]="searchInput"
+        name="medSearch"
+        placeholder="Search name, code, generic…"
+        (keyup.enter)="applySearch()"
+      />
+      <button
+        pButton
+        type="button"
+        icon="pi pi-search"
+        severity="secondary"
+        [outlined]="true"
+        class="hms-toolbar-chip"
+        (click)="applySearch()"
+        aria-label="Search"
+      ></button>
+    </div>
+    <div class="flex shrink-0 flex-wrap items-center justify-end gap-2">
+      <input
+        #medImport
+        type="file"
+        accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        class="sr-only"
+        tabindex="-1"
+        (change)="onImportFileSelected($event)"
+      />
+      <button
+        pButton
+        type="button"
+        label="Export Excel"
+        icon="pi pi-download"
+        severity="secondary"
+        [outlined]="true"
+        class="hms-toolbar-chip"
+        [loading]="exportingExcel"
+        [disabled]="exportingExcel"
+        (click)="exportExcel()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Import Excel"
+        icon="pi pi-upload"
+        severity="secondary"
+        [outlined]="true"
+        class="hms-toolbar-chip"
+        [loading]="importingExcel"
+        [disabled]="importingExcel"
+        (click)="openImportPicker()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="New medicine"
+        icon="pi pi-plus"
+        severity="secondary"
+        class="hms-toolbar-solid"
+        (click)="openCreate()"
+      ></button>
+    </div>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+  @if (errorMessage) {
+    <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+  }
+
+  <p-table
+    [showLoader]="false"
+    [value]="rows"
+    [lazy]="true"
+    [paginator]="true"
+    [rows]="pageSize"
+    [totalRecords]="totalCount"
+    [loading]="loading"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    (onLazyLoad)="onLazyLoad($event)"
+    [tableStyle]="{ 'min-width': '100%' }"
+    styleClass="p-datatable-sm hms-crud-table"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Form</th>
+        <th>Expiry</th>
+        <th>Active</th>
+        <th class="w-36 text-end">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-row>
+      <tr>
+        <td class="font-mono text-xs">{{ row.code }}</td>
+        <td>
+          <div class="font-medium text-slate-900">{{ row.medicineName }}</div>
+          @if (row.genericName) {
+            <div class="text-xs text-slate-500">{{ row.genericName }}</div>
+          }
+        </td>
+        <td class="text-sm">{{ row.category }}</td>
+        <td class="text-sm">{{ row.form }}</td>
+        <td class="text-sm text-slate-600">{{ row.expiryDate }}</td>
+        <td>
+          @if (row.isActive) {
+            <p-tag value="Active" severity="success" styleClass="text-xs" />
+          } @else {
+            <p-tag value="Inactive" severity="secondary" styleClass="text-xs" />
+          }
+        </td>
+        <td class="text-end">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-pencil"
+            [text]="true"
+            severity="secondary"
+            class="mr-1"
+            (click)="openEdit(row)"
+            aria-label="Edit"
+          ></button>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-trash"
+            [text]="true"
+            severity="danger"
+            (click)="confirmDelete(row)"
+            aria-label="Delete"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="7" class="hms-table-empty-cell text-center text-sm text-slate-500">
+          <div class="flex flex-col items-center justify-center gap-2 py-4">
+            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
+            <span>No medicines found.</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="loadingbody" let-columns>
+      <app-hms-table-loading-body [cols]="columns?.length || 7" />
+    </ng-template>
+  </p-table>
+  </div>
+</app-surface-panel>
+
+<app-medicine-form-dialog
+  [(visible)]="dialogOpen"
+  [saving]="saving"
+  [record]="editingRow"
+  (submitCreate)="onMedicineCreate($event)"
+  (submitUpdate)="onMedicineUpdate($event)"
+/>

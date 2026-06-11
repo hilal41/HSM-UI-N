@@ -1,0 +1,414 @@
+:host {
+  --cte-card-pad: var(--hms-card-padding);
+
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Cards 2 & 3 — no outer tinted wrapper; gap uses parent surface */
+.cfd-layout {
+  display: grid;
+  gap: var(--cte-card-pad);
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0;
+  background: transparent;
+}
+
+@media (min-width: 900px) {
+  .cfd-layout {
+    /* Form builder ~70%, live preview ~30% */
+    grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+  }
+}
+
+.cfd-editor {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: var(--cte-card-pad);
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226 232 240 / 0.95);
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+}
+
+.cfd-editor__head {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: 0.12rem;
+  border-bottom: 1px solid rgb(226 232 240 / 0.9);
+  padding: 0.3rem 0 0.35rem;
+}
+
+.cfd-editor__head-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem 0.5rem;
+}
+
+.cfd-editor__title {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+.cfd-editor__hint {
+  margin: 0;
+  font-size: 0.6rem;
+  line-height: 1.25;
+  color: #64748b;
+}
+
+:host ::ng-deep .cfd-add-sec.p-button {
+  flex-shrink: 0;
+}
+
+.cfd-sections {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--cte-card-pad);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.35rem 0 0.45rem;
+  align-items: start;
+}
+
+@media (min-width: 768px) {
+  .cfd-sections {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .cfd-sections {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.cfd-sec {
+  container-type: inline-size;
+  container-name: cfd-sec;
+  margin: 0;
+  min-width: 0;
+  padding: 0.45rem 0.4rem 0.5rem;
+  border: 1px solid rgb(226 232 240 / 0.95);
+  border-radius: 0.4rem;
+  background: rgb(255 255 255 / 0.85);
+}
+
+.cfd-sec__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.35rem;
+}
+
+.cfd-sec__title {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cfd-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.cfd-field {
+  border-radius: 0;
+  background: transparent;
+  padding: 0.35rem 0;
+  border: 0;
+  border-bottom: 1px solid rgb(248 250 252);
+}
+
+.cfd-field:last-child {
+  border-bottom: 0;
+}
+
+.cfd-field__grid {
+  display: grid;
+  gap: 0.3rem 0.4rem;
+  grid-template-columns: 1fr 8.5rem auto auto;
+  align-items: end;
+}
+
+@media (max-width: 640px) {
+  .cfd-field__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .cfd-cell--actions {
+    grid-column: 2;
+    justify-self: end;
+  }
+}
+
+/* Narrow section tiles (2–3 per row): stack field controls */
+@container cfd-sec (max-width: 22rem) {
+  .cfd-field__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cfd-cell--check {
+    grid-column: 1;
+  }
+
+  .cfd-cell--actions {
+    grid-column: 1;
+    justify-self: end;
+  }
+}
+
+.cfd-lbl {
+  display: block;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 0.12rem;
+}
+
+.cfd-lbl-inline {
+  font-size: 0.65rem;
+  color: #475569;
+  margin-left: 0.2rem;
+}
+
+.cfd-cell--full {
+  width: 100%;
+}
+
+.cfd-cell--tight-top {
+  margin-top: 0.3rem;
+}
+
+.cfd-cell--check {
+  display: flex;
+  align-items: center;
+  padding-bottom: 0.08rem;
+}
+
+.cfd-opt-ta {
+  padding: 0.28rem 0.4rem;
+  font-size: 0.65rem;
+  line-height: 1.35;
+}
+
+:host ::ng-deep .cfd-icon-btn.p-button {
+  width: 1.65rem !important;
+  height: 1.65rem !important;
+  padding: 0 !important;
+}
+
+/* Prime inputs in editor — match global HMS tokens */
+:host ::ng-deep .cfd-editor .p-inputtext {
+  padding: var(--hms-input-py) var(--hms-input-px) !important;
+  font-size: var(--hms-input-font) !important;
+  line-height: var(--hms-input-line) !important;
+  min-height: var(--hms-control-height) !important;
+}
+
+:host ::ng-deep .cfd-editor .cfd-sec__title.p-inputtext {
+  font-size: var(--hms-font-ui-sm) !important;
+  padding: var(--hms-input-py) var(--hms-input-px) !important;
+}
+
+:host ::ng-deep .cfd-editor .p-select {
+  min-height: var(--hms-control-height) !important;
+}
+
+:host ::ng-deep .cfd-editor .p-select .p-select-label {
+  padding: var(--hms-input-py) var(--hms-input-px) !important;
+  font-size: var(--hms-input-font) !important;
+  line-height: var(--hms-input-line) !important;
+}
+
+:host ::ng-deep .cfd-editor .p-select-dropdown {
+  width: 1.65rem !important;
+}
+
+:host ::ng-deep .cfd-editor .p-checkbox {
+  transform: scale(0.9);
+  transform-origin: left center;
+}
+
+.cfd-preview-wrap {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: var(--cte-card-pad);
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226 232 240 / 0.95);
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+}
+
+/* One row: left = visit preview title + blurb; right = Live preview badge (+ name) */
+.cfd-preview-topbar {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  padding: 0 0 0.45rem;
+  border-bottom: 1px solid rgb(226 232 240 / 0.9);
+  background: #fff;
+}
+
+.cfd-preview-topbar__end {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem 0.45rem;
+}
+
+.cfd-preview__badge {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0f766e;
+  background: #ecfdf5;
+  border: 1px solid rgb(167 243 208 / 0.9);
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+}
+
+.cfd-preview__name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.cfd-preview-paper {
+  flex: 1 1 auto;
+  min-height: 10rem;
+  overflow-y: auto;
+  margin: 0;
+  border-radius: 0;
+  background: #fff;
+  padding: 0.4rem 0 0.5rem;
+  box-shadow: none;
+}
+
+.cfd-preview-h {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border-bottom: 0;
+}
+
+.cfd-preview-h__t {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.cfd-preview-h__s {
+  margin: 0.1rem 0 0;
+  font-size: 0.62rem;
+  color: #64748b;
+}
+
+.cfd-psec {
+  margin-bottom: 0.45rem;
+}
+
+.cfd-psec__t {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #334155;
+}
+
+.cfd-pfld {
+  margin-bottom: 0.45rem;
+}
+
+.cfd-plbl {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #14532d;
+  margin-bottom: 0.15rem;
+}
+
+.cfd-pinp,
+.cfd-pta,
+.cfd-psel {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 0.3rem;
+  border: 1px solid #cbd5e1;
+  padding: 0.22rem 0.4rem;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+.cfd-pta {
+  resize: vertical;
+  min-height: 2rem;
+}
+
+.cfd-pcheck {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  color: #334155;
+}
+
+.cfd-pcheck__i {
+  width: 1rem;
+  height: 1rem;
+}
+
+.cfd-prad {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cfd-prad__row {
+  display: flex;
+  align-items: center;
+  gap: 0.28rem;
+  font-size: 0.7rem;
+  color: #334155;
+}
+
+.cfd-preview-empty {
+  margin: 1.25rem 0 0;
+  text-align: center;
+  font-size: 0.72rem;
+  color: #94a3b8;
+}

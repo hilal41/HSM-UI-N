@@ -1,0 +1,160 @@
+<app-surface-panel
+  class="hms-crud-surface dcs-session-surface"
+  title="Doctor checkup"
+  subtitle="Checkup and medicines"
+>
+  @if (visit && patient) {
+    <div surfacePanelTitleExtras class="dcs-header-session-wrap">
+      <div class="dcs-header-session">
+        <div class="dcs-visit-field dcs-visit-field--header dcs-visit-field--plain dcs-visit-field--queue">
+          <span id="dcs-lbl-visit" class="dcs-visit-field__lbl">Queue / visit</span>
+          <span class="dcs-visit-field__text dcs-visit-field__text--truncate" aria-labelledby="dcs-lbl-visit">
+            {{ visitQueueLine() }}
+          </span>
+        </div>
+        <div class="dcs-visit-field dcs-visit-field--header dcs-visit-field--plain dcs-visit-field--patient">
+          <span id="dcs-lbl-patient" class="dcs-visit-field__lbl">Patient</span>
+          <span class="dcs-visit-field__text dcs-visit-field__text--truncate" aria-labelledby="dcs-lbl-patient">
+            {{ patient.firstName }} {{ patient.lastName }}
+          </span>
+        </div>
+        <div class="dcs-visit-field dcs-visit-field--header dcs-visit-field--plain dcs-visit-field--reg">
+          <span id="dcs-lbl-reg" class="dcs-visit-field__lbl">Reg. no.</span>
+          <span class="dcs-visit-field__text font-mono" aria-labelledby="dcs-lbl-reg">{{ patient.patientNumber }}</span>
+        </div>
+        <div class="dcs-visit-field dcs-visit-field--header dcs-visit-field--plain dcs-visit-field--phone">
+          <span id="dcs-lbl-phone" class="dcs-visit-field__lbl">Phone</span>
+          <span class="dcs-visit-field__text dcs-visit-field__text--truncate" aria-labelledby="dcs-lbl-phone">
+            {{ patient.phone || '—' }}
+          </span>
+        </div>
+        <div class="dcs-visit-field dcs-visit-field--header dcs-visit-field--save">
+          <span class="dcs-visit-field__lbl" aria-hidden="true">&nbsp;</span>
+          <button
+            pButton
+            type="button"
+            label="Save checkup"
+            icon="pi pi-check"
+            severity="success"
+            class="dcs-header-save-btn"
+            [loading]="saving"
+            [disabled]="saving || selectedTemplateId == null"
+            (click)="saveAll()"
+          ></button>
+        </div>
+        <div class="dcs-visit-field dcs-visit-field--header dcs-visit-field--print">
+          <span class="dcs-visit-field__lbl" aria-hidden="true">&nbsp;</span>
+          <button
+            pButton
+            type="button"
+            label="Save & print"
+            icon="pi pi-print"
+            severity="secondary"
+            [outlined]="true"
+            class="dcs-header-print-btn"
+            [loading]="saving"
+            [disabled]="saving || selectedTemplateId == null"
+            (click)="saveAndPrintMedicineSlip()"
+          ></button>
+        </div>
+        <div class="dcs-visit-field dcs-visit-field--header dcs-visit-field--template">
+          <span id="dcs-lbl-tpl" class="dcs-visit-field__lbl">Template</span>
+          <p-select
+            inputId="dcs-tpl"
+            name="dcsTpl"
+            [options]="templates"
+            optionLabel="name"
+            optionValue="id"
+            [(ngModel)]="selectedTemplateId"
+            (ngModelChange)="onTemplateChange()"
+            aria-labelledby="dcs-lbl-tpl"
+            styleClass="w-full dcs-select"
+            appendTo="body"
+          />
+          @if (templates.length === 0) {
+            <p class="dcs-micro-warn">No templates.</p>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body dcs-panel-body">
+    @if (errorMessage && !visit) {
+      <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+    }
+
+    @if (loading) {
+      <app-hms-block-skeleton [lines]="14" ariaLabel="Loading visit" />
+    } @else if (visit && patient) {
+      @if (errorMessage) {
+        <p-message severity="warn" [text]="errorMessage" styleClass="mb-4 w-full" />
+      }
+
+      <div class="dcs-layout">
+        <div class="dcs-left-stack">
+          <section class="dcs-card dcs-card--checkup" aria-label="Checkup form">
+            <div class="dcs-workspace-head">
+              <span class="dcs-workspace-title">Checkup & prescription</span>
+              @if (checkupLoading) {
+                <span class="dcs-loading-hint">Loading…</span>
+              }
+            </div>
+            <div class="dcs-workspace-scroll">
+              @if (hasFormFields) {
+                <app-doctor-checkup-form [(fieldValues)]="fieldValues" [formDoc]="formDoc" />
+              } @else {
+                <div class="dcs-preview-placeholder">
+                  <p class="m-0 text-xs leading-snug text-slate-600">
+                    No fields on this template — add sections in the template studio.
+                  </p>
+                </div>
+              }
+            </div>
+          </section>
+
+          <section class="dcs-card dcs-card--notes" aria-label="Prescription notes">
+            <div class="dcs-workspace-head">
+              <span id="dcs-notes-ttl" class="dcs-workspace-title">Notes / prescription</span>
+            </div>
+            <label class="dcs-next-checkup">
+              <span class="dcs-next-checkup__label">Next checkup</span>
+              <input
+                type="datetime-local"
+                name="dcsNextCheckup"
+                [(ngModel)]="nextCheckupAt"
+                class="dcs-next-checkup__input"
+              />
+            </label>
+            <textarea
+              pTextarea
+              id="dcs-med"
+              name="dcsMed"
+              [(ngModel)]="medicineNotes"
+              [rows]="3"
+              class="dcs-notes-ta w-full font-sans"
+              placeholder="Medicines, doses, instructions…"
+              aria-labelledby="dcs-notes-ttl"
+            ></textarea>
+          </section>
+        </div>
+
+        <aside class="dcs-aside-medicines" aria-label="Medicine search and assignment">
+          <app-doctor-checkup-medicine-panel />
+        </aside>
+      </div>
+
+    }
+  </div>
+</app-surface-panel>
+
+<app-medicine-slip
+  class="dcs-medicine-slip-print"
+  [patient]="patient"
+  [hospital]="myHospital"
+  [visit]="visit"
+  [checkup]="printCheckupSnapshot"
+  [checkupFormDoc]="formDoc"
+  [template]="medicineSlipTemplate"
+/>

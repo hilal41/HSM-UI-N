@@ -1,0 +1,449 @@
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+  /* Square top (shelf / gutter above); rounded bottom — same as session `.dcs-card`. */
+  border-radius: 0 0 var(--hms-space) var(--hms-space);
+  border: 1px solid rgb(226 232 240 / 0.95);
+  background: #fff;
+  padding: 0.4rem 0.5rem;
+}
+
+.dcm-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  height: 100%;
+  min-height: 0;
+}
+
+.dcm-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.dcm-title {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+.dcm-sub {
+  font-size: 0.65rem;
+  line-height: 1.35;
+  color: #64748b;
+}
+
+.dcm-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 0;
+}
+
+.dcm-block--staged {
+  flex: 1 1 auto;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgb(226 232 240 / 0.9);
+}
+
+.dcm-lbl-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+
+.dcm-lbl {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.dcm-muted {
+  font-size: 0.65rem;
+  color: #94a3b8;
+}
+
+.dcm-medicine-search-area {
+  position: relative;
+  z-index: 2;
+}
+
+/* Search + per-page in one control */
+.dcm-search-combo {
+  position: relative;
+}
+
+.dcm-search-combo__field {
+  display: flex;
+  align-items: stretch;
+  min-height: 2rem;
+  border-radius: 0.35rem;
+  border: 1px solid rgb(203 213 225 / 0.95);
+  background: #fff;
+  overflow: hidden;
+}
+
+.dcm-search-combo__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  outline: none;
+  padding: 0.32rem 0.45rem;
+  font-size: 0.78rem;
+  font-family: inherit;
+  line-height: 1.35;
+  color: #0f172a;
+  background: transparent;
+}
+
+.dcm-search-combo__input::placeholder {
+  color: #94a3b8;
+}
+
+.dcm-results-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.15rem;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-right: 1px solid rgb(226 232 240 / 0.95);
+  background: rgb(248 250 252 / 0.85);
+  cursor: pointer;
+  color: #334155;
+}
+
+.dcm-results-trigger:hover {
+  background: rgb(241 245 249 / 0.95);
+}
+
+.dcm-results-trigger .pi {
+  font-size: 0.72rem;
+  transition: transform 0.15s ease;
+}
+
+.dcm-results-trigger--open .pi {
+  transform: rotate(-180deg);
+}
+
+.dcm-page-size-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  flex-shrink: 0;
+  padding: 0 0.4rem 0 0.35rem;
+  margin: 0;
+  border: none;
+  border-left: 1px solid rgb(226 232 240 / 0.95);
+  background: rgb(248 250 252 / 0.85);
+  cursor: pointer;
+  font-size: 0.72rem;
+  color: #334155;
+}
+
+.dcm-page-size-trigger:hover {
+  background: rgb(241 245 249 / 0.95);
+}
+
+.dcm-page-size-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 1.5rem;
+  text-align: right;
+}
+
+.dcm-page-size-trigger .pi {
+  font-size: 0.65rem;
+  opacity: 0.75;
+}
+
+.dcm-page-size-popover {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  min-width: 11.5rem;
+  max-width: min(100%, 16rem);
+  padding: 0.35rem;
+  border-radius: 0.35rem;
+  border: 1px solid rgb(226 232 240 / 0.98);
+  background: #fff;
+  box-shadow: 0 6px 18px rgb(15 23 42 / 0.1);
+}
+
+.dcm-page-size-opt {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.35rem 0.45rem;
+  margin: 0;
+  border: none;
+  border-radius: 0.28rem;
+  background: transparent;
+  font-size: 0.76rem;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.dcm-page-size-opt:hover {
+  background: rgb(241 245 249 / 0.95);
+}
+
+.dcm-page-size-custom {
+  padding-top: 0.2rem;
+  margin-top: 0.15rem;
+  border-top: 1px solid rgb(241 245 249 / 0.95);
+}
+
+.dcm-page-size-custom-lbl {
+  display: block;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 0.28rem;
+}
+
+.dcm-page-size-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.dcm-page-size-custom-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border-radius: 0.28rem;
+  border: 1px solid rgb(203 213 225 / 0.95);
+  padding: 0.25rem 0.4rem;
+  font-size: 0.76rem;
+}
+
+.dcm-result-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: min(40vh, 16rem);
+  overflow: auto;
+  border-radius: 0.35rem;
+  border: 1px solid rgb(226 232 240 / 0.95);
+  background: rgb(248 250 252 / 0.5);
+}
+
+.dcm-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0.45rem;
+  border-bottom: 1px solid rgb(241 245 249 / 0.9);
+  cursor: pointer;
+  list-style: none;
+  outline: none;
+  transition: background 0.12s ease;
+}
+
+.dcm-result-row:last-child {
+  border-bottom: none;
+}
+
+.dcm-result-row:hover:not(.dcm-result-row--disabled) {
+  background: rgb(240 253 244 / 0.65);
+}
+
+.dcm-result-row:focus-visible:not(.dcm-result-row--disabled) {
+  box-shadow: inset 0 0 0 2px rgb(34 197 94 / 0.45);
+}
+
+.dcm-result-row--staged:not(.dcm-result-row--disabled) {
+  background: rgb(236 253 245 / 0.55);
+}
+
+.dcm-result-row--disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.dcm-result-row-hint {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #15803d;
+}
+
+.dcm-result-row-hint--done {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.dcm-result-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.dcm-result-name {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.dcm-result-meta {
+  font-size: 0.65rem;
+  color: #64748b;
+}
+
+.dcm-empty {
+  margin: 0;
+  padding: 0.5rem 0.45rem;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.dcm-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+
+.dcm-pager-meta {
+  font-size: 0.65rem;
+  color: #64748b;
+  flex: 1 1 auto;
+  text-align: center;
+}
+
+.dcm-staged-list {
+  flex: 1 1 auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  max-height: none;
+  overflow: auto;
+  border-radius: 0.35rem;
+  border: 1px solid rgb(226 232 240 / 0.95);
+  background: #fff;
+}
+
+.dcm-staged-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.35rem;
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid rgb(241 245 249 / 0.9);
+}
+
+.dcm-staged-row:last-child {
+  border-bottom: none;
+}
+
+.dcm-staged-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #0f172a;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.dcm-staged-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(8.5rem, 11rem);
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+@media (max-width: 520px) {
+  :host {
+    padding: 0.35rem;
+  }
+
+  .dcm-search-combo__field {
+    min-height: 1.85rem;
+  }
+
+  .dcm-results-trigger {
+    width: 1.9rem;
+  }
+
+  .dcm-page-size-trigger {
+    padding-inline: 0.3rem;
+  }
+
+  .dcm-page-size-value {
+    min-width: 1.25rem;
+  }
+
+  .dcm-staged-row {
+    gap: 0.25rem;
+    padding: 0.4rem;
+  }
+
+  .dcm-staged-main {
+    grid-template-columns: 1fr;
+    gap: 0.28rem;
+  }
+}
+
+:host ::ng-deep .dcm-usage-select.p-select {
+  width: 100%;
+  min-height: 1.8rem;
+  border-radius: 0.35rem !important;
+  border-color: rgb(203 213 225 / 0.95) !important;
+  background: rgb(248 250 252 / 0.65) !important;
+}
+
+:host ::ng-deep .dcm-usage-select .p-select-label {
+  padding: 0.25rem 0.35rem !important;
+  font-size: 0.7rem !important;
+  line-height: 1.2 !important;
+}
+
+:host ::ng-deep .dcm-usage-select .p-select-dropdown {
+  width: 1.55rem;
+}
+
+:host ::ng-deep .dcm-usage-select .p-select-clear-icon,
+:host ::ng-deep .dcm-usage-select .p-select-dropdown-icon {
+  font-size: 0.68rem;
+}
+
+:host ::ng-deep .dcm-icon-btn.p-button {
+  width: 1.85rem;
+  height: 1.85rem;
+  padding: 0;
+}
+
+:host ::ng-deep .dcm-save.p-button {
+  justify-content: center;
+}
+
+:host ::ng-deep .dcm-page-size-custom-row .p-button {
+  flex-shrink: 0;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}

@@ -1,0 +1,108 @@
+<div class="dcf-root">
+  @for (sec of sections(); track sec.id) {
+    <section class="dcf-section">
+      <h3 class="dcf-section-title">{{ sec.title }}</h3>
+      <div class="dcf-grid">
+        @for (field of sec.fields; track field.id) {
+          <div
+            class="dcf-field"
+            [class.dcf-field--checkbox]="field.type === 'checkbox'"
+            [class.dcf-field--radio]="field.type === 'radio'"
+          >
+            @if (field.type !== 'checkbox') {
+              <label class="dcf-label" [for]="'dcf-' + field.id">
+                {{ field.label }}
+                @if (field.required) {
+                  <span class="dcf-req">*</span>
+                }
+              </label>
+            }
+
+            @switch (field.type) {
+              @case ('textarea') {
+                <textarea
+                  pTextarea
+                  [id]="'dcf-' + field.id"
+                  [name]="field.id"
+                  [rows]="1"
+                  class="dcf-control dcf-control--ta w-full"
+                  [placeholder]="field.placeholder ?? ''"
+                  [ngModel]="valueFor(field)"
+                  (ngModelChange)="setValue(field, $event)"
+                ></textarea>
+              }
+              @case ('number') {
+                <p-inputNumber
+                  [inputId]="'dcf-' + field.id"
+                  [name]="field.id"
+                  styleClass="dcf-control w-full"
+                  [ngModel]="valueFor(field)"
+                  (ngModelChange)="setValue(field, $event)"
+                />
+              }
+              @case ('checkbox') {
+                <div class="dcf-check-row">
+                  <p-checkbox
+                    [inputId]="'dcf-' + field.id"
+                    [name]="field.id"
+                    [binary]="true"
+                    [ngModel]="!!valueFor(field)"
+                    (ngModelChange)="setValue(field, $event)"
+                  />
+                  <label class="dcf-check-label" [for]="'dcf-' + field.id">
+                    {{ field.label }}
+                    @if (field.required) {
+                      <span class="dcf-req">*</span>
+                    }
+                  </label>
+                </div>
+              }
+              @case ('select') {
+                <p-select
+                  [inputId]="'dcf-' + field.id"
+                  [name]="field.id"
+                  [options]="selectOptions(field)"
+                  optionLabel="label"
+                  optionValue="value"
+                  [placeholder]="field.placeholder ?? '— Select —'"
+                  styleClass="dcf-control w-full"
+                  appendTo="body"
+                  [ngModel]="valueFor(field)"
+                  (ngModelChange)="setValue(field, $event)"
+                />
+              }
+              @case ('radio') {
+                <div class="dcf-radio-group" role="radiogroup" [attr.aria-label]="field.label">
+                  @for (opt of field.options ?? []; track opt) {
+                    <div class="dcf-radio-item">
+                      <p-radioButton
+                        [name]="radioName(field)"
+                        [inputId]="'dcf-' + field.id + '-' + opt"
+                        [value]="opt"
+                        [ngModel]="valueFor(field)"
+                        (ngModelChange)="setValue(field, $event)"
+                      />
+                      <label [for]="'dcf-' + field.id + '-' + opt">{{ opt }}</label>
+                    </div>
+                  }
+                </div>
+              }
+              @default {
+                <input
+                  pInputText
+                  type="text"
+                  [id]="'dcf-' + field.id"
+                  [name]="field.id"
+                  class="dcf-control w-full"
+                  [placeholder]="field.placeholder ?? ''"
+                  [ngModel]="valueFor(field)"
+                  (ngModelChange)="setValue(field, $event)"
+                />
+              }
+            }
+          </div>
+        }
+      </div>
+    </section>
+  }
+</div>

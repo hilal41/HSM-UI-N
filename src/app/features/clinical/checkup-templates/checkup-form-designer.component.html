@@ -1,0 +1,202 @@
+<div class="cfd-layout">
+  <div class="cfd-editor">
+    <div class="cfd-editor__head">
+      <div class="cfd-editor__head-top">
+        <h3 class="cfd-editor__title">Form builder</h3>
+        <button
+          pButton
+          type="button"
+          label="Add section"
+          icon="pi pi-plus"
+          severity="success"
+          size="small"
+          class="cfd-add-sec"
+          (click)="addSection()"
+        ></button>
+      </div>
+      <p class="cfd-editor__hint">Sections → questions. Saved layout becomes the visit form + print snapshot.</p>
+    </div>
+    <div class="cfd-sections">
+      @for (sec of doc().sections; track sec.id; let si = $index) {
+        <div class="cfd-sec">
+          <div class="cfd-sec__bar">
+            <input
+              pInputText
+              class="cfd-sec__title"
+              [ngModel]="sec.title"
+              (ngModelChange)="patchSectionTitle(si, $event)"
+              [name]="'sec-title-' + sec.id"
+            />
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              severity="danger"
+              [text]="true"
+              size="small"
+              class="cfd-icon-btn"
+              (click)="removeSection(si)"
+              aria-label="Remove section"
+            ></button>
+          </div>
+          <div class="cfd-fields">
+            @for (fld of sec.fields; track fld.id; let fi = $index) {
+              <div class="cfd-field">
+                <div class="cfd-field__grid">
+                  <div class="cfd-cell">
+                    <span class="cfd-lbl">Label</span>
+                    <input
+                      pInputText
+                      class="w-full"
+                      [ngModel]="fld.label"
+                      (ngModelChange)="patchField(si, fi, { label: $event })"
+                      [name]="'lbl-' + fld.id"
+                    />
+                  </div>
+                  <div class="cfd-cell">
+                    <span class="cfd-lbl">Type</span>
+                    <p-select
+                      [options]="fieldTypeOptions"
+                      [ngModel]="fld.type"
+                      (ngModelChange)="onFieldTypeChange(si, fi, $event)"
+                      optionLabel="label"
+                      optionValue="value"
+                      [appendTo]="'body'"
+                      styleClass="w-full"
+                      [inputId]="'typ-' + fld.id"
+                    />
+                  </div>
+                  <div class="cfd-cell cfd-cell--check">
+                    <p-checkbox
+                      [binary]="true"
+                      [ngModel]="!!fld.required"
+                      (ngModelChange)="patchField(si, fi, { required: $event })"
+                      [inputId]="'req-' + fld.id"
+                    />
+                    <label [for]="'req-' + fld.id" class="cfd-lbl-inline">Required</label>
+                  </div>
+                  <div class="cfd-cell cfd-cell--actions">
+                    <button
+                      pButton
+                      type="button"
+                      icon="pi pi-times"
+                      severity="secondary"
+                      [text]="true"
+                      size="small"
+                      class="cfd-icon-btn"
+                      (click)="removeField(si, fi)"
+                      aria-label="Remove field"
+                    ></button>
+                  </div>
+                </div>
+                @if (fld.type === 'text' || fld.type === 'textarea' || fld.type === 'number') {
+                  <div class="cfd-cell cfd-cell--full cfd-cell--tight-top">
+                    <span class="cfd-lbl">Placeholder (optional)</span>
+                    <input
+                      pInputText
+                      class="w-full"
+                      [ngModel]="fld.placeholder ?? ''"
+                      (ngModelChange)="patchField(si, fi, { placeholder: $event || undefined })"
+                      [name]="'ph-' + fld.id"
+                    />
+                  </div>
+                }
+                @if (fld.type === 'select' || fld.type === 'radio') {
+                  <div class="cfd-cell cfd-cell--full cfd-cell--tight-top">
+                    <span class="cfd-lbl">Options (one per line)</span>
+                    <textarea
+                      class="cfd-opt-ta w-full rounded border border-slate-200 bg-white font-mono"
+                      [value]="optionsText(si, fi)"
+                      (input)="onOptionsTextChange(si, fi, $any($event.target).value)"
+                      rows="2"
+                      [name]="'opt-' + fld.id"
+                    ></textarea>
+                  </div>
+                }
+              </div>
+            }
+            <button
+              pButton
+              type="button"
+              label="Add question"
+              icon="pi pi-plus"
+              severity="secondary"
+              [outlined]="true"
+              class="!text-xs"
+              (click)="addField(si)"
+            ></button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="cfd-preview-wrap">
+    <div class="cfd-preview-topbar">
+      <header class="cfd-preview-h">
+        <h4 class="cfd-preview-h__t">Visit form preview</h4>
+        <p class="cfd-preview-h__s">Read-only sample — matches saved template layout.</p>
+      </header>
+      <div class="cfd-preview-topbar__end">
+        <span class="cfd-preview__badge">Live preview</span>
+        @if (templateTitle()) {
+          <span class="cfd-preview__name">{{ templateTitle() }}</span>
+        }
+      </div>
+    </div>
+    <div class="cfd-preview-paper">
+      @for (sec of doc().sections; track sec.id) {
+        <section class="cfd-psec">
+          <h5 class="cfd-psec__t">{{ sec.title }}</h5>
+          @for (fld of sec.fields; track fld.id) {
+            <div class="cfd-pfld">
+              @switch (fld.type) {
+                @case ('checkbox') {
+                  <label class="cfd-pcheck">
+                    <input type="checkbox" disabled class="cfd-pcheck__i" />
+                    {{ fld.label }}@if (fld.required) {<span class="text-red-600"> *</span>}
+                  </label>
+                }
+                @case ('textarea') {
+                  <label class="cfd-plbl">{{ fld.label }}@if (fld.required) {<span class="text-red-600"> *</span>}</label>
+                  <textarea class="cfd-pta" rows="2" disabled [placeholder]="fld.placeholder || ''"></textarea>
+                }
+                @case ('number') {
+                  <label class="cfd-plbl">{{ fld.label }}@if (fld.required) {<span class="text-red-600"> *</span>}</label>
+                  <input type="number" class="cfd-pinp" disabled />
+                }
+                @case ('select') {
+                  <label class="cfd-plbl">{{ fld.label }}@if (fld.required) {<span class="text-red-600"> *</span>}</label>
+                  <select class="cfd-psel" disabled>
+                    <option value="">— Select —</option>
+                    @for (o of fld.options ?? []; track o) {
+                      <option>{{ o }}</option>
+                    }
+                  </select>
+                }
+                @case ('radio') {
+                  <span class="cfd-plbl">{{ fld.label }}@if (fld.required) {<span class="text-red-600"> *</span>}</span>
+                  <div class="cfd-prad">
+                    @for (o of fld.options ?? []; track o) {
+                      <label class="cfd-prad__row">
+                        <input type="radio" class="cfd-prad__i" disabled [attr.name]="'pv-' + fld.id" />
+                        {{ o }}
+                      </label>
+                    }
+                  </div>
+                }
+                @default {
+                  <label class="cfd-plbl">{{ fld.label }}@if (fld.required) {<span class="text-red-600"> *</span>}</label>
+                  <input type="text" class="cfd-pinp" disabled [placeholder]="fld.placeholder || ''" />
+                }
+              }
+            </div>
+          }
+        </section>
+      }
+      @if (doc().sections.length === 0) {
+        <p class="cfd-preview-empty">Add a section on the left to see the preview here.</p>
+      }
+    </div>
+  </div>
+</div>

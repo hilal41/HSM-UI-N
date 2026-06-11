@@ -1,0 +1,210 @@
+@if (patient) {
+  <div class="slip-card" [ngStyle]="slipSurfaceStyle()">
+    <div class="slip-sections">
+      @for (sectionId of visibleSections; track sectionId) {
+        <div class="slip-section" [attr.data-slip-section]="sectionId">
+          <div class="slip-section__body">
+            @switch (sectionId) {
+              @case ('hospital') {
+                @if (hospital) {
+                  <section class="slip-block slip-block--hospital">
+                    @if (template.logoPlacement === 'above-center' && showHospitalLogo() && hospitalLogoSrc) {
+                      <div class="slip-logo-row slip-logo-row--above">
+                        <img
+                          [src]="hospitalLogoSrc"
+                          alt=""
+                          class="slip-logo slip-logo--above"
+                          [style.max-height.px]="template.logoMaxHeightPx"
+                        />
+                      </div>
+                    }
+                    <div [ngClass]="hospitalLayoutClass()">
+                      @if (template.logoPlacement === 'inline-start' && showHospitalLogo() && hospitalLogoSrc) {
+                        <img
+                          [src]="hospitalLogoSrc"
+                          alt=""
+                          class="slip-logo slip-logo--inline"
+                          [style.max-height.px]="template.logoMaxHeightPx"
+                        />
+                      }
+                      <div [ngClass]="hospitalTextClass()">
+                        @if (template.hospitalShowName) {
+                          <div class="slip-hospital-name">{{ hospital.name }}</div>
+                        }
+                        @if (hospital.tagline?.trim()) {
+                          <p class="slip-hospital-tagline">{{ hospital.tagline }}</p>
+                        }
+                        <dl class="slip-dl slip-dl--hospital">
+                          @if (template.hospitalShowCode) {
+                            <div class="slip-dl__row">
+                              <dt>Code</dt>
+                              <dd class="slip-mono">{{ hospital.code }}</dd>
+                            </div>
+                          }
+                          @if (template.hospitalShowAddress) {
+                            <div class="slip-dl__row slip-dl__row--full">
+                              <dt>Address</dt>
+                              <dd>{{ hospital.address || '—' }}</dd>
+                            </div>
+                          }
+                          @if (template.hospitalShowPhone) {
+                            <div class="slip-dl__row">
+                              <dt>Phone</dt>
+                              <dd class="slip-mono">{{ hospital.phone || '—' }}</dd>
+                            </div>
+                          }
+                          @if (template.hospitalShowEmail) {
+                            <div class="slip-dl__row slip-dl__row--full">
+                              <dt>Email</dt>
+                              <dd>{{ hospital.email || '—' }}</dd>
+                            </div>
+                          }
+                          @if (hospital.website?.trim()) {
+                            <div class="slip-dl__row slip-dl__row--full">
+                              <dt>Web</dt>
+                              <dd>{{ hospital.website }}</dd>
+                            </div>
+                          }
+                          @if (hospital.businessRegistrationNumber?.trim()) {
+                            <div class="slip-dl__row slip-dl__row--full">
+                              <dt>Business</dt>
+                              <dd class="slip-mono">{{ hospital.businessRegistrationNumber }}</dd>
+                            </div>
+                          }
+                        </dl>
+                      </div>
+                      @if (template.logoPlacement === 'inline-end' && showHospitalLogo() && hospitalLogoSrc) {
+                        <img
+                          [src]="hospitalLogoSrc"
+                          alt=""
+                          class="slip-logo slip-logo--inline"
+                          [style.max-height.px]="template.logoMaxHeightPx"
+                        />
+                      }
+                    </div>
+                  </section>
+                } @else {
+                  <p class="slip-muted">Hospital details are not available for this account.</p>
+                }
+              }
+              @case ('header') {
+                <header [ngClass]="headerAlignClass()">
+                  <div class="slip-header__title">{{ template.slipTitle }}</div>
+                  <div class="slip-header__meta">
+                    {{ slipGeneratedLabel }}
+                  </div>
+                </header>
+              }
+              @case ('patient') {
+                <div [ngClass]="bodySectionClass()">
+                  <section class="slip-block slip-block--patient">
+                    <h3 class="slip-block__title">Patient</h3>
+                    <dl class="slip-dl">
+                      <div class="slip-dl__row">
+                        <dt>Name</dt>
+                        <dd>{{ patient.firstName }} {{ patient.lastName }}</dd>
+                      </div>
+                      <div class="slip-dl__row">
+                        <dt>Reg. no.</dt>
+                        <dd class="slip-mono">{{ patient.patientNumber }}</dd>
+                      </div>
+                      <div class="slip-dl__row">
+                        <dt>Phone</dt>
+                        <dd class="slip-mono">{{ patient.phone || '—' }}</dd>
+                      </div>
+                      <div class="slip-dl__row">
+                        <dt>Age</dt>
+                        <dd>{{ ageYears }} yr</dd>
+                      </div>
+                      <div class="slip-dl__row">
+                        <dt>Gender</dt>
+                        <dd>{{ patient.gender || '—' }}</dd>
+                      </div>
+                      <div class="slip-dl__row slip-dl__row--full">
+                        <dt>Address</dt>
+                        <dd>{{ patient.address || '—' }}</dd>
+                      </div>
+                    </dl>
+                  </section>
+                </div>
+              }
+              @case ('services') {
+                <div [ngClass]="bodySectionClass()">
+                  <section class="slip-block">
+                    <h3 class="slip-block__title">Services</h3>
+                    @if (lines.length === 0) {
+                      <p class="slip-muted">No lines on this slip.</p>
+                    } @else {
+                      <div class="slip-table-scroll">
+                        <table class="slip-table" [class.slip-table--plain]="!template.showTableGrid">
+                          <thead>
+                            <tr>
+                              <th>Service</th>
+                              <th>Doctor</th>
+                              <th class="slip-num">Price</th>
+                              <th class="slip-num">Disc.</th>
+                              <th>Notes</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (row of lines; track row.serviceTitle + row.serviceCode + $index) {
+                              <tr>
+                                <td>
+                                  <div class="slip-svc-title">{{ row.serviceTitle }}</div>
+                                  <div class="slip-svc-code">{{ row.serviceCode }}</div>
+                                </td>
+                                <td>{{ row.doctorName }}</td>
+                                <td class="slip-num">{{ row.servicePrice }}</td>
+                                <td class="slip-num">{{ row.serviceDiscount }}</td>
+                                <td>{{ row.remarks || '—' }}</td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    }
+                  </section>
+                </div>
+              }
+              @case ('totals') {
+                <div [ngClass]="bodySectionClass()">
+                  <section class="slip-block slip-block--totals">
+                    <h3 class="slip-block__title">Visit</h3>
+                    @if (visitRemarks.trim()) {
+                      <p class="slip-remarks">{{ visitRemarks }}</p>
+                    }
+                    <div class="slip-totals">
+                      <div class="slip-totals__row">
+                        <span>Total</span>
+                        <strong class="slip-mono">{{ totalAmount }}</strong>
+                      </div>
+                      <div class="slip-totals__row">
+                        <span>Discount</span>
+                        <strong class="slip-mono">{{ discountAmount }}</strong>
+                      </div>
+                      <div class="slip-totals__row slip-totals__row--accent">
+                        <span>Net</span>
+                        <strong class="slip-mono">{{ totalAmount - discountAmount }}</strong>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              }
+              @case ('footer') {
+                <div [ngClass]="bodySectionClass()">
+                  <footer class="slip-footer slip-footer--custom slip-muted">
+                    {{ template.footerText }}
+                  </footer>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+} @else {
+  <div class="slip-empty no-print">
+    <p>Register a patient to preview and print the registration slip.</p>
+  </div>
+}

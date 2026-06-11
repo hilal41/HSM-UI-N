@@ -1,0 +1,224 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Hospitals"
+  subtitle="Tenants, codes, and enabled modules"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <button
+      pButton
+      type="button"
+      label="New hospital"
+      icon="pi pi-plus"
+      severity="secondary"
+      class="hms-toolbar-solid"
+      (click)="openCreate()"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+  @if (errorMessage) {
+    <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+  }
+  <p-table
+    [showLoader]="false"
+    [value]="rows"
+    [loading]="loading"
+    [tableStyle]="{ 'min-width': '100%' }"
+    styleClass="p-datatable-sm hms-crud-table"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Status</th>
+        <th>Modules</th>
+        <th class="min-w-[10rem] text-end">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-row>
+      <tr>
+        <td class="font-mono text-xs">{{ row.code }}</td>
+        <td>{{ row.name }}</td>
+        <td>
+          <p-tag
+            [value]="row.status"
+            [severity]="row.status === 'Active' ? 'success' : 'secondary'"
+          />
+        </td>
+        <td class="text-sm text-slate-600">{{ row.enabledModules?.length ?? 0 }}</td>
+        <td class="text-end">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-pencil"
+            [text]="true"
+            severity="secondary"
+            class="mr-1"
+            (click)="openEdit(row)"
+            aria-label="Edit"
+          ></button>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-th-large"
+            [text]="true"
+            severity="success"
+            (click)="openModulesDialog(row)"
+            aria-label="Modules"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5" class="hms-table-empty-cell text-center text-sm text-slate-500">
+          <div class="flex flex-col items-center justify-center gap-2 py-4">
+            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
+            <span>No hospitals found.</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="loadingbody" let-columns>
+      <app-hms-table-loading-body [cols]="columns?.length || 5" />
+    </ng-template>
+  </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog
+  [header]="editingHospital == null ? 'New hospital' : 'Edit hospital'"
+  [(visible)]="dialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 32rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+  (onHide)="closeDialog()"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="h-name">Name</label>
+        <input pInputText id="h-name" class="w-full" [(ngModel)]="formName" name="hName" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="h-code">Code</label>
+        <input
+          pInputText
+          id="h-code"
+          class="w-full"
+          [(ngModel)]="formCode"
+          name="hCode"
+          [disabled]="editingHospital != null"
+        />
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label" for="h-addr">Address</label>
+        <input pInputText id="h-addr" class="w-full" [(ngModel)]="formAddress" name="hAddr" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="h-ph">Phone</label>
+        <input pInputText id="h-ph" class="w-full" [(ngModel)]="formPhone" name="hPh" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="h-em">Email</label>
+        <input pInputText id="h-em" type="email" class="w-full" [(ngModel)]="formEmail" name="hEm" />
+      </div>
+      @if (editingHospital == null) {
+        <div class="flex flex-col gap-1 sm:col-span-2">
+          <label class="hms-field-label">Initial modules</label>
+          <p-multiselect
+            [(ngModel)]="formModuleIds"
+            name="hMods"
+            [options]="moduleOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select modules"
+            display="chip"
+            styleClass="w-full"
+            appendTo="body"
+          />
+        </div>
+      } @else {
+        <div class="flex flex-col gap-1 sm:col-span-2">
+          <label class="hms-field-label" for="h-st">Status</label>
+          <p-select
+            inputId="h-st"
+            [(ngModel)]="formStatus"
+            name="hSt"
+            [options]="statusOptions"
+            optionLabel="label"
+            optionValue="value"
+            styleClass="w-full"
+            appendTo="body"
+          />
+        </div>
+      }
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="closeDialog()"></button>
+      <button
+        pButton
+        type="button"
+        label="Save"
+        icon="pi pi-check"
+        severity="success"
+        [loading]="saving"
+        (click)="saveHospital()"
+      ></button>
+    </div>
+  </div>
+</p-dialog>
+
+<p-dialog
+  header="Hospital modules"
+  [(visible)]="modulesDialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 32rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+  (onHide)="closeModulesDialog()"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    @if (modulesTarget) {
+      <p class="text-sm text-slate-600 sm:col-span-2">{{ modulesTarget.name }}</p>
+    }
+    <div class="flex flex-col gap-1 sm:col-span-2">
+      <label class="hms-field-label" for="h-mod-pick">Modules</label>
+      <p-multiselect
+        inputId="h-mod-pick"
+        [(ngModel)]="selectedModuleIds"
+        name="hModPick"
+        [options]="moduleOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Modules"
+        display="chip"
+        styleClass="w-full"
+        appendTo="body"
+      />
+    </div>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+    <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="closeModulesDialog()"></button>
+    <button
+      pButton
+      type="button"
+      label="Save modules"
+      icon="pi pi-check"
+      severity="success"
+      [loading]="saving"
+      (click)="saveModules()"
+    ></button>
+    </div>
+  </div>
+</p-dialog>

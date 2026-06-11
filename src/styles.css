@@ -1,1 +1,927 @@
-/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+@import "primeicons/primeicons.css";
+
+/* HMS density — one scale app-wide (inputs, labels, buttons, dialogs, tables) */
+:root {
+  /* One rhythm: main inset, gutters, card padding — uniform 0.5rem everywhere */
+  --hms-space: 0.5rem;
+  --hms-main-pad: var(--hms-space);
+  --hms-page-gutter: var(--hms-space);
+  --hms-card-padding: var(--hms-space);
+  /* Sticky bar height + shell top gutter (see `.app-shell-root` padding-top) */
+  --hms-shell-header-offset: calc(3.25rem + var(--hms-space));
+  --hms-font-ui: 0.8125rem;
+  --hms-font-ui-sm: 0.75rem;
+  --hms-font-title: 0.95rem;
+  --hms-font-label: 0.58rem;
+  /* Tight text fields (dialogs + pages) — matches doctor checkup form controls. */
+  --hms-input-py: 0.18rem;
+  --hms-input-px: 0.32rem;
+  --hms-input-font: 0.68rem;
+  --hms-input-line: 1.25;
+  --hms-control-height: 1.5rem;
+  --hms-btn-py: 0.3rem;
+  --hms-btn-px: 0.65rem;
+  --hms-btn-font: 0.75rem;
+  --hms-dialog-header-pad: 0.55rem 0.75rem 0.45rem;
+  --hms-dialog-scroll-pad: 0.55rem 0.75rem 0.45rem;
+  --hms-dialog-footer-pad: 0.5rem 0.75rem 0.55rem;
+  --hms-table-cell-py: 0.3rem;
+  --hms-table-cell-px: 0.45rem;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+  }
+}
+
+@layer base {
+  html {
+    @apply min-h-full;
+  }
+
+  body {
+    @apply m-0 min-h-full bg-[#e6e9f3] font-sans text-slate-700 antialiased;
+    font-size: var(--hms-font-ui);
+    line-height: 1.45;
+  }
+}
+
+/* Shell main + white panels: uniform inset (top/right/bottom/left) = `--hms-space` */
+.hms-main-pad {
+  padding: var(--hms-main-pad);
+  box-sizing: border-box;
+}
+
+/*
+ * Shared header card (`surface-panel`): uniform 0.5rem inset via `--hms-card-padding`.
+ * Bottom left/right corners square so the strip / body below meets a flush edge.
+ */
+.hms-surface-panel-inner {
+  padding: var(--hms-card-padding);
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #e6e9f3;
+  border-radius: var(--hms-space) var(--hms-space) 0 0;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+/*
+ * Body has no extra horizontal inset: `main.hms-main-pad` is the single 0.5rem shell inset (L/R/top/bottom).
+ * Keeps one clear rhythm app-wide; gaps between cards use `--hms-main-pad` in feature layouts.
+ */
+app-surface-panel .hms-surface-panel-body {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  background: transparent;
+}
+
+app-surface-panel:not(:has(> .hms-surface-panel-inner)) .hms-surface-panel-body {
+  padding: 0;
+}
+
+/* Space below header card when this page is not CRUD (CRUD uses `.hms-crud-body-spacer` instead). */
+app-surface-panel:not(.hms-crud-surface):has(> .hms-surface-panel-inner) .hms-surface-panel-body {
+  padding-top: var(--hms-main-pad);
+}
+
+/* Routed view fills `<main>` so shelf cards can stretch to the bottom */
+main.hms-main-pad {
+  display: flex;
+  flex-direction: column;
+}
+
+main.hms-main-pad > router-outlet + * {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+app-surface-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  background: transparent;
+}
+
+/* No outer card — only optional header inner is white (see `.hms-surface-panel-inner`). */
+.hms-surface-panel {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+/* CRUD list shell (Doctor checkup–style): compact title row, no header rule, shelf, dense toolbar */
+app-surface-panel.hms-crud-surface .hms-surface-panel-inner > div:first-child {
+  border-bottom: none !important;
+  padding-bottom: 0.2rem !important;
+  margin-bottom: 0 !important;
+}
+
+app-surface-panel.hms-crud-surface .hms-surface-panel-inner > div:first-child > div.flex.items-end {
+  padding-top: 0.1rem !important;
+}
+
+app-surface-panel.hms-crud-surface .hms-surface-panel-inner > div:first-child h1 {
+  font-size: 1rem !important;
+  line-height: 1.25 !important;
+}
+
+app-surface-panel.hms-crud-surface .hms-surface-panel-inner > div:first-child h1 + p {
+  margin-top: 0.15rem !important;
+}
+
+app-surface-panel.hms-crud-surface .hms-surface-panel-inner {
+  padding-top: calc(var(--hms-card-padding) * 0.75);
+}
+
+.hms-crud-body-spacer {
+  flex-shrink: 0;
+  height: var(--hms-main-pad);
+  margin-left: 0;
+  margin-right: 0;
+  background: #e6e9f3;
+}
+
+.hms-crud-panel-body {
+  margin-top: 0;
+}
+
+.hms-crud-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+.hms-toolbar-search {
+  width: 12.5rem;
+  min-width: 8rem;
+  flex: 0 1 auto;
+  min-height: 1.9rem;
+  border-radius: 0.65rem;
+  border: 1px solid #cbd5e1;
+  padding-inline: 0.6rem;
+  font-size: 0.78rem;
+  color: #0f172a;
+  background: #fff;
+}
+
+.hms-crud-actions .hms-toolbar-search--grow {
+  width: auto;
+  flex: 1 1 8rem;
+  max-width: min(20rem, 100%);
+  min-width: 6rem;
+}
+
+app-surface-panel.hms-crud-surface button.hms-toolbar-chip.p-button {
+  min-height: 1.9rem !important;
+  background: #ffffff !important;
+  border: 1px solid #0f172a !important;
+  color: #0f2744 !important;
+  border-radius: 9999px !important;
+  padding-block: 0.15rem !important;
+  padding-inline: 0.62rem !important;
+  font-size: 0.7rem !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+  flex: 0 0 auto;
+}
+
+app-surface-panel.hms-crud-surface button.hms-toolbar-chip.p-button .p-button-label {
+  color: #0f2744 !important;
+}
+
+app-surface-panel.hms-crud-surface button.hms-toolbar-chip.p-button .p-button-icon {
+  color: #0f172a !important;
+}
+
+app-surface-panel.hms-crud-surface button.hms-toolbar-chip.p-button:not(:disabled):hover {
+  background: #f1f5f9 !important;
+  border-color: #020617 !important;
+  color: #020617 !important;
+}
+
+app-surface-panel.hms-crud-surface button.hms-toolbar-chip.p-button:not(:disabled):hover .p-button-label,
+app-surface-panel.hms-crud-surface button.hms-toolbar-chip.p-button:not(:disabled):hover .p-button-icon {
+  color: #020617 !important;
+}
+
+app-surface-panel.hms-crud-surface button.hms-toolbar-chip--active.p-button {
+  background: #ecfdf5 !important;
+  border-color: #6ee7b7 !important;
+  color: #065f46 !important;
+}
+
+app-surface-panel.hms-crud-surface button.hms-toolbar-chip--active.p-button .p-button-label,
+app-surface-panel.hms-crud-surface button.hms-toolbar-chip--active.p-button .p-button-icon {
+  color: #065f46 !important;
+}
+
+app-surface-panel.hms-crud-surface button.hms-toolbar-chip--icon.p-button {
+  padding-inline: 0.45rem !important;
+  min-width: 1.9rem !important;
+}
+
+app-surface-panel.hms-crud-surface .hms-crud-panel-body .p-datatable.hms-crud-table .p-datatable-thead > tr > th {
+  font-size: 0.7rem;
+  color: #475569;
+  text-transform: none;
+  padding: var(--hms-table-cell-py) var(--hms-table-cell-px);
+}
+
+app-surface-panel.hms-crud-surface .hms-crud-panel-body .p-datatable.hms-crud-table .p-datatable-tbody > tr > td {
+  font-size: 0.8rem;
+  padding: var(--hms-table-cell-py) var(--hms-table-cell-px);
+}
+
+/* List actions stay quiet until a row is active. Applies across HMS CRUD tables. */
+app-surface-panel.hms-crud-surface .p-datatable-tbody > tr > td:last-child .p-button {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(0.2rem);
+  transition:
+    opacity 0.14s ease,
+    transform 0.14s ease,
+    background 0.14s ease,
+    border-color 0.14s ease;
+}
+
+app-surface-panel.hms-crud-surface .p-datatable-tbody > tr:hover > td:last-child .p-button,
+app-surface-panel.hms-crud-surface .p-datatable-tbody > tr:focus-within > td:last-child .p-button,
+app-surface-panel.hms-crud-surface .p-datatable-tbody > tr.hms-row-editing > td:last-child .p-button {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+@media (hover: none) {
+  app-surface-panel.hms-crud-surface .p-datatable-tbody > tr > td:last-child .p-button {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+}
+
+/* Prime table inside surface panel: body scrolls, paginator stays at bottom of card */
+app-surface-panel .hms-surface-panel-body p-table {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  width: 100%;
+}
+
+app-surface-panel .hms-surface-panel-body p-table .p-datatable {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+app-surface-panel .hms-surface-panel-body p-table .p-datatable-wrapper {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+}
+
+/* Empty row: tall cell so message (or icon markup) sits in a full-height band */
+app-surface-panel .hms-surface-panel-body .p-datatable-tbody > tr:only-child > td[colspan] {
+  min-height: min(48vh, 22rem);
+  vertical-align: middle;
+}
+
+/* Checkup template studio page fills routed main */
+app-checkup-templates-page .cts-root {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+app-checkup-template-editor-page .cte-root {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Solid toolbar CTA (list pages) — emerald, matches p-button-success */
+button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link) {
+  background: #10b981 !important;
+  border-color: #10b981 !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 2px rgb(16 185 129 / 14%);
+}
+
+button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link):enabled:hover {
+  background: #059669 !important;
+  border-color: #059669 !important;
+  color: #ffffff !important;
+}
+
+/* Prime skeleton — match HMS density */
+.p-skeleton {
+  border-radius: 6px;
+}
+
+/* PrimeNG buttons: pill radius + compact HMS size */
+.p-button {
+  border-radius: 50px !important;
+  font-size: var(--hms-btn-font) !important;
+  padding: var(--hms-btn-py) var(--hms-btn-px) !important;
+  min-height: 1.85rem;
+  gap: 0.35rem;
+}
+
+.p-button.p-button-icon-only {
+  width: 2rem !important;
+  min-width: 2rem !important;
+  height: 2rem !important;
+  padding: 0 !important;
+}
+
+.p-button .p-button-icon {
+  font-size: 0.85rem !important;
+}
+
+/* HMS solid success / primary — emerald (list pages, dialogs, forms) */
+.p-button.p-button-success:not(.p-button-outlined):not(.p-button-text):not(.p-button-link) {
+  background: #10b981 !important;
+  border-color: #10b981 !important;
+  color: #ffffff !important;
+}
+
+.p-button.p-button-success:not(.p-button-outlined):not(.p-button-text):not(.p-button-link):not(:disabled):hover {
+  background: #059669 !important;
+  border-color: #059669 !important;
+  color: #ffffff !important;
+}
+
+.p-button.p-button-success:not(.p-button-outlined):not(.p-button-text):not(.p-button-link):not(:disabled):active {
+  background: #047857 !important;
+  border-color: #047857 !important;
+}
+
+/* ========= HMS CRUD / form dialogs ========= */
+.p-dialog.hms-crud-dialog {
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  box-shadow:
+    0 4px 6px -1px rgba(15, 23, 42, 0.06),
+    0 20px 40px -12px rgba(15, 81, 50, 0.12) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: calc(100dvh - 1.25rem) !important;
+}
+
+.p-dialog.hms-crud-dialog .p-dialog-header {
+  flex-shrink: 0;
+  padding: var(--hms-dialog-header-pad) !important;
+  border-bottom: 1px solid rgba(15, 81, 50, 0.1);
+  background: #fff;
+}
+
+.p-dialog.hms-crud-dialog .p-dialog-title {
+  font-size: var(--hms-font-title) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em;
+  color: #0f172a !important;
+}
+
+.p-dialog.hms-crud-dialog .p-dialog-content {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  background: #fff;
+}
+
+.p-dialog.hms-crud-dialog .p-dialog-footer {
+  flex-shrink: 0;
+  padding: var(--hms-dialog-footer-pad) !important;
+  border-top: 1px solid rgba(15, 81, 50, 0.1);
+  background: #fff;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.4rem 0.55rem;
+}
+
+.hms-dialog-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.hms-dialog-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: var(--hms-dialog-scroll-pad);
+  -webkit-overflow-scrolling: touch;
+}
+
+.hms-dialog-footer {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.4rem 0.55rem;
+  padding: var(--hms-dialog-footer-pad);
+  border-top: 1px solid rgba(15, 81, 50, 0.1);
+  background: #ffffff;
+  box-shadow: 0 -6px 16px rgba(15, 23, 42, 0.06);
+}
+
+.hms-field-label {
+  font-size: var(--hms-font-label);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.hms-field-label--required::after {
+  content: ' *';
+  color: #b91c1c;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* Form controls inside HMS dialogs — matches doctor checkup form controls. */
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-inputtext,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll input.p-inputtext,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .hms-time-input {
+  box-sizing: border-box;
+  background: #ffffff !important;
+  border: 1px solid rgb(203 213 225 / 0.95) !important;
+  border-radius: 0.35rem !important;
+  padding: var(--hms-input-py) var(--hms-input-px) !important;
+  font-size: var(--hms-input-font) !important;
+  line-height: var(--hms-input-line) !important;
+  min-height: var(--hms-control-height) !important;
+  max-height: 2.25rem !important;
+  font-weight: 400;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-inputtext:enabled:hover,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll input.p-inputtext:enabled:hover,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .hms-time-input:enabled:hover,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll textarea.p-inputtextarea:enabled:hover,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-inputnumber .p-inputnumber-input:enabled:hover,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .patient-dob-datepicker.p-datepicker:hover {
+  border-color: #047857 !important;
+}
+
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-inputtext:enabled:focus,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll input.p-inputtext:enabled:focus,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .hms-time-input:enabled:focus,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll textarea.p-inputtextarea:enabled:focus,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-inputnumber .p-inputnumber-input:enabled:focus,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .patient-dob-datepicker.p-datepicker:focus-within {
+  border-color: #047857 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.p-dialog.hms-crud-dialog .hms-dialog-scroll textarea.p-inputtextarea {
+  box-sizing: border-box;
+  background: #ffffff !important;
+  border: 1px solid rgb(203 213 225 / 0.95) !important;
+  border-radius: 0.35rem !important;
+  padding: var(--hms-input-py) var(--hms-input-px) !important;
+  font-size: var(--hms-input-font) !important;
+  line-height: var(--hms-input-line) !important;
+  min-height: 2.25rem !important;
+  font-weight: 400;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-password .p-inputtext {
+  border-radius: 0.35rem !important;
+}
+
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-select.p-select {
+  background: #ffffff !important;
+  border: 1px solid rgb(203 213 225 / 0.95) !important;
+  border-radius: 0.35rem !important;
+  min-height: var(--hms-control-height) !important;
+  box-shadow: none !important;
+}
+
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-select.p-select:not(.p-disabled):hover,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-select.p-select.p-focus,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-select.p-select:focus-within,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-multiselect:not(.p-disabled):hover,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-multiselect.p-focus,
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-multiselect:focus-within {
+  border-color: #047857 !important;
+  box-shadow: none !important;
+}
+
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-select .p-select-label {
+  line-height: var(--hms-input-line) !important;
+  padding: var(--hms-input-py) var(--hms-input-px) !important;
+  font-size: var(--hms-input-font) !important;
+  color: #0f172a !important;
+}
+
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-select .p-select-dropdown {
+  width: 1.5rem;
+}
+
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-select .p-select-dropdown-icon {
+  font-size: 0.65rem;
+}
+
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-inputnumber .p-inputnumber-input {
+  background: #ffffff !important;
+  border: 1px solid rgb(203 213 225 / 0.95) !important;
+  border-radius: 0.35rem !important;
+  padding: var(--hms-input-py) var(--hms-input-px) !important;
+  font-size: var(--hms-input-font) !important;
+  line-height: var(--hms-input-line) !important;
+  min-height: var(--hms-control-height) !important;
+  max-height: 2.25rem !important;
+  font-weight: 400;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+.p-dialog.hms-crud-dialog .hms-dialog-scroll .p-multiselect {
+  border-radius: 0.35rem !important;
+  border: 1px solid rgb(203 213 225 / 0.95) !important;
+  background: #fff !important;
+  min-height: var(--hms-control-height) !important;
+}
+
+/* DOB picker in dialogs (patient edit) */
+.p-dialog.hms-crud-dialog .patient-dob-datepicker.p-datepicker {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  background: #ffffff !important;
+  border: 1px solid rgb(203 213 225 / 0.95) !important;
+  border-radius: 0.35rem !important;
+  box-shadow: none !important;
+  min-height: var(--hms-control-height) !important;
+  overflow: hidden;
+}
+
+.p-dialog.hms-crud-dialog .patient-dob-datepicker.p-datepicker .p-datepicker-input.p-inputtext {
+  flex: 1 1 auto;
+  width: 1%;
+  min-width: 0;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border-radius: 0.35rem !important;
+  padding: var(--hms-input-py) var(--hms-input-px) !important;
+  font-size: var(--hms-input-font) !important;
+  line-height: var(--hms-input-line) !important;
+  font-weight: 400;
+  color: #0f172a !important;
+  min-height: var(--hms-control-height) !important;
+  box-sizing: border-box;
+}
+
+.p-dialog.hms-crud-dialog .patient-dob-datepicker .p-datepicker-input-icon-container {
+  position: absolute !important;
+  top: 50% !important;
+  inset-inline-end: 0.65rem !important;
+  margin-block-start: 0 !important;
+  transform: translateY(-50%);
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: auto !important;
+  height: auto !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  color: #0f172a !important;
+}
+
+/* ── Server-rendered checkup form HTML (CheckupFormHtmlRenderer → innerHTML / print) ──
+   Injected markup has no Angular encapsulation; keep rules global so fields stay visible. */
+.hms-checkup-form-html {
+  color: #0f172a;
+}
+
+.hms-checkup-form-html .hms-checkup-meta {
+  margin: 0 0 0.5rem;
+  font-size: var(--hms-font-ui);
+  color: #334155;
+}
+
+/* 2–3 fields per row on wide cards; stack on narrow viewports. `hms-checkup-fields` uses `display: contents`
+   so fields grid with the section (works with or without the wrapper in older snapshots). */
+.hms-checkup-form-html .hms-checkup-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.75rem), 1fr));
+  column-gap: 0.55rem;
+  row-gap: 0.45rem;
+  align-items: start;
+  margin-bottom: 0.85rem;
+}
+
+.hms-checkup-form-html .hms-checkup-fields {
+  display: contents;
+}
+
+.hms-checkup-form-html .hms-checkup-section-title {
+  grid-column: 1 / -1;
+  margin: 0 0 0.35rem;
+  font-size: var(--hms-font-title);
+  font-weight: 700;
+  color: #0f172a;
+  border-bottom: 1px solid rgb(203 213 225 / 0.95);
+  padding-bottom: 0.25rem;
+}
+
+.hms-checkup-form-html .hms-checkup-field {
+  margin-bottom: 0;
+  min-width: 0;
+}
+
+.hms-checkup-form-html .hms-checkup-field:has(textarea.hms-checkup-control),
+.hms-checkup-form-html .hms-checkup-field:has(.hms-checkup-radio-group) {
+  grid-column: 1 / -1;
+}
+
+.hms-checkup-form-html .hms-checkup-label {
+  display: block;
+  font-weight: 600;
+  font-size: var(--hms-font-ui-sm);
+  color: #14532d;
+  margin-bottom: 0.2rem;
+}
+
+.hms-checkup-form-html .hms-checkup-label .req {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.hms-checkup-form-html .hms-checkup-control,
+.hms-checkup-form-html input.hms-checkup-control,
+.hms-checkup-form-html textarea.hms-checkup-control,
+.hms-checkup-form-html select.hms-checkup-control {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #94a3b8 !important;
+  border-radius: 0.3rem;
+  padding: var(--hms-input-py) var(--hms-input-px);
+  font-size: var(--hms-input-font);
+  line-height: 1.4;
+  color: #0f172a;
+  background: #ffffff;
+  box-shadow: inset 0 1px 2px rgb(15 23 42 / 4%);
+  cursor: text;
+}
+
+.hms-checkup-form-html select.hms-checkup-control {
+  cursor: pointer;
+}
+
+.hms-checkup-form-html textarea.hms-checkup-control {
+  min-height: 3.5rem;
+  resize: vertical;
+}
+
+.hms-checkup-form-html input.hms-checkup-control:read-only,
+.hms-checkup-form-html textarea.hms-checkup-control:read-only,
+.hms-checkup-form-html select.hms-checkup-control:disabled {
+  background: #f8fafc;
+  color: #334155;
+  cursor: default;
+}
+
+.hms-checkup-form-html .hms-checkup-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  font-size: var(--hms-font-ui-sm);
+  color: #334155;
+  cursor: pointer;
+}
+
+.hms-checkup-form-html .hms-checkup-check input {
+  margin-top: 0.2rem;
+  width: 1rem;
+  height: 1rem;
+  accent-color: #0d9488;
+}
+
+.hms-checkup-form-html .hms-checkup-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.hms-checkup-form-html .hms-checkup-radio {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: var(--hms-font-ui-sm);
+  color: #334155;
+  cursor: pointer;
+}
+
+.hms-checkup-form-html .hms-checkup-radio input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #0d9488;
+}
+
+/* ========= HMS global PrimeNG (pages + non-CRUD dialogs) — same density as tokens ========= */
+.p-inputtext.p-component,
+input.p-inputtext.p-component {
+  font-size: var(--hms-input-font) !important;
+  padding: var(--hms-input-py) var(--hms-input-px) !important;
+  line-height: var(--hms-input-line) !important;
+  min-height: var(--hms-control-height) !important;
+}
+
+textarea.p-textarea,
+.p-textarea.p-component textarea {
+  font-size: var(--hms-input-font) !important;
+  padding: var(--hms-input-py) var(--hms-input-px) !important;
+  line-height: var(--hms-input-line) !important;
+  min-height: 2rem !important;
+}
+
+.p-select.p-component {
+  min-height: var(--hms-control-height) !important;
+}
+
+.p-select.p-component .p-select-label {
+  font-size: var(--hms-input-font) !important;
+  padding: var(--hms-input-py) var(--hms-input-px) !important;
+  line-height: var(--hms-input-line) !important;
+}
+
+.p-inputnumber .p-inputnumber-input {
+  font-size: var(--hms-input-font) !important;
+  padding: var(--hms-input-py) var(--hms-input-px) !important;
+  line-height: var(--hms-input-line) !important;
+  min-height: var(--hms-control-height) !important;
+}
+
+.p-autocomplete .p-autocomplete-input,
+.p-autocomplete .p-autocomplete-input-multiple {
+  font-size: var(--hms-input-font) !important;
+  padding: var(--hms-input-py) var(--hms-input-px) !important;
+  line-height: var(--hms-input-line) !important;
+  min-height: var(--hms-control-height) !important;
+}
+
+/* Datepicker trigger (often appendTo body — not inside .p-dialog) */
+.p-datepicker.p-component,
+.p-datepicker.p-component .p-datepicker-input-icon-container {
+  min-height: var(--hms-control-height) !important;
+}
+
+.p-datepicker .p-datepicker-input.p-inputtext,
+.p-datepicker.p-component .p-datepicker-input.p-inputtext {
+  font-size: var(--hms-input-font) !important;
+  padding: var(--hms-input-py) var(--hms-input-px) !important;
+  line-height: var(--hms-input-line) !important;
+  min-height: var(--hms-control-height) !important;
+}
+
+/* Any Prime dialog: shrink inputs even when not using .hms-dialog-scroll */
+.p-dialog .p-inputtext.p-component,
+.p-dialog input.p-inputtext.p-component:not([type='checkbox']):not([type='radio']),
+.p-dialog .p-inputnumber .p-inputnumber-input {
+  font-size: var(--hms-input-font) !important;
+  padding: var(--hms-input-py) var(--hms-input-px) !important;
+  line-height: var(--hms-input-line) !important;
+  min-height: var(--hms-control-height) !important;
+}
+
+.p-dialog textarea.p-textarea,
+.p-dialog .p-textarea.p-component textarea {
+  font-size: var(--hms-input-font) !important;
+  padding: var(--hms-input-py) var(--hms-input-px) !important;
+  line-height: var(--hms-input-line) !important;
+  min-height: 2rem !important;
+}
+
+.p-dialog .p-select.p-component {
+  min-height: var(--hms-control-height) !important;
+}
+
+.p-dialog .p-datepicker .p-datepicker-input.p-inputtext {
+  min-height: var(--hms-control-height) !important;
+}
+
+.p-datatable .p-datatable-thead > tr > th,
+.p-datatable .p-datatable-tbody > tr > td {
+  padding: var(--hms-table-cell-py) var(--hms-table-cell-px) !important;
+  font-size: var(--hms-font-ui-sm) !important;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  font-size: var(--hms-font-label) !important;
+  letter-spacing: 0.04em;
+}
+
+.p-paginator {
+  padding: 0.35rem 0.5rem !important;
+  font-size: var(--hms-font-ui-sm) !important;
+  gap: 0.25rem;
+}
+
+.p-paginator .p-paginator-page,
+.p-paginator .p-paginator-next,
+.p-paginator .p-paginator-prev,
+.p-paginator .p-paginator-first,
+.p-paginator .p-paginator-last {
+  min-width: 1.85rem !important;
+  height: 1.85rem !important;
+}
+
+.p-message .p-message-text,
+.p-message-content {
+  font-size: var(--hms-font-ui-sm) !important;
+}
+
+.p-card .p-card-body,
+.p-card .p-card-content {
+  padding: var(--hms-card-padding) !important;
+  font-size: var(--hms-font-ui);
+}
+
+.p-card .p-card-title {
+  font-size: var(--hms-font-title) !important;
+  margin-bottom: 0.35rem !important;
+}
+
+.p-dialog:not(.hms-crud-dialog) .p-dialog-header {
+  padding: var(--hms-dialog-header-pad) !important;
+}
+
+.p-dialog:not(.hms-crud-dialog) .p-dialog-title {
+  font-size: var(--hms-font-title) !important;
+}
+
+.p-dialog:not(.hms-crud-dialog) .p-dialog-content {
+  padding: var(--hms-dialog-scroll-pad) !important;
+  font-size: var(--hms-font-ui);
+}
+
+.p-dialog:not(.hms-crud-dialog) .p-dialog-footer {
+  padding: var(--hms-dialog-footer-pad) !important;
+  gap: 0.4rem 0.55rem;
+}
+
+.p-confirmdialog .p-dialog-content {
+  font-size: var(--hms-font-ui) !important;
+}
+
+.p-tag {
+  font-size: 0.58rem !important;
+  padding: 0.1rem 0.35rem !important;
+}
+
+.p-toast .p-toast-message-text,
+.p-toast .p-toast-detail,
+.p-toast .p-toast-summary {
+  font-size: var(--hms-font-ui-sm) !important;
+}

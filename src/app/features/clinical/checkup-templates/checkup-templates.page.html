@@ -1,0 +1,196 @@
+<div class="cts-page">
+  <section class="cts-title-card" aria-labelledby="cts-studio-title">
+    <h1 id="cts-studio-title" class="cts-page-title">Checkup template studio</h1>
+    <p class="cts-page-subtitle">
+      HMS library starters plus your hospital’s custom forms — edit in the builder; use Save as custom to copy a preset with a new code.
+    </p>
+  </section>
+
+  @if (errorMessage) {
+    <p-message severity="error" [text]="errorMessage" styleClass="w-full shrink-0" />
+  }
+
+  <div class="cts-root">
+    @if (loadingStudio) {
+      <div class="cts-layout cts-layout--loading" aria-busy="true" aria-label="Loading templates">
+        <div class="cts-skeleton-panel"></div>
+        <div class="cts-skeleton-panel cts-skeleton-panel--wide"></div>
+      </div>
+    } @else {
+      <div class="cts-layout" aria-label="Starter library and custom templates">
+        <aside class="cts-aside">
+            <section class="cts-panel">
+              <header class="cts-head">
+                <div class="cts-head__row">
+                  <h2 class="cts-head__title">Starter library</h2>
+                  <p-tag value="HMS" severity="success" styleClass="cts-tag-pill" />
+                </div>
+                <p class="cts-head__hint">Built-in presets — Edit opens the builder; Save as custom copies the layout.</p>
+              </header>
+              <ul class="cts-lib-list">
+                @for (row of filteredLibrary(); track row.id) {
+                  <li class="cts-lib-row">
+                    <div class="cts-lib-row__text">
+                      <span class="cts-lib-row__code">{{ row.code }}</span>
+                      <span class="cts-lib-row__name">{{ row.name }}</span>
+                      <span class="cts-lib-row__meta">{{ schemaSummary(row) }}</span>
+                    </div>
+                    <p-tag value="Built-in" severity="secondary" styleClass="cts-tag-muted" />
+                    <div class="cts-lib-row__actions">
+                      <button
+                        pButton
+                        type="button"
+                        label="Edit"
+                        icon="pi pi-pencil"
+                        severity="secondary"
+                        [outlined]="true"
+                        size="small"
+                        class="cts-lib-action-btn"
+                        (click)="openEdit(row)"
+                      ></button>
+                      <button
+                        pButton
+                        type="button"
+                        label="Save as custom"
+                        icon="pi pi-copy"
+                        severity="secondary"
+                        [outlined]="true"
+                        size="small"
+                        class="cts-lib-action-btn"
+                        (click)="duplicateAsCustom(row)"
+                      ></button>
+                    </div>
+                  </li>
+                } @empty {
+                  <li class="cts-lib-empty">Library presets appear after the API seeds your hospital.</li>
+                }
+              </ul>
+            </section>
+          </aside>
+
+          <main class="cts-main">
+            <section class="cts-panel">
+              <div class="cts-toolbar">
+                <div class="cts-toolbar__intro">
+                  <h2 class="cts-head__title">Your custom templates</h2>
+                  <p class="cts-head__hint m-0">Paginated list. Codes cannot start with <span class="font-mono">LIB_</span>.</p>
+                </div>
+                <div class="cts-toolbar__controls">
+                  <div class="cts-search" role="search">
+                    <span class="cts-search__icon" aria-hidden="true"><i class="pi pi-search text-xs"></i></span>
+                    <input
+                      pInputText
+                      type="search"
+                      class="cts-search__input"
+                      [(ngModel)]="searchInput"
+                      name="ctSearch"
+                      placeholder="Filter library & custom…"
+                      (keyup.enter)="applySearch()"
+                      aria-label="Search templates"
+                    />
+                    <button
+                      pButton
+                      type="button"
+                      class="cts-search__btn"
+                      icon="pi pi-search"
+                      severity="secondary"
+                      size="small"
+                      (click)="applySearch()"
+                      aria-label="Apply search"
+                    ></button>
+                  </div>
+                  <button
+                    pButton
+                    type="button"
+                    label="New template"
+                    icon="pi pi-plus"
+                    severity="secondary"
+                    size="small"
+                    class="cts-toolbar-cta cts-solid-neutral-btn shrink-0"
+                    (click)="openCreate()"
+                  ></button>
+                </div>
+              </div>
+
+              @if (rows.length === 0) {
+                <div class="cts-empty-main">
+                  <p class="cts-empty-main__title m-0">No custom templates yet</p>
+                  <p class="cts-empty-main__text m-0">
+                    Use <strong>Save as custom</strong> on a library row, or create blank. Reserved prefix:
+                    <span class="font-mono">LIB_</span>.
+                  </p>
+                  <button
+                    pButton
+                    type="button"
+                    class="cts-toolbar-cta cts-solid-neutral-btn"
+                    label="Create template"
+                    icon="pi pi-plus"
+                    severity="secondary"
+                    size="small"
+                    (click)="openCreate()"
+                  ></button>
+                </div>
+              } @else {
+                <div class="cts-table" role="list">
+                  <div class="cts-table__head" aria-hidden="true">
+                    <span>Code</span>
+                    <span>Name</span>
+                    <span>Sections</span>
+                    <span>Updated</span>
+                    <span class="cts-table__head-actions"></span>
+                  </div>
+                  @for (row of rows; track row.id) {
+                    <div class="cts-table__row" role="listitem">
+                      <span class="cts-table__code font-mono">{{ row.code }}</span>
+                      <span class="cts-table__name">{{ row.name }}</span>
+                      <span class="cts-table__meta">{{ schemaSummary(row) }}</span>
+                      <span class="cts-table__date">{{ row.updatedAt ?? row.createdAt | date: 'MMM d, y · h:mm a' }}</span>
+                      <div class="cts-table__actions">
+                        <button
+                          pButton
+                          type="button"
+                          class="!h-8 !w-8"
+                          icon="pi pi-pencil"
+                          [text]="true"
+                          severity="secondary"
+                          size="small"
+                          (click)="openEdit(row)"
+                          aria-label="Edit"
+                        ></button>
+                        <button
+                          pButton
+                          type="button"
+                          class="!h-8 !w-8"
+                          icon="pi pi-trash"
+                          [text]="true"
+                          severity="danger"
+                          size="small"
+                          (click)="confirmDelete(row)"
+                          aria-label="Delete"
+                        ></button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+
+              @if (totalCount > 0) {
+                <div class="cts-paginator">
+                  <p-paginator
+                    styleClass="cts-paginator__inner border-0 bg-transparent"
+                    [rows]="pageSize"
+                    [totalRecords]="totalCount"
+                    [first]="(page - 1) * pageSize"
+                    [rowsPerPageOptions]="[6, 10, 20]"
+                    (onPageChange)="onPageChange($event)"
+                    [showCurrentPageReport]="true"
+                    currentPageReportTemplate="Showing {first}–{last} of {totalRecords}"
+                  />
+                </div>
+              }
+            </section>
+          </main>
+      </div>
+    }
+  </div>
+</div>

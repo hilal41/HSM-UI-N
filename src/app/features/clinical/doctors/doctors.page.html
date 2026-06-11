@@ -1,0 +1,249 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Doctors"
+  subtitle="Clinical staff linked to departments"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <button
+      pButton
+      type="button"
+      label="New doctor"
+      icon="pi pi-plus"
+      severity="secondary"
+      class="hms-toolbar-solid"
+      (click)="openCreate()"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+  @if (errorMessage) {
+    <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+  }
+  <p-table
+    [showLoader]="false"
+    [value]="rows"
+    [lazy]="true"
+    [paginator]="true"
+    [rows]="pageSize"
+    [totalRecords]="totalCount"
+    [loading]="loading"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    (onLazyLoad)="onLazyLoad($event)"
+    [tableStyle]="{ 'min-width': '100%' }"
+    styleClass="p-datatable-sm hms-crud-table"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Number</th>
+        <th>Name</th>
+        <th>Department</th>
+        <th>Specialization</th>
+        <th>Availability</th>
+        <th>Status</th>
+        <th class="w-36 text-end">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-row>
+      <tr>
+        <td class="font-mono text-xs">{{ row.doctorNumber }}</td>
+        <td>{{ row.firstName }} {{ row.lastName }}</td>
+        <td>{{ row.departmentName ?? '—' }}</td>
+        <td>{{ row.specialization }}</td>
+        <td class="max-w-64 text-xs font-medium text-slate-600">
+          <span class="line-clamp-2" [title]="availabilityText(row)">{{ availabilityText(row) }}</span>
+        </td>
+        <td>
+          <p-tag
+            [value]="row.status"
+            [severity]="row.status === 'Active' ? 'success' : 'secondary'"
+          />
+        </td>
+        <td class="text-end">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-pencil"
+            [text]="true"
+            severity="secondary"
+            class="mr-1"
+            (click)="openEdit(row)"
+            aria-label="Edit"
+          ></button>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-trash"
+            [text]="true"
+            severity="danger"
+            (click)="confirmDelete(row)"
+            aria-label="Delete"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="7" class="hms-table-empty-cell text-center text-sm text-slate-500">
+          <div class="flex flex-col items-center justify-center gap-2 py-4">
+            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
+            <span>No doctors found.</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="loadingbody" let-columns>
+      <app-hms-table-loading-body [cols]="columns?.length || 7" />
+    </ng-template>
+  </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog
+  [header]="editingId == null ? 'New doctor' : 'Edit doctor'"
+  [(visible)]="dialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 36rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+  (onHide)="closeDialog()"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label hms-field-label--required" for="dr-fn">First name</label>
+          <input pInputText id="dr-fn" class="w-full" [(ngModel)]="formFirstName" name="drFn" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label hms-field-label--required" for="dr-ln">Last name</label>
+          <input pInputText id="dr-ln" class="w-full" [(ngModel)]="formLastName" name="drLn" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label hms-field-label--required" for="dr-num">Doctor number</label>
+          <input pInputText id="dr-num" class="w-full" [(ngModel)]="formDoctorNumber" name="drNum" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label hms-field-label--required" for="dr-lic">License</label>
+          <input pInputText id="dr-lic" class="w-full" [(ngModel)]="formLicense" name="drLic" />
+        </div>
+        <div class="flex flex-col gap-1 sm:col-span-2">
+          <label class="hms-field-label hms-field-label--required" for="dr-spec">Specialization</label>
+          <input pInputText id="dr-spec" class="w-full" [(ngModel)]="formSpecialization" name="drSpec" />
+        </div>
+        <div class="flex flex-col gap-1 sm:col-span-2">
+          <label class="hms-field-label hms-field-label--required" for="dr-dept">Department</label>
+          <p-select
+            inputId="dr-dept"
+            [(ngModel)]="formDepartmentId"
+            name="drDept"
+            [options]="departmentOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select department"
+            styleClass="w-full"
+            appendTo="body"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="dr-ph">Phone</label>
+          <input pInputText id="dr-ph" class="w-full" [(ngModel)]="formPhone" name="drPh" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="dr-em">Email</label>
+          <input pInputText id="dr-em" type="email" class="w-full" [(ngModel)]="formEmail" name="drEm" />
+        </div>
+        <div class="flex flex-col gap-1 sm:col-span-2">
+          <label class="hms-field-label" for="dr-qu">Qualification</label>
+          <textarea pTextarea id="dr-qu" [(ngModel)]="formQualification" name="drQu" rows="2" class="w-full"></textarea>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="dr-yr">Years experience</label>
+          <p-inputNumber
+            inputId="dr-yr"
+            [(ngModel)]="formYears"
+            name="drYr"
+            [min]="0"
+            [useGrouping]="false"
+            styleClass="w-full"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="dr-st">Status</label>
+          <p-select
+            inputId="dr-st"
+            [(ngModel)]="formStatus"
+            name="drSt"
+            [options]="statusOptions"
+            optionLabel="label"
+            optionValue="value"
+            styleClass="w-full"
+            appendTo="body"
+          />
+        </div>
+        <div class="flex flex-col gap-1 sm:col-span-2">
+          <div class="flex items-center justify-between gap-2">
+            <label class="hms-field-label">Weekly availability</label>
+            <span class="text-[0.62rem] font-medium text-slate-400">Unchecked days are unavailable</span>
+          </div>
+          <div class="grid grid-cols-1 gap-1.5 rounded-md border border-slate-200 bg-slate-50/60 p-2 sm:grid-cols-12">
+            @for (day of formAvailabilityDays; track day.day; let i = $index) {
+              <div
+                [class]="
+                  i < 3
+                    ? 'rounded bg-white px-2 py-1.5 ring-1 ring-slate-200/80 sm:col-span-4'
+                    : 'rounded bg-white px-2 py-1.5 ring-1 ring-slate-200/80 sm:col-span-3'
+                "
+              >
+                <label class="flex min-w-0 items-center gap-2 text-[0.72rem] font-semibold text-slate-700">
+                  <p-checkbox
+                    [(ngModel)]="day.enabled"
+                    [binary]="true"
+                    [inputId]="'dr-av-day-' + day.day"
+                    [name]="'drAvDay' + day.day"
+                  />
+                  <span class="truncate">{{ day.label }}</span>
+                </label>
+
+                @if (day.enabled) {
+                  <div class="mt-1.5 grid grid-cols-[minmax(0,6rem)_auto_minmax(0,6rem)] items-center gap-1.5 pl-8 sm:pl-0">
+                    <input
+                      type="time"
+                      class="hms-time-input w-full text-[0.64rem]"
+                      [(ngModel)]="day.start"
+                      [name]="'drAvStart' + day.day"
+                      [attr.aria-label]="day.label + ' start time'"
+                    />
+                    <span class="text-[0.62rem] font-semibold text-slate-400">to</span>
+                    <input
+                      type="time"
+                      class="hms-time-input w-full text-[0.64rem]"
+                      [(ngModel)]="day.end"
+                      [name]="'drAvEnd' + day.day"
+                      [attr.aria-label]="day.label + ' end time'"
+                    />
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          <p class="m-0 text-[0.62rem] leading-snug text-slate-500">
+            Example: enable Monday and set 02:00 to 14:00 for 2 AM to 2 PM.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="closeDialog()"></button>
+      <button
+        pButton
+        type="button"
+        label="Save"
+        icon="pi pi-check"
+        severity="success"
+        [loading]="saving"
+        (click)="save()"
+      ></button>
+    </div>
+  </div>
+</p-dialog>

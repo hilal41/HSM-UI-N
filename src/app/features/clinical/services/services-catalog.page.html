@@ -1,0 +1,211 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Clinical services"
+  subtitle="OPD, IPD, and other billable services"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <button
+      pButton
+      type="button"
+      label="New service"
+      icon="pi pi-plus"
+      severity="secondary"
+      class="hms-toolbar-solid"
+      (click)="openCreate()"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+  @if (errorMessage) {
+    <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+  }
+  <p-table
+    [showLoader]="false"
+    [value]="rows"
+    [lazy]="true"
+    [paginator]="true"
+    [rows]="pageSize"
+    [totalRecords]="totalCount"
+    [loading]="loading"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    (onLazyLoad)="onLazyLoad($event)"
+    [tableStyle]="{ 'min-width': '100%' }"
+    styleClass="p-datatable-sm hms-crud-table"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Code</th>
+        <th>Title</th>
+        <th>Consultancy type</th>
+        <th>Category</th>
+        <th class="text-end">Price</th>
+        <th class="w-36 text-end">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-row>
+      <tr>
+        <td class="font-mono text-xs">{{ row.code }}</td>
+        <td>{{ row.title }}</td>
+        <td>{{ row.consultancyType || '—' }}</td>
+        <td>{{ row.serviceCategoryName ?? '—' }}</td>
+        <td class="text-end font-mono text-sm">{{ row.price | number: '1.2-2' }}</td>
+        <td class="text-end">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-pencil"
+            [text]="true"
+            severity="secondary"
+            class="mr-1"
+            (click)="openEdit(row)"
+            aria-label="Edit"
+          ></button>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-trash"
+            [text]="true"
+            severity="danger"
+            (click)="confirmDelete(row)"
+            aria-label="Delete"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6" class="hms-table-empty-cell text-center text-sm text-slate-500">
+          <div class="flex flex-col items-center justify-center gap-2 py-4">
+            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
+            <span>No services found.</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="loadingbody" let-columns>
+      <app-hms-table-loading-body [cols]="columns?.length || 6" />
+    </ng-template>
+  </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog
+  [header]="editingId == null ? 'New service' : 'Edit service'"
+  [(visible)]="dialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 32rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+  (onHide)="closeDialog()"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="sv-code">Code</label>
+        <input pInputText id="sv-code" class="w-full" [(ngModel)]="formCode" name="svCode" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="sv-title">Title</label>
+        <input pInputText id="sv-title" class="w-full" [(ngModel)]="formTitle" name="svTitle" />
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label hms-field-label--required" for="sv-ctype">Consultancy type</label>
+        <p-select
+          inputId="sv-ctype"
+          [(ngModel)]="formConsultancyType"
+          name="svConsultancyType"
+          [options]="consultancyTypeOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label hms-field-label--required" for="sv-cat">Category</label>
+        <p-select
+          inputId="sv-cat"
+          [(ngModel)]="formCategoryId"
+          name="svCat"
+          [options]="categoryOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="sv-disc">Discount</label>
+        <p-inputNumber
+          inputId="sv-disc"
+          [(ngModel)]="formDiscount"
+          name="svDisc"
+          [minFractionDigits]="2"
+          [maxFractionDigits]="2"
+          styleClass="w-full"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="sv-price">Price</label>
+        <p-inputNumber
+          inputId="sv-price"
+          [(ngModel)]="formPrice"
+          name="svPrice"
+          [minFractionDigits]="2"
+          [maxFractionDigits]="2"
+          styleClass="w-full"
+        />
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label" for="sv-doc">Assigned doctor (optional)</label>
+        <p-select
+          inputId="sv-doc"
+          [(ngModel)]="formDoctorId"
+          name="svDoc"
+          [options]="doctorOptions"
+          optionLabel="label"
+          optionValue="value"
+          [showClear]="true"
+          placeholder="None"
+          styleClass="w-full"
+          appendTo="body"
+          [disabled]="formClearDoctor"
+        />
+      </div>
+      @if (editingId != null) {
+        <div class="flex items-center gap-2 sm:col-span-2">
+          <p-checkbox inputId="sv-clr" [(ngModel)]="formClearDoctor" name="svClr" [binary]="true" />
+          <label for="sv-clr" class="text-sm text-slate-600">Clear assigned doctor</label>
+        </div>
+      }
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label" for="sv-share">Doctor share</label>
+        <p-inputNumber
+          inputId="sv-share"
+          [(ngModel)]="formDoctorShare"
+          name="svShare"
+          [minFractionDigits]="2"
+          [maxFractionDigits]="2"
+          styleClass="w-full"
+        />
+      </div>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="closeDialog()"></button>
+      <button
+        pButton
+        type="button"
+        label="Save"
+        icon="pi pi-check"
+        severity="success"
+        [loading]="saving"
+        (click)="save()"
+      ></button>
+    </div>
+  </div>
+</p-dialog>

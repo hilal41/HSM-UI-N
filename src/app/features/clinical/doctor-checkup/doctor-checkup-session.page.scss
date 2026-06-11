@@ -1,0 +1,526 @@
+:host {
+  display: block;
+}
+
+/* Title row: extras grow and scroll if needed */
+:host ::ng-deep app-surface-panel.dcs-session-surface.hms-crud-surface .hms-surface-panel-inner {
+  padding-top: 0.35rem !important;
+  padding-bottom: 0 !important;
+}
+
+:host ::ng-deep app-surface-panel.dcs-session-surface.hms-crud-surface .hms-surface-panel-inner > div:first-child {
+  align-items: center !important;
+  padding-bottom: 0.35rem !important;
+}
+
+:host ::ng-deep app-surface-panel.dcs-session-surface.hms-crud-surface .hms-surface-panel-inner > div:first-child > div:first-child {
+  flex: 0 0 clamp(8.5rem, 13vw, 11rem) !important;
+  padding-right: 0.35rem !important;
+  gap: 0.45rem !important;
+  align-items: center !important;
+}
+
+:host ::ng-deep app-surface-panel.dcs-session-surface.hms-crud-surface .hms-surface-panel-inner > div:first-child h1 {
+  font-size: 0.78rem !important;
+  line-height: 1.05 !important;
+}
+
+:host ::ng-deep app-surface-panel.dcs-session-surface.hms-crud-surface .hms-surface-panel-inner > div:first-child h1 + p {
+  display: block !important;
+  margin-top: 0.08rem !important;
+  max-width: 8rem !important;
+  overflow: hidden !important;
+  color: #64748b !important;
+  font-size: 0.54rem !important;
+  line-height: 1.05 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+:host ::ng-deep app-surface-panel.dcs-session-surface.hms-crud-surface .hms-surface-panel-back {
+  width: 1.85rem !important;
+  height: 1.85rem !important;
+  min-width: 1.85rem !important;
+  min-height: 1.85rem !important;
+  margin-top: 0 !important;
+}
+
+:host ::ng-deep app-surface-panel.dcs-session-surface.hms-crud-surface .hms-surface-panel-back__icon {
+  font-size: 1.35rem !important;
+}
+
+:host ::ng-deep app-surface-panel.dcs-session-surface.hms-crud-surface .hms-surface-panel-inner > div:first-child > div:last-child {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  align-items: center !important;
+  padding-top: 0 !important;
+}
+
+/* Body tint under title — same `--hms-main-pad` as header inset / global CRUD spacer. */
+:host ::ng-deep app-surface-panel.dcs-session-surface.hms-crud-surface .hms-crud-body-spacer {
+  height: var(--hms-main-pad);
+  min-height: var(--hms-main-pad);
+  background: #e6e9f3;
+}
+
+/* Shelf: body color; gutters match shared header card spacing (`--hms-main-pad`). */
+.dcs-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  row-gap: var(--hms-main-pad);
+  column-gap: var(--hms-main-pad);
+  margin-top: 0;
+  padding: 0;
+  min-width: 0;
+  background: #e6e9f3;
+  border-radius: 0;
+}
+
+.dcs-left-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hms-main-pad);
+  min-width: 0;
+}
+
+.dcs-aside-medicines {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  min-height: 0;
+}
+
+@media (min-width: 960px) {
+  .dcs-layout {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .dcs-left-stack {
+    flex: 6 1 0;
+  }
+
+  .dcs-aside-medicines {
+    flex: 4 1 0;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+.dcs-aside-medicines > app-doctor-checkup-medicine-panel {
+  flex: 1 1 auto;
+  height: 100%;
+}
+
+/* Square top (meets shelf under header); rounded bottom — matches shared header strip (flat top). */
+.dcs-card {
+  border-radius: 0 0 var(--hms-space) var(--hms-space);
+  border: 1px solid rgb(226 232 240 / 0.95);
+  background: #fff;
+  padding: 0.35rem 0.4rem;
+}
+
+.dcs-header-session-wrap {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  padding-right: 0.2rem;
+}
+
+/* One horizontal row: Queue … Template (scrolls on very narrow viewports) */
+.dcs-header-session {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 0.25rem clamp(0.25rem, 0.8vw, 0.45rem);
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 1180px) {
+  .dcs-header-session-wrap {
+    overflow-x: visible;
+    overflow-y: visible;
+  }
+
+  .dcs-header-session {
+    display: grid;
+    grid-template-columns: minmax(12rem, 1.4fr) minmax(8rem, 1fr) minmax(5rem, 0.7fr) minmax(6rem, 0.8fr);
+    gap: 0.45rem;
+    align-items: end;
+  }
+
+  .dcs-header-session > .dcs-visit-field--queue,
+  .dcs-header-session > .dcs-visit-field--patient,
+  .dcs-header-session > .dcs-visit-field--reg,
+  .dcs-header-session > .dcs-visit-field--phone,
+  .dcs-header-session > .dcs-visit-field--save,
+  .dcs-header-session > .dcs-visit-field--print,
+  .dcs-header-session > .dcs-visit-field--template {
+    min-width: 0;
+    max-width: none;
+  }
+
+  .dcs-header-session > .dcs-visit-field--save,
+  .dcs-header-session > .dcs-visit-field--print {
+    grid-column: span 1;
+  }
+
+  .dcs-header-session > .dcs-visit-field--template {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 720px) {
+  :host ::ng-deep app-surface-panel.dcs-session-surface.hms-crud-surface .hms-surface-panel-inner > div:first-child {
+    flex-wrap: wrap;
+  }
+
+  .dcs-header-session {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dcs-header-session > .dcs-visit-field--queue,
+  .dcs-header-session > .dcs-visit-field--save,
+  .dcs-header-session > .dcs-visit-field--print,
+  .dcs-header-session > .dcs-visit-field--template {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 460px) {
+  .dcs-header-session {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dcs-header-session > .dcs-visit-field--queue,
+  .dcs-header-session > .dcs-visit-field--patient,
+  .dcs-header-session > .dcs-visit-field--reg,
+  .dcs-header-session > .dcs-visit-field--phone,
+  .dcs-header-session > .dcs-visit-field--save,
+  .dcs-header-session > .dcs-visit-field--print,
+  .dcs-header-session > .dcs-visit-field--template {
+    grid-column: 1 / -1;
+  }
+}
+
+.dcs-visit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
+  min-width: 0;
+}
+
+.dcs-header-session > .dcs-visit-field--queue {
+  flex: 1.05 1 8.25rem;
+  min-width: 7.2rem;
+  max-width: 17rem;
+}
+
+.dcs-header-session > .dcs-visit-field--patient {
+  flex: 0.85 1 5rem;
+  min-width: 4.2rem;
+  max-width: 10rem;
+}
+
+.dcs-header-session > .dcs-visit-field--reg {
+  flex: 0.55 1 3.6rem;
+  min-width: 3.25rem;
+  max-width: 6.5rem;
+}
+
+.dcs-header-session > .dcs-visit-field--phone {
+  flex: 0.8 1 5rem;
+  min-width: 4rem;
+  max-width: 9.5rem;
+}
+
+.dcs-header-session > .dcs-visit-field--save {
+  flex: 0 0 auto;
+  min-width: 7.4rem;
+}
+
+.dcs-header-session > .dcs-visit-field--print {
+  flex: 0 0 auto;
+  min-width: 7.4rem;
+}
+
+.dcs-header-session > .dcs-visit-field--template {
+  flex: 0.9 1 7rem;
+  min-width: 6rem;
+  max-width: 12.5rem;
+}
+
+/* Read-only patient line: label + plain text */
+.dcs-visit-field--header.dcs-visit-field--plain {
+  justify-content: flex-end;
+  min-height: 1.65rem;
+  min-width: 0;
+}
+
+.dcs-visit-field__lbl {
+  font-size: 0.48rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  line-height: 1.15;
+}
+
+.dcs-visit-field__text {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.dcs-visit-field__text--truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.dcs-lbl {
+  display: block;
+  margin-bottom: 0.15rem;
+  line-height: 1.1;
+}
+
+.dcs-micro-warn {
+  margin: 0.2rem 0 0;
+  font-size: 0.65rem;
+  line-height: 1.3;
+  color: #9a3412;
+}
+
+:host ::ng-deep .dcs-select {
+  width: 100%;
+}
+
+:host ::ng-deep .dcs-select.p-select {
+  min-height: 1.65rem;
+  border-radius: 0.35rem !important;
+}
+
+:host ::ng-deep .dcs-select .p-select-label {
+  padding: 0.18rem 0.35rem !important;
+  font-size: 0.66rem !important;
+  line-height: 1.25 !important;
+}
+
+:host ::ng-deep .dcs-select .p-select-dropdown {
+  width: 1.55rem;
+}
+
+:host ::ng-deep .dcs-select .p-select-dropdown .p-select-dropdown-icon {
+  font-size: 0.75rem;
+}
+
+:host ::ng-deep .dcs-header-save-btn.p-button {
+  min-height: 1.7rem;
+  width: 100%;
+  justify-content: center;
+  border-radius: 999px !important;
+  font-size: 0.64rem !important;
+  font-weight: 700;
+  padding-inline: 0.65rem !important;
+  box-shadow: 0 4px 12px rgb(16 185 129 / 0.18);
+}
+
+:host ::ng-deep .dcs-header-print-btn.p-button {
+  min-height: 1.7rem;
+  width: 100%;
+  justify-content: center;
+  border-radius: 999px !important;
+  font-size: 0.64rem !important;
+  font-weight: 700;
+  padding-inline: 0.65rem !important;
+}
+
+/* ── Checkup card (template preview only) ───────────────────────────────── */
+.dcs-panel-body {
+  position: relative;
+  padding-bottom: 0.25rem;
+}
+
+.dcs-card--checkup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-height: 8rem;
+  max-height: min(58vh, 32rem);
+  padding: 0.35rem 0.4rem;
+}
+
+@media (max-width: 959px) {
+  .dcs-card {
+    border-radius: var(--hms-space);
+  }
+
+  .dcs-card--checkup {
+    max-height: none;
+  }
+
+  .dcs-aside-medicines > app-doctor-checkup-medicine-panel {
+    height: auto;
+  }
+}
+
+/* ── Notes card (draft text + save) ────────────────────────────────────── */
+.dcs-card--notes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.dcs-next-checkup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.dcs-next-checkup__label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.dcs-next-checkup__input {
+  width: 100%;
+  border: 1px solid rgb(203 213 225 / 0.95);
+  border-radius: 0.35rem;
+  padding: 0.35rem 0.45rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: #0f172a;
+  background: #fff;
+}
+
+.dcs-workspace-head {
+  margin-bottom: 0.25rem;
+}
+
+.dcs-workspace-title {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+.dcs-card--checkup .dcs-workspace-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 0.15rem;
+}
+
+.dcs-loading-hint {
+  margin-left: 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.dcs-preview-placeholder {
+  min-height: 4rem;
+  height: 100%;
+  border-radius: 0.35rem;
+  border: 1px dashed rgb(203 213 225 / 0.95);
+  background: rgb(248 250 252 / 0.55);
+  padding: 0.5rem 0.6rem;
+  display: flex;
+  align-items: center;
+}
+
+.dcs-preview-html {
+  border-radius: 0.35rem;
+  border: 1px solid rgb(226 232 240 / 0.9);
+  background: #fff;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+/* No extra horizontal inset vs medicines card — form uses the same card padding only. */
+.dcs-preview-html--workspace {
+  min-height: 0;
+  min-width: 0;
+  padding-left: 0;
+  padding-right: 0;
+  border: none;
+  background: transparent;
+  padding-top: 0.2rem;
+  padding-bottom: 0;
+}
+
+.dcs-card--checkup .dcs-preview-html--workspace {
+  border-radius: 0;
+}
+
+.dcs-notes-ta {
+  font-size: 0.78rem !important;
+  line-height: 1.35 !important;
+  padding: 0.35rem 0.45rem !important;
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
+:host ::ng-deep .dcs-notes-ta.p-inputtextarea,
+:host ::ng-deep textarea.dcs-notes-ta {
+  font-size: 0.78rem !important;
+}
+
+.dcs-preview-html :deep(.hms-checkup-form-html) {
+  color: #0f172a;
+}
+
+.dcs-preview-html :deep(.hms-checkup-section-title) {
+  font-size: 0.88rem;
+  margin: 0.5rem 0 0.25rem;
+}
+
+app-medicine-slip.dcs-medicine-slip-print {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: min(100%, 48rem);
+}
+
+@media print {
+  :host {
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+
+  app-surface-panel {
+    display: none !important;
+  }
+
+  app-medicine-slip.dcs-medicine-slip-print {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+}

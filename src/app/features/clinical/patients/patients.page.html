@@ -1,0 +1,316 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Patients"
+  subtitle="Register and manage patient records"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <button
+      pButton
+      type="button"
+      label="New patient"
+      icon="pi pi-plus"
+      severity="secondary"
+      class="hms-toolbar-solid"
+      (click)="openCreate()"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+  @if (errorMessage) {
+    <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+  }
+  <p-table
+    [showLoader]="false"
+    [value]="rows"
+    [lazy]="true"
+    [paginator]="true"
+    [rows]="pageSize"
+    [totalRecords]="totalCount"
+    [loading]="loading"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    (onLazyLoad)="onLazyLoad($event)"
+    [tableStyle]="{ 'min-width': '100%' }"
+    styleClass="p-datatable-sm hms-crud-table"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Number</th>
+        <th>Name</th>
+        <th>Gender</th>
+        <th>Date of birth</th>
+        <th>Status</th>
+        <th class="w-36 text-end">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-row>
+      <tr>
+        <td class="font-mono text-xs">{{ row.patientNumber }}</td>
+        <td>{{ row.firstName }} {{ row.lastName }}</td>
+        <td>{{ row.gender }}</td>
+        <td>{{ row.dateOfBirth | date: 'mediumDate' }}</td>
+        <td>
+          <p-tag
+            [value]="row.status"
+            [severity]="row.status === 'Active' ? 'success' : 'secondary'"
+          />
+        </td>
+        <td class="text-end">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-pencil"
+            [text]="true"
+            severity="secondary"
+            class="mr-1"
+            (click)="openEdit(row)"
+            aria-label="Edit"
+          ></button>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-trash"
+            [text]="true"
+            severity="danger"
+            (click)="confirmDelete(row)"
+            aria-label="Delete"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6" class="hms-table-empty-cell text-center text-sm text-slate-500">
+          <div class="flex flex-col items-center justify-center gap-2 py-4">
+            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
+            <span>No patients found.</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="loadingbody" let-columns>
+      <app-hms-table-loading-body [cols]="columns?.length || 6" />
+    </ng-template>
+  </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog
+  [header]="editingId == null ? 'New patient' : 'Edit patient'"
+  [(visible)]="dialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 40rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+  (onHide)="closeDialog()"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="pt-fn">First name</label>
+        <input pInputText id="pt-fn" class="w-full" [(ngModel)]="formFirstName" name="ptFn" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="pt-ln">Last name</label>
+        <input pInputText id="pt-ln" class="w-full" [(ngModel)]="formLastName" name="ptLn" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="pt-num">Patient number</label>
+        <input pInputText id="pt-num" class="w-full" [(ngModel)]="formPatientNumber" name="ptNum" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="pt-dob">Date of birth</label>
+        <p-datepicker
+          inputId="pt-dob"
+          [(ngModel)]="formDob"
+          (ngModelChange)="onFormDobChange()"
+          name="ptDob"
+          dateFormat="yy-mm-dd"
+          [showIcon]="true"
+          iconDisplay="input"
+          [fluid]="true"
+          appendTo="body"
+          [maxDate]="maxDobDate"
+          placeholder="Select date"
+          styleClass="w-full patient-dob-datepicker"
+        />
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label" for="pt-age">Age (from DOB or enter years-months-days)</label>
+        <input
+          pInputText
+          id="pt-age"
+          class="w-full"
+          [(ngModel)]="formAgeYmdText"
+          (input)="onFormAgeYmdInput($event)"
+          (blur)="onFormAgeYmdBlur()"
+          name="ptAge"
+          autocomplete="off"
+          placeholder="e.g. 45-6-12 (years-months-days)"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="pt-gen">Gender</label>
+        <p-select
+          inputId="pt-gen"
+          [(ngModel)]="formGender"
+          name="ptGen"
+          [options]="genderOptions"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="pt-blood">Blood type</label>
+        <p-select
+          inputId="pt-blood"
+          [(ngModel)]="formBloodTypeId"
+          name="ptBlood"
+          [options]="bloodTypeOptions"
+          optionLabel="displayName"
+          optionValue="id"
+          placeholder="Optional"
+          [showClear]="true"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label" for="pt-pic">Patient picture</label>
+        <div class="pt-pic-box">
+          <button
+            type="button"
+            class="pt-pic-preview"
+            (click)="ptPicCamera.click()"
+            aria-label="Open camera"
+          >
+            @if (formPatientPictureBase64) {
+              <img [src]="formPatientPictureBase64" alt="Patient preview" class="pt-pic-preview__img" />
+            } @else {
+              <i class="pi pi-camera pt-pic-preview__icon" aria-hidden="true"></i>
+            }
+          </button>
+          <div class="pt-pic-actions">
+            <button
+              pButton
+              type="button"
+              label="Camera"
+              icon="pi pi-camera"
+              class="pr-pill-white"
+              (click)="ptPicCamera.click()"
+            ></button>
+            <button
+              pButton
+              type="button"
+              label="Upload"
+              icon="pi pi-upload"
+              class="pr-pill-white"
+              (click)="ptPicUpload.click()"
+            ></button>
+            @if (formPatientPictureBase64) {
+              <button
+                pButton
+                type="button"
+                label="Clear"
+                severity="secondary"
+                [outlined]="true"
+                class="pr-pill-white"
+                (click)="clearPatientPicture()"
+              ></button>
+            }
+          </div>
+        </div>
+        <input
+          #ptPicCamera
+          id="pt-pic"
+          type="file"
+          accept="image/*"
+          capture="environment"
+          class="hidden"
+          (change)="onPatientPictureSelected($event)"
+        />
+        <input
+          #ptPicUpload
+          type="file"
+          accept="image/*"
+          class="hidden"
+          (change)="onPatientPictureSelected($event)"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="pt-ph">Phone</label>
+        <input pInputText id="pt-ph" class="w-full" [(ngModel)]="formPhone" name="ptPh" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="pt-em">Email</label>
+        <input pInputText id="pt-em" type="email" class="w-full" [(ngModel)]="formEmail" name="ptEm" />
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label" for="pt-addr">Address</label>
+        <textarea pTextarea id="pt-addr" [(ngModel)]="formAddress" name="ptAddr" rows="2" class="w-full"></textarea>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="pt-city">City</label>
+        <input pInputText id="pt-city" class="w-full" [(ngModel)]="formCity" name="ptCity" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="pt-st">State</label>
+        <input pInputText id="pt-st" class="w-full" [(ngModel)]="formState" name="ptSt" />
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label" for="pt-zip">Zip</label>
+        <input pInputText id="pt-zip" class="w-full" [(ngModel)]="formZip" name="ptZip" />
+      </div>
+      <p class="text-xs font-medium text-slate-500 sm:col-span-2">Emergency contact</p>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="pt-en">Name</label>
+        <input pInputText id="pt-en" class="w-full" [(ngModel)]="formEmerName" name="ptEn" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="pt-ep">Phone</label>
+        <input pInputText id="pt-ep" class="w-full" [(ngModel)]="formEmerPhone" name="ptEp" />
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label" for="pt-er">Relation</label>
+        <input pInputText id="pt-er" class="w-full" [(ngModel)]="formEmerRel" name="ptEr" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="pt-ins">Insurance provider</label>
+        <input pInputText id="pt-ins" class="w-full" [(ngModel)]="formInsProvider" name="ptIns" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="pt-pol">Policy number</label>
+        <input pInputText id="pt-pol" class="w-full" [(ngModel)]="formInsPolicy" name="ptPol" />
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="hms-field-label" for="pt-st2">Status</label>
+        <p-select
+          inputId="pt-st2"
+          [(ngModel)]="formStatus"
+          name="ptSt2"
+          [options]="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      </div>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="closeDialog()"></button>
+      <button
+        pButton
+        type="button"
+        label="Save"
+        icon="pi pi-check"
+        severity="success"
+        [loading]="saving"
+        (click)="save()"
+      ></button>
+    </div>
+  </div>
+</p-dialog>

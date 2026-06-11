@@ -1,0 +1,216 @@
+<p-dialog
+  [modal]="true"
+  [style]="{ width: 'min(98vw, 52rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="pr-register-log-dialog hms-crud-dialog"
+  [visible]="visible"
+  (visibleChange)="onVisibleChange($event)"
+  [draggable]="false"
+  [dismissableMask]="true"
+>
+  <ng-template pTemplate="header">
+    <div class="pr-register-log-headrow">
+      <div class="pr-register-log-headrow__left">
+        <span class="pr-register-log-headrow__title">Recently registered patients</span>
+        <p class="pr-register-log-headrow__sub">
+          @if (fromDate && toDate && isSingleDayRange()) {
+            Showing visits saved on <strong>{{ fromDate | date: 'mediumDate' }}</strong>.
+          } @else if (fromDate && toDate) {
+            Showing visits from <strong>{{ fromDate | date: 'mediumDate' }}</strong> to
+            <strong>{{ toDate | date: 'mediumDate' }}</strong>.
+          } @else {
+            Showing today’s visits.
+          }
+        </p>
+      </div>
+      <div class="pr-register-log-headrow__filters">
+        <button
+          pButton
+          type="button"
+          label="Today"
+          class="pr-pill-white pr-register-log-toolbar__chip"
+          [class.pr-register-log-toolbar__chip--active]="activeQuickFilter === 'today'"
+          [outlined]="activeQuickFilter !== 'today'"
+          [severity]="activeQuickFilter === 'today' ? undefined : 'secondary'"
+          (click)="applyQuickFilter('today')"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="Yesterday"
+          class="pr-pill-white pr-register-log-toolbar__chip"
+          [class.pr-register-log-toolbar__chip--active]="activeQuickFilter === 'yesterday'"
+          [outlined]="activeQuickFilter !== 'yesterday'"
+          [severity]="activeQuickFilter === 'yesterday' ? undefined : 'secondary'"
+          (click)="applyQuickFilter('yesterday')"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="Last 7 days"
+          class="pr-pill-white pr-register-log-toolbar__chip"
+          [class.pr-register-log-toolbar__chip--active]="activeQuickFilter === 'last7'"
+          [outlined]="activeQuickFilter !== 'last7'"
+          [severity]="activeQuickFilter === 'last7' ? undefined : 'secondary'"
+          (click)="applyQuickFilter('last7')"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="This month"
+          class="pr-pill-white pr-register-log-toolbar__chip"
+          [class.pr-register-log-toolbar__chip--active]="activeQuickFilter === 'month'"
+          [outlined]="activeQuickFilter !== 'month'"
+          [severity]="activeQuickFilter === 'month' ? undefined : 'secondary'"
+          (click)="applyQuickFilter('month')"
+        ></button>
+        <button
+          pButton
+          type="button"
+          [label]="showAdvancedFilters ? 'Hide date filter' : 'More'"
+          [icon]="showAdvancedFilters ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+          severity="secondary"
+          [outlined]="true"
+          class="pr-pill-white pr-register-log-toolbar__more"
+          (click)="toggleAdvancedFilters()"
+        ></button>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll pr-register-log-scroll">
+      @if (showAdvancedFilters) {
+        <div class="pr-register-log-filters">
+          <div class="pr-register-log-filters__grid">
+            <div class="pr-register-log-field">
+              <label class="hms-field-label" for="prl-from">From date</label>
+              <p-datepicker
+                inputId="prl-from"
+                [(ngModel)]="fromDate"
+                dateFormat="yy-mm-dd"
+                [showIcon]="true"
+                iconDisplay="input"
+                appendTo="body"
+                styleClass="w-full"
+              />
+            </div>
+            <div class="pr-register-log-field">
+              <label class="hms-field-label" for="prl-to">To date</label>
+              <p-datepicker
+                inputId="prl-to"
+                [(ngModel)]="toDate"
+                dateFormat="yy-mm-dd"
+                [showIcon]="true"
+                iconDisplay="input"
+                appendTo="body"
+                styleClass="w-full"
+              />
+            </div>
+          </div>
+          @if (highlightPatientId != null && highlightPatientId > 0) {
+            <div class="pr-register-log-filters__only">
+              <p-checkbox [(ngModel)]="limitToCurrentPatient" [binary]="true" inputId="prl-only" />
+              <label for="prl-only">Show only the patient selected on this screen</label>
+            </div>
+          }
+          <div class="pr-register-log-filters__actions">
+            <button
+              pButton
+              type="button"
+              label="Apply dates"
+              icon="pi pi-filter"
+              class="pr-pill-white"
+              (click)="applyFilter()"
+            ></button>
+          </div>
+        </div>
+      }
+
+      <div class="pr-register-log-content-area">
+        @if (loading) {
+          <div class="pr-register-log-state pr-register-log-state--skeleton">
+            <app-hms-block-skeleton [lines]="14" ariaLabel="Loading visits" />
+          </div>
+        } @else if (!rows.length) {
+          <div class="pr-register-log-state">
+            <p class="pr-register-log-muted">No visits for this day (or range). Use More to change dates.</p>
+          </div>
+        } @else {
+          <div class="pr-register-log-table-wrap">
+            <table class="pr-register-log-table">
+              <thead>
+                <tr>
+                  <th>Visit</th>
+                  <th>Patient</th>
+                  <th>Phone</th>
+                  <th class="pr-register-log-table__narrow">Age</th>
+                  <th class="pr-register-log-table__narrow">Gender</th>
+                  <th class="pr-register-log-table__narrow">Printed</th>
+                  <th>Service 1</th>
+                  <th>Service 2</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of rows; track row.visitId) {
+                  <tr [class.pr-register-log-table__row--hl]="isHighlighted(row)">
+                    <td>
+                      <span class="pr-register-log-table__dt">{{ row.visitDate | date: 'short' }}</span>
+                    </td>
+                    <td>
+                      <span class="pr-register-log-table__name">{{ row.patientName }}</span>
+                    </td>
+                    <td class="pr-register-log-table__mono">{{ row.phone || '—' }}</td>
+                    <td class="tabular-nums">{{ row.ageYears }}</td>
+                    <td>{{ row.gender || '—' }}</td>
+                    <td>
+                      <span
+                        class="pr-register-log-print"
+                        [class.pr-register-log-print--yes]="row.isPrinted"
+                        [class.pr-register-log-print--no]="!row.isPrinted"
+                      >
+                        {{ row.isPrinted ? 'Yes' : 'No' }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="pr-register-log-svc">{{ row.serviceSummary1 || '—' }}</span>
+                    </td>
+                    <td>
+                      <span class="pr-register-log-svc">{{ row.serviceSummary2 || '—' }}</span>
+                      @if (row.extraServiceCount > 0) {
+                        <div class="pr-register-log-extra">+{{ row.extraServiceCount }} more</div>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+
+      @if (totalCount > pageSize) {
+        <div class="pr-register-log-paginator">
+          <p-paginator
+            [rows]="pageSize"
+            [totalRecords]="totalCount"
+            [first]="(page - 1) * pageSize"
+            (onPageChange)="onPageChange($event)"
+          />
+        </div>
+      }
+    </div>
+
+    <div class="hms-dialog-footer">
+      <button
+        pButton
+        type="button"
+        label="Close"
+        severity="secondary"
+        [outlined]="true"
+        class="pr-pill-white"
+        (click)="close()"
+      ></button>
+    </div>
+  </div>
+</p-dialog>

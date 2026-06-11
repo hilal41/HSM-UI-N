@@ -1,0 +1,87 @@
+<app-surface-panel title="Profile">
+  @if (loading) {
+    <app-hms-block-skeleton [lines]="12" ariaLabel="Loading profile" />
+  } @else if (errorMessage) {
+    <p-message severity="error" [text]="errorMessage" styleClass="w-full" />
+  } @else if (data) {
+    <div class="flex flex-col gap-6">
+      <div>
+        <h2 class="text-sm font-medium text-slate-500">Account</h2>
+        <p class="mt-1 text-lg font-semibold text-slate-800">
+          {{ data.user.firstName ?? '' }} {{ data.user.lastName ?? '' }}
+        </p>
+        <p class="text-sm text-slate-600">{{ data.user.userName }} · {{ data.user.email }}</p>
+        <p class="mt-2 text-sm text-slate-600">
+          Role:
+          <span class="font-medium text-emerald-900">{{ data.roleName ?? data.user.roleName ?? '—' }}</span>
+        </p>
+      </div>
+
+      <div>
+        <h3 class="mb-2 text-sm font-medium text-slate-500">Departments</h3>
+        <div class="flex flex-wrap gap-2">
+          @for (d of data.departments; track d.id) {
+            <p-chip [label]="d.name" icon="pi pi-building" />
+          } @empty {
+            <span class="text-sm text-slate-500">No departments linked.</span>
+          }
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-[#e6e9f3] bg-[#e6e9f3]/30 p-4">
+        <h3 class="mb-2 text-sm font-medium text-slate-500">Session</h3>
+        <p class="mb-3 text-sm text-slate-600">Rotate the access token using your current refresh token.</p>
+        <button
+          pButton
+          type="button"
+          label="Refresh access token"
+          icon="pi pi-refresh"
+          severity="success"
+          [outlined]="true"
+          [loading]="refreshing"
+          (click)="refreshAccessToken()"
+        ></button>
+      </div>
+
+      <div>
+        <h3 class="mb-2 text-sm font-medium text-slate-500">Allowed modules (from GET /Me)</h3>
+        <div class="flex flex-wrap gap-2">
+          @for (m of data.allowedModules; track m.id) {
+            <p-tag severity="success" [value]="m.name" />
+          } @empty {
+            <span class="text-sm text-slate-500">No modules listed.</span>
+          }
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-[#e6e9f3] bg-[#FFFFFF] p-4">
+        <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-sm font-medium text-slate-500">Allowed modules (GET /Me/allowed-modules)</h3>
+          <button
+            pButton
+            type="button"
+            label="Reload"
+            icon="pi pi-refresh"
+            [text]="true"
+            severity="secondary"
+            [loading]="loadingAllowedModules"
+            (click)="loadAllowedModulesEndpoint()"
+          ></button>
+        </div>
+        @if (allowedModulesError) {
+          <p-message severity="warn" [text]="allowedModulesError" styleClass="w-full" />
+        } @else if (loadingAllowedModules) {
+          <app-hms-block-skeleton [lines]="8" ariaLabel="Loading modules" />
+        } @else {
+          <div class="flex flex-wrap gap-2">
+            @for (m of allowedModulesEndpoint; track m.id) {
+              <p-tag severity="success" [value]="m.name + ' (' + m.code + ')'" />
+            } @empty {
+              <span class="text-sm text-slate-500">No modules returned.</span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</app-surface-panel>

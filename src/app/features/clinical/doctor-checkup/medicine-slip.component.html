@@ -1,0 +1,228 @@
+@if (patient) {
+  <div class="mslip-card" [ngStyle]="slipSurfaceStyle()">
+    <div class="mslip-sections">
+      @for (sectionId of visibleSections; track sectionId) {
+        <div class="mslip-section" [attr.data-medicine-slip-section]="sectionId">
+          <div class="mslip-section__body">
+            @switch (sectionId) {
+              @case ('hospital') {
+                @if (hospital) {
+                  <section class="mslip-block mslip-block--hospital">
+                    @if (template.logoPlacement === 'above-center' && showHospitalLogo() && hospitalLogoSrc) {
+                      <div class="mslip-logo-row mslip-logo-row--above">
+                        <img
+                          [src]="hospitalLogoSrc"
+                          alt=""
+                          class="mslip-logo mslip-logo--above"
+                          [style.max-height.px]="template.logoMaxHeightPx"
+                        />
+                      </div>
+                    }
+                    <div [ngClass]="hospitalLayoutClass()">
+                      @if (template.logoPlacement === 'inline-start' && showHospitalLogo() && hospitalLogoSrc) {
+                        <img
+                          [src]="hospitalLogoSrc"
+                          alt=""
+                          class="mslip-logo mslip-logo--inline"
+                          [style.max-height.px]="template.logoMaxHeightPx"
+                        />
+                      }
+                      <div [ngClass]="hospitalTextClass()">
+                        @if (template.hospitalShowName) {
+                          <div class="mslip-hospital-name">{{ hospital.name }}</div>
+                        }
+                        @if (hospital.tagline?.trim()) {
+                          <p class="mslip-hospital-tagline">{{ hospital.tagline }}</p>
+                        }
+                        <dl class="mslip-dl mslip-dl--hospital">
+                          @if (template.hospitalShowCode) {
+                            <div class="mslip-dl__row">
+                              <dt>Code</dt>
+                              <dd class="mslip-mono">{{ hospital.code }}</dd>
+                            </div>
+                          }
+                          @if (template.hospitalShowAddress) {
+                            <div class="mslip-dl__row mslip-dl__row--full">
+                              <dt>Address</dt>
+                              <dd>{{ hospital.address || '—' }}</dd>
+                            </div>
+                          }
+                          @if (template.hospitalShowPhone) {
+                            <div class="mslip-dl__row">
+                              <dt>Phone</dt>
+                              <dd class="mslip-mono">{{ hospital.phone || '—' }}</dd>
+                            </div>
+                          }
+                          @if (template.hospitalShowEmail) {
+                            <div class="mslip-dl__row mslip-dl__row--full">
+                              <dt>Email</dt>
+                              <dd>{{ hospital.email || '—' }}</dd>
+                            </div>
+                          }
+                        </dl>
+                      </div>
+                      @if (template.logoPlacement === 'inline-end' && showHospitalLogo() && hospitalLogoSrc) {
+                        <img
+                          [src]="hospitalLogoSrc"
+                          alt=""
+                          class="mslip-logo mslip-logo--inline"
+                          [style.max-height.px]="template.logoMaxHeightPx"
+                        />
+                      }
+                    </div>
+                  </section>
+                }
+              }
+              @case ('header') {
+                <header [ngClass]="headerAlignClass()">
+                  <div class="mslip-header__title">{{ template.slipTitle }}</div>
+                  <div class="mslip-header__meta">Printed {{ slipGeneratedLabel }}</div>
+                </header>
+              }
+              @case ('patient') {
+                <div [ngClass]="bodySectionClass()">
+                  <section class="mslip-block">
+                    <h3 class="mslip-block__title">Patient</h3>
+                    <dl class="mslip-dl">
+                      <div class="mslip-dl__row">
+                        <dt>Name</dt>
+                        <dd>{{ patient.firstName }} {{ patient.lastName }}</dd>
+                      </div>
+                      <div class="mslip-dl__row">
+                        <dt>Reg. no.</dt>
+                        <dd class="mslip-mono">{{ patient.patientNumber }}</dd>
+                      </div>
+                      <div class="mslip-dl__row">
+                        <dt>Phone</dt>
+                        <dd class="mslip-mono">{{ patient.phone || '—' }}</dd>
+                      </div>
+                      <div class="mslip-dl__row">
+                        <dt>Age</dt>
+                        <dd>{{ patientAgeYears }} yr</dd>
+                      </div>
+                      <div class="mslip-dl__row">
+                        <dt>Gender</dt>
+                        <dd>{{ patient.gender || '—' }}</dd>
+                      </div>
+                      <div class="mslip-dl__row mslip-dl__row--full">
+                        <dt>Address</dt>
+                        <dd>{{ patient.address || '—' }}</dd>
+                      </div>
+                    </dl>
+                  </section>
+                </div>
+              }
+              @case ('visit') {
+                <div [ngClass]="bodySectionClass()">
+                  <section class="mslip-block">
+                    <h3 class="mslip-block__title">Visit</h3>
+                    <dl class="mslip-dl">
+                      <div class="mslip-dl__row">
+                        <dt>Visit ID</dt>
+                        <dd class="mslip-mono">{{ visit?.id || '—' }}</dd>
+                      </div>
+                      <div class="mslip-dl__row">
+                        <dt>Visit date</dt>
+                        <dd>{{ formatDateTime(visit?.visitDate) }}</dd>
+                      </div>
+                      <div class="mslip-dl__row">
+                        <dt>Checkup ID</dt>
+                        <dd class="mslip-mono">{{ checkup?.id || '—' }}</dd>
+                      </div>
+                      <div class="mslip-dl__row">
+                        <dt>Saved at</dt>
+                        <dd>{{ formatDateTime(checkup?.createdAt) }}</dd>
+                      </div>
+                    </dl>
+                  </section>
+                </div>
+              }
+              @case ('checkupQuestions') {
+                <div [ngClass]="bodySectionClass()">
+                  <section class="mslip-block">
+                    <h3 class="mslip-block__title">Checkup &amp; prescription</h3>
+                    @if (checkupPrintSections.length === 0) {
+                      <p class="mslip-muted">No checkup answers recorded.</p>
+                    } @else {
+                      <div class="mslip-checkup">
+                        @for (section of checkupPrintSections; track section.title) {
+                          <div class="mslip-checkup__section">
+                            <h4 class="mslip-checkup__title">{{ section.title }}</h4>
+                            <dl class="mslip-checkup__grid">
+                              @for (row of section.rows; track row.label) {
+                                <div class="mslip-checkup__row">
+                                  <dt>{{ row.label }}</dt>
+                                  <dd>{{ row.value }}</dd>
+                                </div>
+                              }
+                            </dl>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </section>
+                </div>
+              }
+              @case ('medicines') {
+                <div [ngClass]="bodySectionClass()">
+                  <section class="mslip-block">
+                    <h3 class="mslip-block__title">Medicines</h3>
+                    @if (medicines.length === 0) {
+                      <p class="mslip-muted">No medicines on this slip.</p>
+                    } @else {
+                      <div class="mslip-table-scroll">
+                        <table class="mslip-table" [class.mslip-table--plain]="!template.showTableGrid">
+                          <thead>
+                            <tr>
+                              @for (columnId of visibleColumns; track columnId) {
+                                <th>{{ columnLabel(columnId) }}</th>
+                              }
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (row of medicines; track row.id || row.medicineId) {
+                              <tr>
+                                @for (columnId of visibleColumns; track columnId) {
+                                  <td>{{ columnValue(row, columnId) }}</td>
+                                }
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    }
+                  </section>
+                </div>
+              }
+              @case ('notes') {
+                <div [ngClass]="bodySectionClass()">
+                  <section class="mslip-block">
+                    <h3 class="mslip-block__title">Notes</h3>
+                    <p class="mslip-remarks">{{ checkup?.medicineNotes || '—' }}</p>
+                  </section>
+                </div>
+              }
+              @case ('nextCheckup') {
+                <div [ngClass]="bodySectionClass()">
+                  <section class="mslip-block">
+                    <h3 class="mslip-block__title">Next checkup</h3>
+                    <p class="mslip-remarks">{{ formatDateTime(checkup?.nextCheckupAt) }}</p>
+                  </section>
+                </div>
+              }
+              @case ('footer') {
+                <div [ngClass]="bodySectionClass()">
+                  <footer class="mslip-footer mslip-muted">{{ template.footerText }}</footer>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+} @else {
+  <div class="mslip-empty no-print">
+    <p>Select a patient/checkup to preview and print the medicine slip.</p>
+  </div>
+}

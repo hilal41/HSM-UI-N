@@ -1,0 +1,183 @@
+<div class="dcm-panel" role="region" aria-label="Medicine search and assignment">
+  <div class="dcm-head">
+    <span class="dcm-title">Medicines</span>
+    <span class="dcm-sub">Search catalog and add — saved with checkup below.</span>
+  </div>
+
+  <div class="dcm-block">
+    <div class="dcm-lbl-row">
+      <label class="dcm-lbl" for="dcm-search">Search</label>
+      @if (searchLoading) {
+        <span class="dcm-muted">Searching…</span>
+      }
+    </div>
+
+    <div class="dcm-medicine-search-area" #medicineSearchArea>
+      <div class="dcm-search-combo">
+        <div class="dcm-search-combo__field">
+          <button
+            type="button"
+            class="dcm-results-trigger"
+            [class.dcm-results-trigger--open]="medicineListOpen"
+            [attr.aria-expanded]="medicineListOpen"
+            aria-haspopup="listbox"
+            [attr.aria-controls]="medicineListOpen ? 'dcm-result-list' : null"
+            aria-label="Show or hide medicine results"
+            (click)="toggleMedicineList($event)"
+          >
+            <i class="pi pi-chevron-down" aria-hidden="true"></i>
+          </button>
+          <input
+            id="dcm-search"
+            type="text"
+            name="dcmSearch"
+            class="dcm-search-combo__input"
+            [(ngModel)]="searchInput"
+            (ngModelChange)="onSearchInput()"
+            placeholder="Name, code, batch…"
+            autocomplete="off"
+          />
+          <button
+            type="button"
+            class="dcm-page-size-trigger"
+            [attr.aria-expanded]="pageSizeMenuOpen"
+            aria-haspopup="listbox"
+            aria-label="Results per page"
+            (click)="togglePageSizeMenu($event)"
+          >
+            <span class="dcm-page-size-value">{{ searchPageSize }}</span>
+            <i class="pi pi-chevron-down" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        @if (pageSizeMenuOpen) {
+          <div class="dcm-page-size-popover" role="listbox" aria-label="Per page">
+            @for (opt of pageSizePresets; track opt) {
+              <button type="button" class="dcm-page-size-opt" role="option" (click)="selectPageSize(opt)">
+                {{ opt }} per page
+              </button>
+            }
+            <div class="dcm-page-size-custom" (click)="$event.stopPropagation()">
+              <span class="dcm-page-size-custom-lbl">Custom</span>
+              <div class="dcm-page-size-custom-row">
+                <input
+                  type="number"
+                  name="dcmCustomPs"
+                  class="dcm-page-size-custom-input"
+                  min="1"
+                  max="1000"
+                  [(ngModel)]="customPageSizeDraft"
+                  (keydown.enter)="applyCustomPageSize()"
+                />
+                <button
+                  pButton
+                  type="button"
+                  label="Apply"
+                  size="small"
+                  severity="secondary"
+                  (click)="applyCustomPageSize()"
+                ></button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      @if (medicineListOpen) {
+        <ul id="dcm-result-list" class="dcm-result-list" aria-live="polite">
+          @for (m of searchRows; track m.id) {
+            <li
+              class="dcm-result-row"
+              [class.dcm-result-row--staged]="isStaged(m)"
+              [class.dcm-result-row--disabled]="!canAdd(m)"
+              role="button"
+              tabindex="0"
+              [attr.aria-disabled]="canAdd(m) ? null : 'true'"
+              [attr.aria-label]="
+                canAdd(m) ? 'Add ' + m.medicineName + ' to this visit' : m.medicineName + ' already added'
+              "
+              (click)="onResultRowClick(m)"
+              (keydown.enter)="onResultRowClick(m)"
+              (keydown.space)="$event.preventDefault(); onResultRowClick(m)"
+            >
+              <div class="dcm-result-text">
+                <span class="dcm-result-name">{{ m.medicineName }}</span>
+                <span class="dcm-result-meta font-mono">{{ m.code }}</span>
+                @if (m.strength) {
+                  <span class="dcm-result-meta">{{ m.strength }}</span>
+                }
+              </div>
+              @if (!canAdd(m)) {
+                <span class="dcm-result-row-hint dcm-result-row-hint--done" aria-hidden="true">Added</span>
+              }
+            </li>
+          } @empty {
+            <li class="dcm-empty">{{ searchLoading ? '…' : 'No matches on this page.' }}</li>
+          }
+        </ul>
+        <div class="dcm-pager">
+          <button
+            pButton
+            type="button"
+            label="Prev"
+            size="small"
+            severity="secondary"
+            [outlined]="true"
+            [disabled]="searchPage <= 1 || searchLoading"
+            (click)="goSearchPrev()"
+          ></button>
+          <span class="dcm-pager-meta">Page {{ searchPage }} / {{ searchTotalPages }} · {{ searchTotal }} total</span>
+          <button
+            pButton
+            type="button"
+            label="Next"
+            size="small"
+            severity="secondary"
+            [outlined]="true"
+            [disabled]="!hasNextSearchPage || searchLoading"
+            (click)="goSearchNext()"
+          ></button>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="dcm-block dcm-block--staged">
+    <span class="dcm-lbl">Selected for this checkup</span>
+    <ul class="dcm-staged-list">
+      @for (id of stagedMedicineIds; track id) {
+        <li class="dcm-staged-row">
+          <div class="dcm-staged-main">
+            <span class="dcm-staged-label">{{ labelForStaged(id) }}</span>
+            <p-select
+              [ngModel]="usageForStaged(id)"
+              (ngModelChange)="setUsageForStaged(id, $event)"
+              [options]="usageOptions"
+              optionLabel="label"
+              optionValue="value"
+              [showClear]="true"
+              appendTo="body"
+              placeholder="Select usage"
+              styleClass="dcm-usage-select"
+              [loading]="usageLoading"
+              [attr.aria-label]="'Usage for ' + labelForStaged(id)"
+            />
+          </div>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-times"
+            [rounded]="true"
+            [text]="true"
+            severity="danger"
+            class="dcm-icon-btn"
+            (click)="removeMedicine(id)"
+            [attr.aria-label]="'Remove ' + labelForStaged(id)"
+          ></button>
+        </li>
+      } @empty {
+        <li class="dcm-empty">No medicines selected yet.</li>
+      }
+    </ul>
+  </div>
+  </div>

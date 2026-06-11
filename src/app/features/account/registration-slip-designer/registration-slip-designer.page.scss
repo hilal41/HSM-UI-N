@@ -1,0 +1,330 @@
+/* Slightly wider than default main inset; symmetric L/R */
+:host {
+  display: block;
+  margin-inline: calc(var(--hms-main-pad) * -0.45);
+}
+
+@media (min-width: 768px) {
+  :host {
+    margin-inline: calc(var(--hms-main-pad) * -0.35);
+  }
+}
+
+/* Drop outer white “mega card”: panel chrome is transparent; only .rsd-card blocks stay white */
+:host ::ng-deep app-surface-panel.rsd-surface--bare .hms-surface-panel {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+:host ::ng-deep app-surface-panel.rsd-surface--bare .hms-surface-panel-inner {
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+:host ::ng-deep app-surface-panel.rsd-surface--bare .hms-surface-panel-body {
+  background: transparent;
+  padding: 0 !important;
+}
+
+/* Title row as its own white card (full heading + subtitle + actions) */
+:host ::ng-deep app-surface-panel.rsd-surface--bare.hms-crud-surface .hms-surface-panel-inner > div:first-child {
+  /* Same rhythm as other CRUD pages: shelf spacer carries the gap — no extra margin here */
+  margin-bottom: 0 !important;
+  padding: var(--hms-main-pad) !important;
+  background: #fff !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+  border-radius: 0.65rem !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+:host ::ng-deep app-surface-panel.rsd-surface--bare.hms-crud-surface .hms-surface-panel-inner > div:first-child h1 {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+:host ::ng-deep app-surface-panel.rsd-surface--bare.hms-crud-surface .hms-surface-panel-inner > div:first-child h1 + p {
+  margin-top: calc(var(--hms-main-pad) * 0.65) !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  max-width: 100%;
+}
+
+/* Inner padding 0: spacer negative margins are wrong — keep shelf flush */
+:host ::ng-deep app-surface-panel.rsd-surface--bare .hms-crud-body-spacer {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* App shell tint shows in gaps between white cards + between columns */
+.rsd-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--hms-main-pad);
+  padding-top: 0;
+  padding-bottom: var(--hms-main-pad);
+  padding-inline: 0;
+  min-width: 0;
+  background: #e6e9f3;
+  border-radius: 0.65rem;
+}
+
+@media (min-width: 1024px) {
+  .rsd-layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.rsd-form {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--hms-main-pad);
+  min-width: 0;
+}
+
+.rsd-preview {
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .rsd-preview {
+    position: sticky;
+    top: 1rem;
+    width: min(100%, 24rem);
+  }
+}
+
+.rsd-card {
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 0.65rem;
+  padding: var(--hms-card-padding) calc(var(--hms-card-padding) * 1.15);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+/* Extra air around title, hint, and preset tiles (matches page gutter rhythm) */
+.rsd-card--templates {
+  padding: calc(var(--hms-main-pad) * 1.85) calc(var(--hms-main-pad) * 1.5);
+}
+
+.rsd-card--templates .rsd-card__title {
+  margin-bottom: calc(var(--hms-main-pad) * 1.1);
+}
+
+.rsd-card--templates .rsd-hint {
+  margin-bottom: calc(var(--hms-main-pad) * 1.35);
+}
+
+.rsd-card__title {
+  margin: 0 0 var(--hms-main-pad);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+.rsd-grid2 {
+  display: grid;
+  gap: var(--hms-main-pad) calc(var(--hms-main-pad) * 1.25);
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+}
+
+.rsd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.rsd-field label,
+.rsd-field--check label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.rsd-field--check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rsd-field--color {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.rsd-color {
+  width: 2.75rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.35rem;
+  cursor: pointer;
+  background: #fff;
+}
+
+.rsd-hint {
+  margin: 0 0 var(--hms-main-pad);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.rsd-hint--tight {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.rsd-field__help {
+  font-size: 0.65rem;
+  line-height: 1.35;
+  color: #94a3b8;
+}
+
+.rsd-field--check-block {
+  align-self: end;
+  padding-top: 0.25rem;
+}
+
+.rsd-presets {
+  display: grid;
+  gap: var(--hms-main-pad);
+  grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+}
+
+.rsd-card--templates .rsd-presets {
+  gap: calc(var(--hms-main-pad) * 1.15);
+}
+
+.rsd-preset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: calc(var(--hms-main-pad) * 1.1) calc(var(--hms-main-pad) * 1.05);
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.45rem;
+  background: #fafafa;
+  cursor: pointer;
+  font: inherit;
+  color: #0f172a;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.rsd-preset:hover {
+  border-color: #cbd5e1;
+  background: #fff;
+}
+
+.rsd-preset--active {
+  border-color: #0f766e;
+  background: #f0fdfa;
+  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.2);
+}
+
+.rsd-preset__name {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.rsd-preset__blurb {
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: #64748b;
+}
+
+.rsd-order {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.rsd-order__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.4rem;
+  background: #fafafa;
+}
+
+.rsd-order__handle {
+  color: #64748b;
+  cursor: grab;
+  padding: 0.1rem;
+  user-select: none;
+}
+
+.rsd-order__handle:active {
+  cursor: grabbing;
+}
+
+.rsd-order__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.rsd-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+/* One white card: title + dashed print frame (no outer tinted wrapper) */
+.rsd-preview__card {
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 0.65rem;
+  padding: calc(var(--hms-main-pad) * 1.15);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.rsd-preview__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-bottom: var(--hms-main-pad);
+}
+
+.rsd-preview__surface {
+  border: 1px dashed rgba(100, 116, 139, 0.45);
+  border-radius: 0.5rem;
+  padding: calc(var(--hms-main-pad) * 0.75);
+  background: #f8fafc;
+}
+
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 0.4rem;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.35;
+}

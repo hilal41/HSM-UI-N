@@ -1,0 +1,163 @@
+<app-surface-panel class="hms-crud-surface" title="Medicine usage">
+  <div surfacePanelActions class="hms-crud-actions">
+    <button
+      pButton
+      type="button"
+      label="New usage"
+      icon="pi pi-plus"
+      severity="secondary"
+      [outlined]="true"
+      class="hms-toolbar-chip"
+      (click)="startNew()"
+    ></button>
+    <button
+      pButton
+      type="button"
+      [label]="editingId == null ? 'Save to hospital' : 'Update usage'"
+      icon="pi pi-save"
+      severity="success"
+      class="hms-toolbar-solid"
+      [loading]="saving"
+      (click)="save()"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    @if (errorMessage) {
+      <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+    }
+
+    <div class="mud-layout">
+      <div class="mud-main">
+        <section class="mud-card mud-card--templates">
+          <h2 class="mud-card__title">Templates</h2>
+          <p class="mud-templates-hint">Not in the list until you save.</p>
+          <div class="mud-presets">
+            @for (p of presets; track p.id) {
+              <button
+                type="button"
+                class="mud-preset"
+                [class.mud-preset--active]="isPresetActive(p.id)"
+                (click)="applyPreset(p.id)"
+              >
+                <span class="mud-preset__name">{{ p.name }}</span>
+                <span class="mud-preset__blurb">{{ p.blurb }}</span>
+              </button>
+            }
+          </div>
+        </section>
+
+        <section class="mud-card mud-saved-table-card" aria-label="Saved usages from your hospital">
+          <h2 class="mud-card__title">Saved usages</h2>
+          <p-table
+            [showLoader]="false"
+            [value]="savedRows"
+            [loading]="savedLoading"
+            [paginator]="savedRows.length > savedTablePageSize"
+            [rows]="savedTablePageSize"
+            [rowsPerPageOptions]="[10, 25, 50]"
+            [tableStyle]="{ 'min-width': '100%' }"
+            styleClass="p-datatable-sm hms-crud-table"
+          >
+            <ng-template #header>
+              <tr>
+                <th class="w-28">Code</th>
+                <th>Description</th>
+                <th class="w-28">Status</th>
+                <th class="w-40">Updated</th>
+                <th class="w-36 text-end">Actions</th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-row>
+              <tr [class.hms-row-editing]="editingId === row.id">
+                <td class="font-mono text-xs">{{ row.shortCode }}</td>
+                <td class="max-w-md text-sm text-slate-600">{{ row.description || '—' }}</td>
+                <td>
+                  <p-tag [severity]="row.isActive ? 'success' : 'secondary'" [value]="row.isActive ? 'Active' : 'Inactive'" />
+                </td>
+                <td class="text-sm text-slate-600">{{ row.updatedAt ?? row.createdAt | date: 'short' }}</td>
+                <td class="text-end">
+                  <button
+                    pButton
+                    type="button"
+                    icon="pi pi-pencil"
+                    [text]="true"
+                    severity="secondary"
+                    class="mr-1"
+                    (click)="openSaved(row)"
+                    aria-label="Load into details"
+                  ></button>
+                  <button
+                    pButton
+                    type="button"
+                    icon="pi pi-trash"
+                    [text]="true"
+                    severity="danger"
+                    (click)="confirmDelete(row)"
+                    aria-label="Delete"
+                  ></button>
+                </td>
+              </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+              <tr>
+                <td colspan="5" class="hms-table-empty-cell text-center text-sm text-slate-500">
+                  <div class="flex flex-col items-center justify-center gap-2 py-4">
+                    <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
+                    <span>No saved usages yet. Pick a template, save, and it will show here.</span>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody" let-columns>
+              <app-hms-table-loading-body [cols]="5" />
+            </ng-template>
+          </p-table>
+        </section>
+      </div>
+
+      <aside class="mud-aside" aria-label="Usage details">
+        <section class="mud-card mud-card--details">
+          <h2 class="mud-card__title">Details</h2>
+          <p class="mud-details-hint">
+            @if (editingId == null) {
+              Click a template to load here, edit if needed, then Save.
+            } @else {
+              Editing saved row #{{ editingId }}. Save to update, or New usage to add another.
+            }
+          </p>
+          <div class="mud-details-stack">
+            <div class="mud-field">
+              <label class="hms-field-label hms-field-label--required" for="mu-code">Short code</label>
+              <input
+                pInputText
+                id="mu-code"
+                class="w-full font-mono text-sm"
+                [(ngModel)]="draftShortCode"
+                name="muCode"
+                (ngModelChange)="syncPresetHighlight()"
+              />
+            </div>
+            <div class="mud-field">
+              <label class="hms-field-label" for="mu-desc">Description</label>
+              <textarea
+                pTextarea
+                id="mu-desc"
+                class="w-full"
+                rows="4"
+                [(ngModel)]="draftDescription"
+                name="muDesc"
+                (ngModelChange)="syncPresetHighlight()"
+              ></textarea>
+            </div>
+            <div class="mud-field mud-field--check">
+              <span class="hms-field-label">Active</span>
+              <p-toggleswitch [(ngModel)]="draftIsActive" name="muActive" />
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+</app-surface-panel>

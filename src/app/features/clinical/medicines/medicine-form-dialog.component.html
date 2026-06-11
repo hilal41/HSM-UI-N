@@ -1,0 +1,206 @@
+<p-dialog
+  [header]="record() ? 'Edit medicine' : 'New medicine'"
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true"
+  [style]="{ width: 'min(96vw, 60rem)' }"
+  [contentStyle]="{ overflow: 'visible', padding: '0' }"
+  styleClass="hms-crud-dialog med-form-dialog"
+  (onHide)="onHide()"
+>
+  <div class="hms-dialog-body med-form-dialog__body">
+    <div class="hms-dialog-scroll med-form-scroll">
+      <div class="med-form-grid">
+        <div class="med-form-field med-form-field--half">
+          <label class="hms-field-label hms-field-label--required" for="mf-name">Medicine name</label>
+          <input
+            pInputText
+            id="mf-name"
+            class="w-full"
+            [(ngModel)]="medicineName"
+            name="mfName"
+            placeholder="Enter medicine name"
+            autocomplete="off"
+          />
+        </div>
+        <div class="med-form-field med-form-field--half">
+          <label class="hms-field-label" for="mf-generic">Generic name</label>
+          <input
+            pInputText
+            id="mf-generic"
+            class="w-full"
+            [(ngModel)]="genericName"
+            name="mfGeneric"
+            placeholder="Enter generic name"
+            autocomplete="off"
+          />
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label hms-field-label--required" for="mf-code">Code</label>
+          <input
+            pInputText
+            id="mf-code"
+            class="w-full font-mono text-sm"
+            [(ngModel)]="code"
+            name="mfCode"
+            placeholder="Enter code"
+            autocomplete="off"
+          />
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label hms-field-label--required" for="mf-batch">Batch number</label>
+          <input
+            pInputText
+            id="mf-batch"
+            class="w-full"
+            [(ngModel)]="batchNumber"
+            name="mfBatch"
+            placeholder="Enter batch number"
+            autocomplete="off"
+          />
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label hms-field-label--required" for="mf-cat">Category</label>
+          <p-select
+            inputId="mf-cat"
+            name="mfCat"
+            [options]="categoryOptions"
+            optionLabel="label"
+            optionValue="value"
+            [(ngModel)]="categorySelect"
+            placeholder="Select category"
+            styleClass="w-full"
+            appendTo="body"
+          />
+          @if (categorySelect === otherSentinel) {
+            <input
+              pInputText
+              class="mt-0.5 w-full"
+              [(ngModel)]="categoryOther"
+              name="mfCatOther"
+              placeholder="Describe category"
+              autocomplete="off"
+            />
+          }
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label hms-field-label--required" for="mf-form">Form</label>
+          <p-select
+            inputId="mf-form"
+            name="mfForm"
+            [options]="formOptions"
+            optionLabel="label"
+            optionValue="value"
+            [(ngModel)]="formSelect"
+            placeholder="Select form"
+            styleClass="w-full"
+            appendTo="body"
+          />
+          @if (formSelect === otherSentinel) {
+            <input
+              pInputText
+              class="mt-0.5 w-full"
+              [(ngModel)]="formOther"
+              name="mfFormOther"
+              placeholder="Describe form"
+              autocomplete="off"
+            />
+          }
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label" for="mf-str">Strength</label>
+          <input
+            pInputText
+            id="mf-str"
+            class="w-full"
+            [(ngModel)]="strength"
+            name="mfStr"
+            placeholder="Enter strength"
+            autocomplete="off"
+          />
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label" for="mf-mfg">Manufacturer</label>
+          <input
+            pInputText
+            id="mf-mfg"
+            class="w-full"
+            [(ngModel)]="manufacturer"
+            name="mfMfg"
+            placeholder="Enter manufacturer"
+            autocomplete="off"
+          />
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label" for="mf-purchase">Purchase price</label>
+          <p-inputNumber
+            inputId="mf-purchase"
+            name="mfPurchase"
+            [(ngModel)]="purchasePrice"
+            mode="decimal"
+            [minFractionDigits]="2"
+            [maxFractionDigits]="2"
+            [min]="0"
+            styleClass="w-full"
+            placeholder="0.00"
+          />
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label" for="mf-sale">Sale price</label>
+          <p-inputNumber
+            inputId="mf-sale"
+            name="mfSale"
+            [(ngModel)]="salePrice"
+            mode="decimal"
+            [minFractionDigits]="2"
+            [maxFractionDigits]="2"
+            [min]="0"
+            styleClass="w-full"
+            placeholder="0.00"
+          />
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label hms-field-label--required" for="mf-exp">Expiry date</label>
+          <p-datepicker
+            inputId="mf-exp"
+            name="mfExp"
+            [(ngModel)]="expiryDate"
+            dateFormat="yy-mm-dd"
+            [showIcon]="true"
+            styleClass="w-full med-expiry-dp"
+            appendTo="body"
+          />
+        </div>
+        <div class="med-form-field med-form-field--full">
+          <label class="hms-field-label" for="mf-desc">Description</label>
+          <textarea
+            pTextarea
+            id="mf-desc"
+            name="mfDesc"
+            [(ngModel)]="description"
+            rows="2"
+            class="w-full"
+            placeholder="Enter description (optional)"
+          ></textarea>
+        </div>
+        <div class="med-form-active">
+          <p-toggleswitch inputId="mf-active" [(ngModel)]="isActive" name="mfActive" />
+          <label class="m-0 text-xs leading-none text-slate-700" for="mf-active">Active</label>
+        </div>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="visible.set(false)"></button>
+      <button
+        pButton
+        type="button"
+        label="Save"
+        icon="pi pi-check"
+        severity="success"
+        [loading]="saving()"
+        [disabled]="saving()"
+        (click)="save()"
+      ></button>
+    </div>
+  </div>
+</p-dialog>

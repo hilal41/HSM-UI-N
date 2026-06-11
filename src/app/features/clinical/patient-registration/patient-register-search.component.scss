@@ -1,0 +1,237 @@
+$qp-pill-border: #0f172a;
+$qp-pill-text: #0f2744;
+$qp-pill-hover-border: #020617;
+$qp-border-soft: rgba(15, 81, 50, 0.1);
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.prs-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem 0.75rem;
+}
+
+.prs-search-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  width: 100%;
+  flex-shrink: 0;
+
+  input {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+}
+
+.prs-search-icon {
+  display: flex;
+  color: #64748b;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+:host ::ng-deep .prs-search-input.p-inputtext,
+:host ::ng-deep input.prs-search-input.p-inputtext {
+  width: 100%;
+  box-sizing: border-box;
+  background: #ffffff !important;
+  border: 1px solid $qp-pill-border !important;
+  border-radius: 0 !important;
+  padding: 0.4rem 1rem !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500;
+  color: $qp-pill-text !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep .prs-search-input.p-inputtext:enabled:focus {
+  outline: none;
+  border-color: $qp-pill-hover-border !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep .prs-search-input.p-inputtext:focus-visible {
+  outline: 2px solid $qp-pill-border;
+  outline-offset: 2px;
+}
+
+.prs-error {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #b91c1c;
+  flex-shrink: 0;
+}
+
+.prs-list-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid $qp-border-soft;
+  border-radius: 0.65rem;
+  background: #fafafa;
+}
+
+.prs-state-fill {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.prs-list-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.prs-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.prs-loading-text {
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+/* Same look as services table empty CTA (`services-empty-cta`) */
+.prs-register-prompt {
+  margin: 0.35rem;
+  border-radius: 0.5rem;
+  background: #f0f2f5;
+}
+
+.prs-register-prompt__cta {
+  display: flex;
+  width: 100%;
+  min-height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 1.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  cursor: pointer;
+  color: #4a5568;
+  font: inherit;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.prs-register-prompt__cta:focus-visible {
+  outline: 2px solid rgba(15, 23, 42, 0.35);
+  outline-offset: 2px;
+}
+
+.prs-register-prompt__icon {
+  font-size: 3.75rem;
+  line-height: 1;
+  color: #94a3b8;
+}
+
+.prs-register-prompt__hint {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.prs-hint {
+  margin: 0;
+  padding: 0 0.5rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.prs-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem;
+  flex: 1 1 auto;
+}
+
+.prs-hit {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.75rem;
+  margin-bottom: 0.25rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.prs-hit:last-child {
+  margin-bottom: 0;
+}
+
+.prs-hit:focus-visible {
+  outline: 2px solid $qp-pill-border;
+  outline-offset: 1px;
+}
+
+.prs-hit__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.prs-hit__meta {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.prs-hit__reg {
+  font-weight: 500;
+  color: #475569;
+}
+
+.prs-hit__sep {
+  margin: 0 0.15rem;
+  opacity: 0.6;
+}
+
+.prs-hit__city {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  margin-top: 0.1rem;
+}
+
+.prs-more {
+  display: flex;
+  justify-content: center;
+  padding: 0.35rem 0.5rem 0.65rem;
+  flex-shrink: 0;
+}

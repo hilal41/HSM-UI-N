@@ -1,0 +1,117 @@
+<app-surface-panel class="hms-crud-surface" title="Modules" subtitle="Menu entries and feature flags">
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+  @if (errorMessage) {
+    <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+  }
+  <p-table
+    [showLoader]="false"
+    [value]="rows"
+    [loading]="loading"
+    [tableStyle]="{ 'min-width': '100%' }"
+    styleClass="p-datatable-sm hms-crud-table"
+    [paginator]="true"
+    [rows]="20"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Order</th>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Active</th>
+        <th class="w-24 text-end">View</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-row>
+      <tr>
+        <td class="text-sm text-slate-600">{{ row.sortOrder }}</td>
+        <td class="font-mono text-xs">{{ row.code }}</td>
+        <td>{{ row.name }}</td>
+        <td class="text-sm text-slate-600">{{ row.category ?? '—' }}</td>
+        <td>
+          <p-tag [value]="row.isActive ? 'Yes' : 'No'" [severity]="row.isActive ? 'success' : 'secondary'" />
+        </td>
+        <td class="text-end">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-eye"
+            [text]="true"
+            severity="secondary"
+            (click)="openDetail(row)"
+            title="GET by id"
+            aria-label="View module"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6" class="hms-table-empty-cell text-center text-sm text-slate-500">
+          <div class="flex flex-col items-center justify-center gap-2 py-4">
+            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
+            <span>No modules found.</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="loadingbody" let-columns>
+      <app-hms-table-loading-body [cols]="columns?.length || 6" />
+    </ng-template>
+  </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog
+  header="Module detail"
+  [(visible)]="detailOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 28rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+  (onHide)="closeDetail()"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+  @if (detailLoading) {
+    <app-hms-block-skeleton [lines]="10" ariaLabel="Loading module detail" />
+  } @else if (moduleDetail) {
+    <dl class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+      <div>
+        <dt class="text-xs font-medium text-slate-500">ID</dt>
+        <dd class="font-mono text-slate-800">{{ moduleDetail.id }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-slate-500">Code</dt>
+        <dd class="font-mono text-slate-800">{{ moduleDetail.code }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-slate-500">Name</dt>
+        <dd class="text-slate-800">{{ moduleDetail.name }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-slate-500">Category</dt>
+        <dd class="text-slate-800">{{ moduleDetail.category ?? '—' }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-slate-500">Sort order</dt>
+        <dd class="text-slate-800">{{ moduleDetail.sortOrder }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-slate-500">Active</dt>
+        <dd>
+          <p-tag
+            [value]="moduleDetail.isActive ? 'Yes' : 'No'"
+            [severity]="moduleDetail.isActive ? 'success' : 'secondary'"
+          />
+        </dd>
+      </div>
+    </dl>
+  }
+    </div>
+  </div>
+  <ng-template #footer>
+    <button pButton type="button" label="Close" severity="secondary" (click)="closeDetail()"></button>
+  </ng-template>
+</p-dialog>
