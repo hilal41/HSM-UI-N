@@ -290,8 +290,8 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #0f766e;
-  background: #ecfdf5;
+  color: var(--hms-color-primary-hover);
+  background: var(--hms-color-primary-light);
   border: 1px solid rgb(167 243 208 / 0.9);
   padding: 0.15rem 0.45rem;
   border-radius: 9999px;

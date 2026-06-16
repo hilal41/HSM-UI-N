@@ -1,4 +1,16 @@
-<app-surface-panel class="hms-crud-surface" title="Modules" subtitle="Menu entries and feature flags">
+<app-surface-panel class="hms-crud-surface" title="Menus" subtitle="Manage navigation items used in role permissions">
+  <div surfacePanelActions class="hms-crud-actions">
+    <button
+      pButton
+      type="button"
+      label="New menu"
+      icon="pi pi-plus"
+      severity="secondary"
+      class="hms-toolbar-solid"
+      (click)="openCreate()"
+    ></button>
+  </div>
+
   <div class="hms-crud-body-spacer" aria-hidden="true"></div>
   <div class="hms-crud-panel-body">
   @if (errorMessage) {
@@ -17,101 +29,151 @@
       <tr>
         <th>Order</th>
         <th>Code</th>
-        <th>Name</th>
-        <th>Category</th>
+        <th>Label</th>
+        <th>Route</th>
+        <th>Visible</th>
         <th>Active</th>
-        <th class="w-24 text-end">View</th>
+        <th class="w-32 text-end">Actions</th>
       </tr>
     </ng-template>
     <ng-template #body let-row>
       <tr>
         <td class="text-sm text-slate-600">{{ row.sortOrder }}</td>
         <td class="font-mono text-xs">{{ row.code }}</td>
-        <td>{{ row.name }}</td>
-        <td class="text-sm text-slate-600">{{ row.category ?? '—' }}</td>
+        <td>{{ row.label }}</td>
+        <td class="font-mono text-xs text-slate-600">{{ row.route ?? '—' }}</td>
+        <td>
+          <p-tag [value]="row.isVisible ? 'Yes' : 'No'" [severity]="row.isVisible ? 'success' : 'secondary'" />
+        </td>
         <td>
           <p-tag [value]="row.isActive ? 'Yes' : 'No'" [severity]="row.isActive ? 'success' : 'secondary'" />
         </td>
         <td class="text-end">
-          <button
-            pButton
-            type="button"
-            icon="pi pi-eye"
-            [text]="true"
-            severity="secondary"
-            (click)="openDetail(row)"
-            title="GET by id"
-            aria-label="View module"
-          ></button>
+          <div class="flex justify-end gap-1">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-pencil"
+              [text]="true"
+              severity="secondary"
+              (click)="openEdit(row)"
+              title="Edit menu"
+              aria-label="Edit menu"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (click)="confirmDelete(row)"
+              title="Delete menu"
+              aria-label="Delete menu"
+            ></button>
+          </div>
         </td>
       </tr>
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="6" class="hms-table-empty-cell text-center text-sm text-slate-500">
+        <td colspan="7" class="hms-table-empty-cell text-center text-sm text-slate-500">
           <div class="flex flex-col items-center justify-center gap-2 py-4">
             <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
-            <span>No modules found.</span>
+            <span>No menus found.</span>
           </div>
         </td>
       </tr>
     </ng-template>
     <ng-template pTemplate="loadingbody" let-columns>
-      <app-hms-table-loading-body [cols]="columns?.length || 6" />
+      <app-hms-table-loading-body [cols]="columns?.length || 7" />
     </ng-template>
   </p-table>
   </div>
 </app-surface-panel>
 
 <p-dialog
-  header="Module detail"
-  [(visible)]="detailOpen"
+  [header]="editingId == null ? 'New menu' : 'Edit menu'"
+  [(visible)]="dialogOpen"
   [modal]="true"
-  [style]="{ width: 'min(95vw, 28rem)' }"
+  [style]="{ width: 'min(95vw, 34rem)' }"
+  [closable]="true"
   [contentStyle]="{ overflow: 'hidden', padding: '0' }"
   styleClass="hms-crud-dialog"
-  (onHide)="closeDetail()"
+  (onHide)="closeDialog()"
 >
   <div class="hms-dialog-body">
-    <div class="hms-dialog-scroll">
-  @if (detailLoading) {
-    <app-hms-block-skeleton [lines]="10" ariaLabel="Loading module detail" />
-  } @else if (moduleDetail) {
-    <dl class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-      <div>
-        <dt class="text-xs font-medium text-slate-500">ID</dt>
-        <dd class="font-mono text-slate-800">{{ moduleDetail.id }}</dd>
+    <div class="hms-dialog-scroll grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
+      <div class="sm:col-span-2">
+        <label class="mb-1 block text-xs font-medium text-slate-500" for="menu-parent">Parent</label>
+        <p-select
+          inputId="menu-parent"
+          [options]="parentOptions"
+          optionLabel="label"
+          optionValue="value"
+          [(ngModel)]="formParentId"
+          placeholder="Select parent"
+          styleClass="w-full"
+        />
       </div>
+
       <div>
-        <dt class="text-xs font-medium text-slate-500">Code</dt>
-        <dd class="font-mono text-slate-800">{{ moduleDetail.code }}</dd>
+        <label class="mb-1 block text-xs font-medium text-slate-500" for="menu-code">Code</label>
+        <input pInputText id="menu-code" class="w-full font-mono text-sm" [(ngModel)]="formCode" maxlength="80" />
       </div>
+
       <div>
-        <dt class="text-xs font-medium text-slate-500">Name</dt>
-        <dd class="text-slate-800">{{ moduleDetail.name }}</dd>
+        <label class="mb-1 block text-xs font-medium text-slate-500" for="menu-label">Label</label>
+        <input pInputText id="menu-label" class="w-full" [(ngModel)]="formLabel" maxlength="120" />
       </div>
+
+      <div class="sm:col-span-2">
+        <label class="mb-1 block text-xs font-medium text-slate-500" for="menu-route">Route</label>
+        <input
+          pInputText
+          id="menu-route"
+          class="w-full font-mono text-sm"
+          [(ngModel)]="formRoute"
+          maxlength="300"
+          placeholder="/app/..."
+        />
+      </div>
+
       <div>
-        <dt class="text-xs font-medium text-slate-500">Category</dt>
-        <dd class="text-slate-800">{{ moduleDetail.category ?? '—' }}</dd>
+        <label class="mb-1 block text-xs font-medium text-slate-500" for="menu-icon">Icon</label>
+        <input pInputText id="menu-icon" class="w-full font-mono text-sm" [(ngModel)]="formIcon" maxlength="80" placeholder="pi pi-home" />
       </div>
+
       <div>
-        <dt class="text-xs font-medium text-slate-500">Sort order</dt>
-        <dd class="text-slate-800">{{ moduleDetail.sortOrder }}</dd>
+        <label class="mb-1 block text-xs font-medium text-slate-500" for="menu-sort">Sort order</label>
+        <p-inputNumber inputId="menu-sort" [(ngModel)]="formSortOrder" [min]="0" styleClass="w-full" />
       </div>
-      <div>
-        <dt class="text-xs font-medium text-slate-500">Active</dt>
-        <dd>
-          <p-tag
-            [value]="moduleDetail.isActive ? 'Yes' : 'No'"
-            [severity]="moduleDetail.isActive ? 'success' : 'secondary'"
-          />
-        </dd>
+
+      <div class="sm:col-span-2">
+        <label class="mb-1 block text-xs font-medium text-slate-500" for="menu-permission">Permission key</label>
+        <input
+          pInputText
+          id="menu-permission"
+          class="w-full font-mono text-sm"
+          [(ngModel)]="formPermissionKey"
+          maxlength="120"
+          placeholder="Optional — defaults to code when route is set"
+        />
       </div>
-    </dl>
-  }
+
+      <div class="flex items-center gap-2">
+        <p-checkbox inputId="menu-active" [(ngModel)]="formIsActive" [binary]="true" />
+        <label for="menu-active" class="text-sm text-slate-700">Active</label>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <p-checkbox inputId="menu-visible" [(ngModel)]="formIsVisible" [binary]="true" />
+        <label for="menu-visible" class="text-sm text-slate-700">Visible</label>
+      </div>
     </div>
   </div>
+
   <ng-template #footer>
-    <button pButton type="button" label="Close" severity="secondary" (click)="closeDetail()"></button>
+    <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="closeDialog()"></button>
+    <button pButton type="button" label="Save" icon="pi pi-check" severity="success" [loading]="saving" (click)="save()"></button>
   </ng-template>
 </p-dialog>

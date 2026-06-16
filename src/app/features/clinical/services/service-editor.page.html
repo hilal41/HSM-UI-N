@@ -1,0 +1,136 @@
+<app-surface-panel class="hms-crud-surface" [title]="pageTitle" [subtitle]="pageSubtitle">
+  <div surfacePanelActions class="hms-crud-actions">
+    <button
+      pButton
+      type="button"
+      label="Cancel"
+      severity="secondary"
+      [outlined]="true"
+      class="hms-toolbar-chip"
+      (click)="cancel()"
+    ></button>
+    <button
+      pButton
+      type="button"
+      label="Save"
+      icon="pi pi-check"
+      severity="success"
+      class="hms-toolbar-solid"
+      [loading]="saving"
+      [disabled]="loading"
+      (click)="save()"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body service-editor-body">
+    @if (loadError) {
+      <p-message severity="error" [text]="loadError" styleClass="mb-3 w-full" />
+    }
+
+    @if (loading) {
+      <app-hms-block-skeleton [lines]="10" ariaLabel="Loading service editor" />
+    } @else {
+      <form class="service-editor-form" (ngSubmit)="save()">
+        <div class="service-editor-form__grid">
+          <div class="service-editor-form__field">
+            <label class="hms-field-label hms-field-label--required" for="sv-code">Code</label>
+            <input pInputText id="sv-code" class="w-full" [(ngModel)]="formCode" name="svCode" />
+          </div>
+
+          <div class="service-editor-form__field">
+            <label class="hms-field-label hms-field-label--required" for="sv-title">Title</label>
+            <input pInputText id="sv-title" class="w-full" [(ngModel)]="formTitle" name="svTitle" />
+          </div>
+
+          <div class="service-editor-form__field service-editor-form__field--wide">
+            <label class="hms-field-label hms-field-label--required" for="sv-ctype">Consultancy type</label>
+            <p-select
+              inputId="sv-ctype"
+              [(ngModel)]="formConsultancyType"
+              name="svConsultancyType"
+              [options]="consultancyTypeOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select"
+              styleClass="w-full"
+            />
+          </div>
+
+          <div class="service-editor-form__field service-editor-form__field--wide">
+            <label class="hms-field-label hms-field-label--required" for="sv-cat">Category</label>
+            <p-select
+              inputId="sv-cat"
+              [(ngModel)]="formCategoryId"
+              name="svCat"
+              [options]="categoryOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select"
+              styleClass="w-full"
+            />
+          </div>
+
+          <div class="service-editor-form__field">
+            <label class="hms-field-label" for="sv-disc">Discount</label>
+            <p-inputNumber
+              inputId="sv-disc"
+              [(ngModel)]="formDiscount"
+              name="svDisc"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+              styleClass="w-full"
+            />
+          </div>
+
+          <div class="service-editor-form__field">
+            <label class="hms-field-label" for="sv-price">Price</label>
+            <p-inputNumber
+              inputId="sv-price"
+              [(ngModel)]="formPrice"
+              name="svPrice"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+              styleClass="w-full"
+            />
+          </div>
+
+          <div class="service-editor-form__field service-editor-form__field--wide">
+            <label class="hms-field-label" for="sv-doc">Assigned doctor (optional)</label>
+            <p-select
+              inputId="sv-doc"
+              [(ngModel)]="formDoctorId"
+              name="svDoc"
+              [options]="doctorOptions"
+              optionLabel="label"
+              optionValue="value"
+              [showClear]="true"
+              placeholder="None"
+              styleClass="w-full"
+              [disabled]="formClearDoctor"
+            />
+          </div>
+
+          @if (!isCreateMode) {
+            <div class="service-editor-form__field service-editor-form__field--wide service-editor-form__check">
+              <p-checkbox inputId="sv-clr" [(ngModel)]="formClearDoctor" name="svClr" [binary]="true" />
+              <label for="sv-clr" class="text-sm text-slate-600">Clear assigned doctor</label>
+            </div>
+          }
+
+          <div class="service-editor-form__field service-editor-form__field--wide">
+            <label class="hms-field-label" for="sv-share">Doctor share</label>
+            <p-inputNumber
+              inputId="sv-share"
+              [(ngModel)]="formDoctorShare"
+              name="svShare"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+              styleClass="w-full"
+            />
+          </div>
+        </div>
+      </form>
+    }
+  </div>
+</app-surface-panel>

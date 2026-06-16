@@ -47,6 +47,10 @@ export class MedicineSlipComponent implements OnChanges {
 
   slipGeneratedLabel = '';
 
+  get branchName(): string | null {
+    return this.visit?.branchName?.trim() || null;
+  }
+
   get visibleSections(): MedicineSlipSectionId[] {
     return visibleMedicineSlipSectionOrder(this.template);
   }

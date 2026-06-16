@@ -39,7 +39,7 @@
               >
                 <ng-template let-item pTemplate="item">
                   <span class="font-medium">{{ item.title }}</span>
-                  <span class="ml-2 text-xs text-[#718096]">{{ item.code }}</span>
+                  <span class="ml-2 text-xs text-[var(--hms-color-text-muted)]">{{ item.code }}</span>
                 </ng-template>
               </p-autocomplete>
             </div>
@@ -83,8 +83,8 @@
           <ng-template #body let-row>
             <tr>
               <td>
-                <div class="text-sm font-semibold leading-tight text-[#2d3748]">{{ row.serviceTitle }}</div>
-                <div class="text-[11px] leading-tight text-[#718096]">{{ row.serviceCode }}</div>
+                <div class="text-sm font-semibold leading-tight text-[var(--hms-color-text)]">{{ row.serviceTitle }}</div>
+                <div class="text-[11px] leading-tight text-[var(--hms-color-text-muted)]">{{ row.serviceCode }}</div>
               </td>
               <td>
                 <p-select
@@ -220,7 +220,7 @@
         }
 
         <div class="pr-raised-card pr-raised-card--remarks flex flex-col gap-[var(--hms-page-gutter)]">
-          <label class="text-xs font-medium text-[#4a5568]" for="visit-remarks">Remarks</label>
+          <label class="text-xs font-medium text-[var(--hms-color-text-muted)]" for="visit-remarks">Remarks</label>
           <textarea
             pTextarea
             id="visit-remarks"
@@ -234,12 +234,12 @@
 
         <div class="pr-raised-card pr-raised-card--totals grid grid-cols-2 gap-[var(--hms-page-gutter)]">
           <div>
-            <span class="text-[10px] font-medium uppercase tracking-wide text-[#718096]">Total</span>
-            <div class="text-base font-semibold tabular-nums text-[#1a202c]">{{ totalAmount }}</div>
+            <span class="text-[10px] font-medium uppercase tracking-wide text-[var(--hms-color-text-muted)]">Total</span>
+            <div class="text-base font-semibold tabular-nums text-[var(--hms-color-text)]">{{ totalAmount }}</div>
           </div>
           <div>
-            <span class="text-[10px] font-medium uppercase tracking-wide text-[#718096]">Discount</span>
-            <div class="text-base font-semibold tabular-nums text-[#1a202c]">{{ discountAmount }}</div>
+            <span class="text-[10px] font-medium uppercase tracking-wide text-[var(--hms-color-text-muted)]">Discount</span>
+            <div class="text-base font-semibold tabular-nums text-[var(--hms-color-text)]">{{ discountAmount }}</div>
           </div>
         </div>
 
@@ -291,5 +291,6 @@
     [totalAmount]="slipTotalForSlip"
     [discountAmount]="slipDiscountForSlip"
     [ageYears]="currentPatient ? ageDisplay(currentPatient) : 0"
+    [branchName]="slipBranchName"
   />
 </div>

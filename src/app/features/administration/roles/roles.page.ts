@@ -1,14 +1,13 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { MessageService } from 'primeng/api';
+import { Router } from '@angular/router';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { DialogModule } from 'primeng/dialog';
 import { MessageModule } from 'primeng/message';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { finalize } from 'rxjs';
 import { RolesApiService } from '../../../core/api/roles-api.service';
 import type { Role } from '../../../core/models/api-contracts';
-import { HmsBlockSkeletonComponent } from '../../../shared/components/hms-block-skeleton/hms-block-skeleton.component';
 import { HmsTableLoadingBodyComponent } from '../../../shared/components/hms-table-loading-body/hms-table-loading-body.component';
 import { SurfacePanelComponent } from '../../../shared/components/surface-panel/surface-panel.component';
 
@@ -17,26 +16,22 @@ import { SurfacePanelComponent } from '../../../shared/components/surface-panel/
   imports: [
     SurfacePanelComponent,
     HmsTableLoadingBodyComponent,
-    HmsBlockSkeletonComponent,
     TableModule,
     TagModule,
     MessageModule,
     ButtonModule,
-    DialogModule,
   ],
   templateUrl: './roles.page.html',
 })
 export class RolesPage implements OnInit {
   private readonly api = inject(RolesApiService);
+  private readonly router = inject(Router);
+  private readonly confirm = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
 
   rows: Role[] = [];
   loading = false;
   errorMessage: string | null = null;
-
-  detailOpen = false;
-  detailLoading = false;
-  roleDetail: Role | null = null;
 
   ngOnInit(): void {
     this.load();
@@ -54,28 +49,37 @@ export class RolesPage implements OnInit {
       });
   }
 
-  openDetail(row: Role): void {
-    this.roleDetail = null;
-    this.detailOpen = true;
-    this.detailLoading = true;
-    this.api
-      .getById(row.id)
-      .pipe(finalize(() => (this.detailLoading = false)))
-      .subscribe({
-        next: (r) => (this.roleDetail = r),
-        error: () => {
-          this.messages.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'GET /Roles/' + row.id + ' failed.',
-          });
-          this.detailOpen = false;
-        },
-      });
+  openCreate(): void {
+    void this.router.navigate(['/app/admin/roles/new']);
   }
 
-  closeDetail(): void {
-    this.detailOpen = false;
-    this.roleDetail = null;
+  openEdit(row: Role): void {
+    void this.router.navigate(['/app/admin/roles/edit', row.id]);
+  }
+
+  confirmDelete(row: Role): void {
+    this.confirm.confirm({
+      header: 'Delete role?',
+      message: `Delete "${row.name}"? This cannot be undone.`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => this.delete(row),
+    });
+  }
+
+  private delete(row: Role): void {
+    this.api.delete(row.id).subscribe({
+      next: () => {
+        this.messages.add({ severity: 'success', summary: 'Deleted', detail: 'Role deleted.' });
+        this.load();
+      },
+      error: (err: { error?: { message?: string } }) => {
+        this.messages.add({
+          severity: 'error',
+          summary: 'Delete failed',
+          detail: err?.error?.message ?? 'Could not delete role.',
+        });
+      },
+    });
   }
 }

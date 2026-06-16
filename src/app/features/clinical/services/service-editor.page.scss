@@ -1,0 +1,47 @@
+:host {
+  display: block;
+}
+
+.service-editor-body {
+  padding: var(--hms-main-pad);
+  background: var(--hms-color-canvas);
+}
+
+.service-editor-form {
+  max-width: 40rem;
+  margin: 0 auto;
+  border: 1px solid rgb(226 232 240 / 0.95);
+  border-radius: 0.65rem;
+  background: #fff;
+  padding: var(--hms-main-pad);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.service-editor-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--hms-main-pad);
+}
+
+.service-editor-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.service-editor-form__field--wide {
+  grid-column: 1 / -1;
+}
+
+.service-editor-form__check {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .service-editor-form__grid {
+    grid-template-columns: 1fr;
+  }
+}

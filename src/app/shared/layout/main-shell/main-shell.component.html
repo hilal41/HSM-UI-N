@@ -1,13 +1,13 @@
 <p-toast position="top-right" class="no-print" />
 <p-confirmdialog class="no-print" />
 
-<div class="app-shell-root flex min-h-screen flex-col bg-[#e6e9f3]">
+<div class="app-shell-root flex min-h-screen flex-col bg-[var(--hms-color-canvas)]">
   <header
-    class="app-shell-header no-print sticky top-0 z-20 w-full border-b border-blue-950/30 bg-[#2563EB] shadow-sm"
+    class="app-shell-header no-print sticky top-0 z-20 w-full border-b border-blue-950/30 bg-[var(--hms-color-nav)] shadow-sm"
   >
     <div class="app-shell-header__bar w-full">
       <p-menubar
-        [model]="menuModel"
+        [model]="menuModel()"
         styleClass="app-shell-menubar !rounded-none !border-0 !bg-transparent !px-0 !py-0"
       >
         <ng-template pTemplate="start">
@@ -24,6 +24,7 @@
 
         <ng-template pTemplate="end">
           <div class="app-shell-end flex items-center gap-1.5 sm:gap-2">
+            <app-branch-switcher />
             @if (user(); as u) {
               <span
                 class="hidden max-w-[10rem] truncate text-[0.72rem] text-blue-100 lg:inline xl:max-w-[14rem]"

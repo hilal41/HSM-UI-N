@@ -6,10 +6,10 @@ import type {
   AssignRoleRequest,
   CreateUserRequest,
   Department,
-  Module,
   PagedResponse,
   SetUserDepartmentsRequest,
-  SetUserModulesRequest,
+  SetUserBranchesRequest,
+  BranchSummary,
   UpdateUserRequest,
   User,
   UserDetail,
@@ -68,11 +68,11 @@ export class UsersApiService {
     return this.http.put<void>(`${this.base}/Users/${id}/departments`, body);
   }
 
-  getModules(id: number): Observable<Module[]> {
-    return this.http.get<Module[]>(`${this.base}/Users/${id}/modules`);
+  getBranches(id: number): Observable<BranchSummary[]> {
+    return this.http.get<BranchSummary[]>(`${this.base}/Users/${id}/branches`);
   }
 
-  setModules(id: number, body: SetUserModulesRequest): Observable<void> {
-    return this.http.put<void>(`${this.base}/Users/${id}/modules`, body);
+  setBranches(id: number, body: SetUserBranchesRequest): Observable<void> {
+    return this.http.put<void>(`${this.base}/Users/${id}/branches`, body);
   }
 }

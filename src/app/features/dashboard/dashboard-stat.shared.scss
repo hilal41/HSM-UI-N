@@ -1,0 +1,203 @@
+/* Shared stat card + grid styles (dashboard + reports). */
+
+@keyframes dash-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dash-root,
+.reports-root {
+  --dash-primary: var(--hms-color-primary);
+  --dash-primary-dark: var(--hms-color-primary-hover);
+  --dash-primary-soft: var(--hms-color-primary-soft);
+  --dash-primary-border: var(--hms-color-primary-border);
+}
+
+.dash-stat-grid {
+  display: grid;
+  gap: var(--hms-main-pad);
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+app-dashboard-stat-card {
+  display: block;
+  height: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .dash-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .dash-stat-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .dash-stat-grid--financial {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1199px) {
+  .dash-stat-grid--financial {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.dash-stat-card {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: var(--hms-page-gutter);
+  min-width: 0;
+  height: 100%;
+  min-height: 5.35rem;
+  box-sizing: border-box;
+  padding: var(--hms-card-padding);
+  border-radius: var(--hms-space);
+  border: 1px solid var(--hms-color-border);
+  background: var(--hms-color-surface);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  overflow: hidden;
+  animation: dash-rise-in 0.55s ease both;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.dash-stat-card--interactive {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.dash-stat-card--interactive:hover,
+.dash-stat-card--interactive:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--dash-primary-border);
+  box-shadow: 0 2px 8px rgb(15 23 42 / 0.08);
+}
+
+.dash-stat-card__accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--hms-color-primary), var(--hms-color-primary-bright));
+}
+
+.dash-stat-card__icon {
+  flex: 0 0 auto;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 14px;
+  font-size: 1.05rem;
+  color: var(--dash-primary-dark);
+  background: var(--dash-primary-soft);
+}
+
+.dash-stat-card__body {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.dash-stat-card__footer {
+  display: flex;
+  align-items: center;
+  min-height: 1.25rem;
+  margin-top: 0.3rem;
+}
+
+.dash-stat-card__label {
+  margin: 0;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--hms-color-text-subtle);
+}
+
+.dash-stat-card__value {
+  margin: 0.15rem 0 0;
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--hms-color-text);
+}
+
+.dash-stat-card__hint {
+  margin: 0;
+  font-size: 0.65rem;
+  color: var(--hms-color-text-subtle);
+  line-height: 1.25;
+}
+
+.dash-stat-card__trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  margin: 0;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: var(--hms-color-text-muted);
+  line-height: 1.2;
+}
+
+.dash-stat-card__trend--up {
+  color: var(--dash-primary-dark);
+  background: var(--dash-primary-soft);
+}
+
+.dash-stat-card__trend--down {
+  color: var(--hms-color-text-muted);
+  background: #f1f5f9;
+}
+
+.dash-stat-card__arrow {
+  flex: 0 0 auto;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 999px;
+  color: var(--hms-color-text-subtle);
+  background: #f8fafc;
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.dash-stat-card__arrow--hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.dash-stat-card--interactive:hover .dash-stat-card__arrow {
+  transform: translateX(2px);
+  color: var(--dash-primary-dark);
+  background: var(--dash-primary-soft);
+}

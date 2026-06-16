@@ -142,6 +142,7 @@
               <thead>
                 <tr>
                   <th>Visit</th>
+                  <th>Branch</th>
                   <th>Patient</th>
                   <th>Phone</th>
                   <th class="pr-register-log-table__narrow">Age</th>
@@ -157,6 +158,7 @@
                     <td>
                       <span class="pr-register-log-table__dt">{{ row.visitDate | date: 'short' }}</span>
                     </td>
+                    <td class="text-sm text-slate-600">{{ row.branchName ?? '—' }}</td>
                     <td>
                       <span class="pr-register-log-table__name">{{ row.patientName }}</span>
                     </td>

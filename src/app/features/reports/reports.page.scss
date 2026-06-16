@@ -1,0 +1,354 @@
+@import '../dashboard/dashboard-stat.shared.scss';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.reports-root {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+app-reports-page app-surface-panel.hms-crud-surface {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+app-reports-page app-surface-panel.hms-crud-surface .hms-surface-panel-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.reports-toolbar {
+  flex-wrap: wrap;
+}
+
+.reports-range-slot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 0 0 auto;
+}
+
+.reports-range-slot--open {
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+:host ::ng-deep .reports-date.p-datepicker,
+:host ::ng-deep .reports-date {
+  width: 6.9rem;
+}
+
+.reports-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  gap: var(--hms-main-pad);
+  min-height: 0;
+  min-width: 0;
+}
+
+.reports-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hms-page-gutter);
+  padding: var(--hms-card-padding);
+  border-radius: var(--hms-space);
+  border: 1px solid var(--hms-color-border);
+  background: var(--hms-color-surface);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  flex-shrink: 0;
+}
+
+.reports-section--visits {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.reports-section--financial {
+  padding: var(--hms-main-pad);
+}
+
+.reports-stat-grid {
+  display: grid;
+  gap: var(--hms-main-pad);
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.reports-stat-grid app-dashboard-stat-card {
+  display: block;
+  height: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .reports-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .reports-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .reports-stat-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.reports-stat-grid .dash-stat-card {
+  height: 100%;
+  min-height: 5.5rem;
+}
+
+.reports-stat-grid .dash-stat-card__arrow--hidden {
+  display: none;
+}
+
+.reports-section__title {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--hms-color-text);
+}
+
+.reports-section__count {
+  font-weight: 500;
+  color: var(--hms-color-text-muted);
+}
+
+.reports-muted {
+  margin: 0;
+  padding: var(--hms-card-padding);
+  color: var(--hms-color-text-muted);
+}
+
+.reports-error {
+  display: flex;
+  align-items: center;
+  gap: var(--hms-page-gutter);
+  padding: var(--hms-card-padding);
+  border-radius: var(--hms-space);
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.8rem;
+}
+
+.reports-table-wrap {
+  overflow: auto;
+  border: 1px solid var(--hms-color-border);
+  border-radius: var(--hms-space);
+}
+
+.reports-table-wrap--visits {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+app-reports-page .reports-table-wrap--visits p-table {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  width: 100%;
+}
+
+app-reports-page .reports-table-wrap--visits p-table .p-datatable {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+app-reports-page .reports-table-wrap--visits p-table .p-datatable-wrapper {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+}
+
+app-reports-page .reports-table-wrap--visits .p-datatable-tbody > tr:only-child > td {
+  min-height: min(40vh, 18rem);
+  vertical-align: middle;
+}
+
+.reports-paginator {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  margin-top: var(--hms-page-gutter);
+}
+
+.reports-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.76rem;
+}
+
+.reports-table th,
+.reports-table td {
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--hms-color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.reports-table thead th {
+  background: #f8fafc;
+  color: var(--hms-color-text-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.reports-table__num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.reports-table__total-row th {
+  background: var(--hms-color-primary-light);
+  color: var(--hms-color-primary-hover);
+  font-weight: 700;
+}
+
+.reports-extra {
+  margin-left: 0.2rem;
+  font-size: 0.68rem;
+  color: var(--hms-color-text-muted);
+}
+
+.reports-services-cell,
+.reports-remarks-cell {
+  max-width: 12rem;
+  word-break: break-word;
+}
+
+.reports-empty {
+  text-align: center;
+  color: var(--hms-color-text-muted);
+  padding: 1.5rem !important;
+}
+
+:host ::ng-deep .reports-p-table .p-datatable-table {
+  font-size: 0.76rem;
+}
+
+:host ::ng-deep .reports-p-table .p-datatable-thead > tr > th {
+  white-space: nowrap;
+}
+
+/* Print layout — hidden on screen */
+.reports-print-sheet {
+  display: none;
+}
+
+@media print {
+  body {
+    background: #fff !important;
+  }
+
+  app-reports-page {
+    display: block !important;
+  }
+
+  .reports-root {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .no-print,
+  app-surface-panel,
+  .reports-body {
+    display: none !important;
+  }
+
+  .reports-print-sheet {
+    display: block !important;
+    padding: 0.35in 0.4in;
+    color: #000;
+    font-size: 9pt;
+    line-height: 1.35;
+  }
+
+  .reports-print-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #000;
+  }
+
+  .reports-print-title {
+    margin: 0;
+    font-size: 14pt;
+    font-weight: 700;
+  }
+
+  .reports-print-hospital {
+    margin: 0.15rem 0 0;
+    font-size: 10pt;
+    color: #333;
+  }
+
+  .reports-print-meta {
+    text-align: right;
+    font-size: 8.5pt;
+  }
+
+  .reports-print-meta p {
+    margin: 0 0 0.15rem;
+  }
+
+  .reports-print-block {
+    margin-top: 0.65rem;
+    break-inside: avoid;
+  }
+
+  .reports-print-block h2 {
+    margin: 0 0 0.35rem;
+    font-size: 10pt;
+    font-weight: 700;
+  }
+
+  .reports-table--compact th,
+  .reports-table--compact td {
+    padding: 0.2rem 0.35rem;
+    border: 1px solid #ccc;
+    font-size: 8pt;
+  }
+
+  .reports-table--compact thead th {
+    background: #f0f0f0;
+  }
+
+  .reports-table--visits-print {
+    font-size: 7.5pt;
+  }
+
+  .reports-table--visits-print th,
+  .reports-table--visits-print td {
+    padding: 0.15rem 0.25rem;
+  }
+}

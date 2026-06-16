@@ -3,6 +3,23 @@
 
 /* HMS density — one scale app-wide (inputs, labels, buttons, dialogs, tables) */
 :root {
+  /* HMS 5-color palette */
+  --hms-color-surface: #ffffff;
+  --hms-color-canvas: #e6e9f3;
+  --hms-color-primary: #059669;
+  --hms-color-primary-bright: #10b981;
+  --hms-color-primary-hover: #047857;
+  --hms-color-primary-light: #ecfdf5;
+  --hms-color-primary-soft: rgb(5 150 105 / 0.1);
+  --hms-color-primary-border: rgb(5 150 105 / 0.22);
+  --hms-color-nav: #2563eb;
+  --hms-color-text: #0f172a;
+  --hms-color-text-muted: #64748b;
+  --hms-color-text-subtle: #94a3b8;
+  --hms-color-border: #e6e9f3;
+  --hms-color-border-input: #cbd5e1;
+  --hms-color-border-strong: #0f172a;
+
   /* One rhythm: main inset, gutters, card padding — uniform 0.5rem everywhere */
   --hms-space: 0.5rem;
   --hms-main-pad: var(--hms-space);
@@ -46,7 +63,7 @@
   }
 
   body {
-    @apply m-0 min-h-full bg-[#e6e9f3] font-sans text-slate-700 antialiased;
+    @apply m-0 min-h-full bg-[var(--hms-color-canvas)] font-sans text-slate-700 antialiased;
     font-size: var(--hms-font-ui);
     line-height: 1.45;
   }
@@ -65,8 +82,8 @@
 .hms-surface-panel-inner {
   padding: var(--hms-card-padding);
   box-sizing: border-box;
-  background: #ffffff;
-  border: 1px solid #e6e9f3;
+  background: var(--hms-color-surface);
+  border: 1px solid var(--hms-color-border);
   border-radius: var(--hms-space) var(--hms-space) 0 0;
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
 }
@@ -155,7 +172,7 @@ app-surface-panel.hms-crud-surface .hms-surface-panel-inner {
   height: var(--hms-main-pad);
   margin-left: 0;
   margin-right: 0;
-  background: #e6e9f3;
+  background: var(--hms-color-canvas);
 }
 
 .hms-crud-panel-body {
@@ -179,11 +196,10 @@ app-surface-panel.hms-crud-surface .hms-surface-panel-inner {
   flex: 0 1 auto;
   min-height: 1.9rem;
   border-radius: 0.65rem;
-  border: 1px solid #cbd5e1;
-  padding-inline: 0.6rem;
+  border: 1px solid var(--hms-color-border-input);
   font-size: 0.78rem;
-  color: #0f172a;
-  background: #fff;
+  color: var(--hms-color-text);
+  background: var(--hms-color-surface);
 }
 
 .hms-crud-actions .hms-toolbar-search--grow {
@@ -195,9 +211,9 @@ app-surface-panel.hms-crud-surface .hms-surface-panel-inner {
 
 app-surface-panel.hms-crud-surface button.hms-toolbar-chip.p-button {
   min-height: 1.9rem !important;
-  background: #ffffff !important;
-  border: 1px solid #0f172a !important;
-  color: #0f2744 !important;
+  background: var(--hms-color-surface) !important;
+  border: 1px solid var(--hms-color-border-strong) !important;
+  color: var(--hms-color-text) !important;
   border-radius: 9999px !important;
   padding-block: 0.15rem !important;
   padding-inline: 0.62rem !important;
@@ -208,11 +224,11 @@ app-surface-panel.hms-crud-surface button.hms-toolbar-chip.p-button {
 }
 
 app-surface-panel.hms-crud-surface button.hms-toolbar-chip.p-button .p-button-label {
-  color: #0f2744 !important;
+  color: var(--hms-color-text) !important;
 }
 
 app-surface-panel.hms-crud-surface button.hms-toolbar-chip.p-button .p-button-icon {
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
 }
 
 app-surface-panel.hms-crud-surface button.hms-toolbar-chip.p-button:not(:disabled):hover {
@@ -227,14 +243,14 @@ app-surface-panel.hms-crud-surface button.hms-toolbar-chip.p-button:not(:disable
 }
 
 app-surface-panel.hms-crud-surface button.hms-toolbar-chip--active.p-button {
-  background: #ecfdf5 !important;
-  border-color: #6ee7b7 !important;
-  color: #065f46 !important;
+  background: var(--hms-color-primary-light) !important;
+  border-color: var(--hms-color-primary-border) !important;
+  color: var(--hms-color-primary-hover) !important;
 }
 
 app-surface-panel.hms-crud-surface button.hms-toolbar-chip--active.p-button .p-button-label,
 app-surface-panel.hms-crud-surface button.hms-toolbar-chip--active.p-button .p-button-icon {
-  color: #065f46 !important;
+  color: var(--hms-color-primary-hover) !important;
 }
 
 app-surface-panel.hms-crud-surface button.hms-toolbar-chip--icon.p-button {
@@ -310,6 +326,14 @@ app-surface-panel .hms-surface-panel-body .p-datatable-tbody > tr:only-child > t
   vertical-align: middle;
 }
 
+app-reports-page {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
 /* Checkup template studio page fills routed main */
 app-checkup-templates-page .cts-root {
   display: flex;
@@ -329,15 +353,15 @@ app-checkup-template-editor-page .cte-root {
 
 /* Solid toolbar CTA (list pages) — emerald, matches p-button-success */
 button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link) {
-  background: #10b981 !important;
-  border-color: #10b981 !important;
+  background: var(--hms-color-primary-bright) !important;
+  border-color: var(--hms-color-primary-bright) !important;
   color: #ffffff !important;
   box-shadow: 0 1px 2px rgb(16 185 129 / 14%);
 }
 
 button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link):enabled:hover {
-  background: #059669 !important;
-  border-color: #059669 !important;
+  background: var(--hms-color-primary) !important;
+  border-color: var(--hms-color-primary) !important;
   color: #ffffff !important;
 }
 
@@ -368,20 +392,20 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
 
 /* HMS solid success / primary — emerald (list pages, dialogs, forms) */
 .p-button.p-button-success:not(.p-button-outlined):not(.p-button-text):not(.p-button-link) {
-  background: #10b981 !important;
-  border-color: #10b981 !important;
+  background: var(--hms-color-primary-bright) !important;
+  border-color: var(--hms-color-primary-bright) !important;
   color: #ffffff !important;
 }
 
 .p-button.p-button-success:not(.p-button-outlined):not(.p-button-text):not(.p-button-link):not(:disabled):hover {
-  background: #059669 !important;
-  border-color: #059669 !important;
+  background: var(--hms-color-primary) !important;
+  border-color: var(--hms-color-primary) !important;
   color: #ffffff !important;
 }
 
 .p-button.p-button-success:not(.p-button-outlined):not(.p-button-text):not(.p-button-link):not(:disabled):active {
-  background: #047857 !important;
-  border-color: #047857 !important;
+  background: var(--hms-color-primary-hover) !important;
+  border-color: var(--hms-color-primary-hover) !important;
 }
 
 /* ========= HMS CRUD / form dialogs ========= */
@@ -407,7 +431,7 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
   font-size: var(--hms-font-title) !important;
   font-weight: 600 !important;
   letter-spacing: -0.02em;
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
 }
 
 .p-dialog.hms-crud-dialog .p-dialog-content {
@@ -466,7 +490,7 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 .hms-field-label--required::after {
@@ -490,7 +514,7 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
   min-height: var(--hms-control-height) !important;
   max-height: 2.25rem !important;
   font-weight: 400;
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
   box-shadow: none !important;
 }
 
@@ -500,7 +524,7 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
 .p-dialog.hms-crud-dialog .hms-dialog-scroll textarea.p-inputtextarea:enabled:hover,
 .p-dialog.hms-crud-dialog .hms-dialog-scroll .p-inputnumber .p-inputnumber-input:enabled:hover,
 .p-dialog.hms-crud-dialog .hms-dialog-scroll .patient-dob-datepicker.p-datepicker:hover {
-  border-color: #047857 !important;
+  border-color: var(--hms-color-primary-hover) !important;
 }
 
 .p-dialog.hms-crud-dialog .hms-dialog-scroll .p-inputtext:enabled:focus,
@@ -509,7 +533,7 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
 .p-dialog.hms-crud-dialog .hms-dialog-scroll textarea.p-inputtextarea:enabled:focus,
 .p-dialog.hms-crud-dialog .hms-dialog-scroll .p-inputnumber .p-inputnumber-input:enabled:focus,
 .p-dialog.hms-crud-dialog .hms-dialog-scroll .patient-dob-datepicker.p-datepicker:focus-within {
-  border-color: #047857 !important;
+  border-color: var(--hms-color-primary-hover) !important;
   box-shadow: none !important;
   outline: none !important;
 }
@@ -524,7 +548,7 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
   line-height: var(--hms-input-line) !important;
   min-height: 2.25rem !important;
   font-weight: 400;
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
   box-shadow: none !important;
 }
 
@@ -546,7 +570,7 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
 .p-dialog.hms-crud-dialog .hms-dialog-scroll .p-multiselect:not(.p-disabled):hover,
 .p-dialog.hms-crud-dialog .hms-dialog-scroll .p-multiselect.p-focus,
 .p-dialog.hms-crud-dialog .hms-dialog-scroll .p-multiselect:focus-within {
-  border-color: #047857 !important;
+  border-color: var(--hms-color-primary-hover) !important;
   box-shadow: none !important;
 }
 
@@ -554,7 +578,7 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
   line-height: var(--hms-input-line) !important;
   padding: var(--hms-input-py) var(--hms-input-px) !important;
   font-size: var(--hms-input-font) !important;
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
 }
 
 .p-dialog.hms-crud-dialog .hms-dialog-scroll .p-select .p-select-dropdown {
@@ -575,7 +599,7 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
   min-height: var(--hms-control-height) !important;
   max-height: 2.25rem !important;
   font-weight: 400;
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
   box-shadow: none !important;
 }
 
@@ -613,7 +637,7 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
   font-size: var(--hms-input-font) !important;
   line-height: var(--hms-input-line) !important;
   font-weight: 400;
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
   min-height: var(--hms-control-height) !important;
   box-sizing: border-box;
 }
@@ -632,7 +656,7 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
   border: none !important;
   background: transparent !important;
   padding: 0 !important;
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
 }
 
 /* ── Server-rendered checkup form HTML (CheckupFormHtmlRenderer → innerHTML / print) ──
@@ -744,7 +768,7 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
   margin-top: 0.2rem;
   width: 1rem;
   height: 1rem;
-  accent-color: #0d9488;
+  accent-color: var(--hms-color-primary);
 }
 
 .hms-checkup-form-html .hms-checkup-radio-group {
@@ -766,7 +790,7 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
 .hms-checkup-form-html .hms-checkup-radio input {
   width: 1rem;
   height: 1rem;
-  accent-color: #0d9488;
+  accent-color: var(--hms-color-primary);
 }
 
 /* ========= HMS global PrimeNG (pages + non-CRUD dialogs) — same density as tokens ========= */

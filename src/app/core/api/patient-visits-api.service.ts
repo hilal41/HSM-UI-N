@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../tokens/api-base-url.token';
 import type {
   CreatePatientVisitRequest,
+  FinancialSummaryResponse,
   PatientVisitRegisterLogPage,
   PatientVisitResponse,
 } from '../models/api-contracts';
@@ -27,6 +28,7 @@ export class PatientVisitsApiService {
     toDate?: string;
     patientId?: number;
     consultancyType?: string;
+    branchId?: number;
     page?: number;
     pageSize?: number;
   }): Observable<PatientVisitRegisterLogPage> {
@@ -45,8 +47,32 @@ export class PatientVisitsApiService {
     if (params.consultancyType) {
       hp = hp.set('consultancyType', params.consultancyType);
     }
+    if (params.branchId != null && params.branchId > 0) {
+      hp = hp.set('branchId', String(params.branchId));
+    }
     return this.http.get<PatientVisitRegisterLogPage>(`${this.base}/clinical/patient-visits`, {
       params: hp,
     });
+  }
+
+  getFinancialSummary(params: {
+    fromDate?: string;
+    toDate?: string;
+    branchId?: number;
+  } = {}): Observable<FinancialSummaryResponse> {
+    let hp = new HttpParams();
+    if (params.fromDate) {
+      hp = hp.set('fromDate', params.fromDate);
+    }
+    if (params.toDate) {
+      hp = hp.set('toDate', params.toDate);
+    }
+    if (params.branchId != null && params.branchId > 0) {
+      hp = hp.set('branchId', String(params.branchId));
+    }
+    return this.http.get<FinancialSummaryResponse>(
+      `${this.base}/clinical/patient-visits/financial-summary`,
+      { params: hp },
+    );
   }
 }

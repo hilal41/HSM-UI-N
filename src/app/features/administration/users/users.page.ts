@@ -5,7 +5,6 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ChipModule } from 'primeng/chip';
 import { DialogModule } from 'primeng/dialog';
-import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -16,13 +15,12 @@ import { PasswordModule } from 'primeng/password';
 import { TextareaModule } from 'primeng/textarea';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { finalize } from 'rxjs';
+import { BranchesApiService } from '../../../core/api/branches-api.service';
 import { ClinicalDepartmentsApiService } from '../../../core/api/clinical-departments-api.service';
-import { ModulesApiService } from '../../../core/api/modules-api.service';
 import { RolesApiService } from '../../../core/api/roles-api.service';
 import { UsersApiService } from '../../../core/api/users-api.service';
 import type {
   Department,
-  Module,
   Role,
   UpdateUserRequest,
   User,
@@ -49,7 +47,6 @@ import { SurfacePanelComponent } from '../../../shared/components/surface-panel/
     TextareaModule,
     SelectModule,
     MultiSelectModule,
-    InputNumberModule,
     ToggleSwitchModule,
     PasswordModule,
     ChipModule,
@@ -60,7 +57,7 @@ export class UsersPage {
   private readonly api = inject(UsersApiService);
   private readonly rolesApi = inject(RolesApiService);
   private readonly departmentsApi = inject(ClinicalDepartmentsApiService);
-  private readonly modulesApi = inject(ModulesApiService);
+  private readonly branchesApi = inject(BranchesApiService);
   private readonly confirm = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -73,12 +70,12 @@ export class UsersPage {
 
   roleOptions: { label: string; value: number }[] = [];
   departmentOptions: { label: string; value: number }[] = [];
-  moduleOptions: { label: string; value: number }[] = [];
+  branchOptions: { label: string; value: number }[] = [];
 
   dialogOpen = false;
   roleDialogOpen = false;
   deptDialogOpen = false;
-  modDialogOpen = false;
+  branchDialogOpen = false;
   detailDialogOpen = false;
   detailLoading = false;
   userDetail: UserDetail | null = null;
@@ -96,11 +93,13 @@ export class UsersPage {
   formAddress = '';
   formIsActive = true;
   formRoleId: number | null = null;
+  formCreateBranchIds: number[] = [];
+  formCreateDefaultBranchId: number | null = null;
 
   assignRoleId: number | null = null;
   selectedDeptIds: number[] = [];
-  selectedModuleIds: number[] = [];
-  modulesDeptId: number | null = null;
+  selectedBranchIds: number[] = [];
+  defaultBranchId: number | null = null;
 
   constructor() {
     this.rolesApi.getAll().subscribe({
@@ -113,9 +112,12 @@ export class UsersPage {
         (this.departmentOptions = list.map((d) => ({ label: d.name, value: d.id }))),
       error: () => {},
     });
-    this.modulesApi.getAll().subscribe({
-      next: (mods: Module[]) =>
-        (this.moduleOptions = mods.filter((m) => m.isActive).map((m) => ({ label: m.name, value: m.id }))),
+    this.branchesApi.getAll('Active').subscribe({
+      next: (list) =>
+        (this.branchOptions = list.map((b) => ({
+          label: b.isMain ? `${b.name} (Main)` : b.name,
+          value: b.id,
+        }))),
       error: () => {},
     });
   }
@@ -168,6 +170,9 @@ export class UsersPage {
     this.formAddress = '';
     this.formIsActive = true;
     this.formRoleId = this.roleOptions[0]?.value ?? null;
+    const mainBranch = this.branchOptions.find((b) => b.label.includes('(Main)'));
+    this.formCreateBranchIds = mainBranch ? [mainBranch.value] : this.branchOptions.slice(0, 1).map((b) => b.value);
+    this.formCreateDefaultBranchId = this.formCreateBranchIds[0] ?? null;
     this.dialogOpen = true;
   }
 
@@ -211,6 +216,8 @@ export class UsersPage {
           address: this.formAddress.trim() || null,
           roleId: this.formRoleId,
           isActive: this.formIsActive,
+          branchIds: this.formCreateBranchIds.length ? this.formCreateBranchIds : undefined,
+          defaultBranchId: this.formCreateDefaultBranchId,
         })
         .pipe(finalize(() => (this.saving = false)))
         .subscribe({
@@ -368,37 +375,53 @@ export class UsersPage {
       });
   }
 
-  openModulesDialog(row: User): void {
+  openBranchDialog(row: User): void {
     this.adminUserId = row.id;
-    this.modulesDeptId = null;
-    this.selectedModuleIds = [];
-    this.modDialogOpen = true;
-    this.api.getModules(row.id).subscribe({
-      next: (mods: Module[]) => (this.selectedModuleIds = mods.map((m) => m.id)),
+    this.selectedBranchIds = [];
+    this.defaultBranchId = null;
+    this.branchDialogOpen = true;
+    this.api.getBranches(row.id).subscribe({
+      next: (branches) => {
+        this.selectedBranchIds = branches.map((b) => b.id);
+        this.defaultBranchId = branches.find((b) => b.isDefault)?.id ?? branches[0]?.id ?? null;
+      },
       error: () => {
-        this.messages.add({ severity: 'error', summary: 'Error', detail: 'Could not load user modules.' });
-        this.modDialogOpen = false;
+        this.messages.add({ severity: 'error', summary: 'Error', detail: 'Could not load user branches.' });
+        this.branchDialogOpen = false;
       },
     });
   }
 
-  saveUserModules(): void {
+  get filteredDefaultBranchOptions(): { label: string; value: number }[] {
+    return this.branchOptions.filter((o) => this.selectedBranchIds.includes(o.value));
+  }
+
+  get filteredCreateDefaultBranchOptions(): { label: string; value: number }[] {
+    return this.branchOptions.filter((o) => this.formCreateBranchIds.includes(o.value));
+  }
+
+  saveBranches(): void {
     if (this.adminUserId == null) return;
     this.saving = true;
     this.api
-      .setModules(this.adminUserId, {
-        moduleIds: this.selectedModuleIds,
-        departmentId: this.modulesDeptId,
+      .setBranches(this.adminUserId, {
+        branchIds: this.selectedBranchIds,
+        defaultBranchId: this.defaultBranchId,
       })
       .pipe(finalize(() => (this.saving = false)))
       .subscribe({
         next: () => {
-          this.messages.add({ severity: 'success', summary: 'Saved', detail: 'Modules updated.' });
-          this.modDialogOpen = false;
+          this.messages.add({ severity: 'success', summary: 'Saved', detail: 'Branches updated.' });
+          this.branchDialogOpen = false;
         },
-        error: () => {
-          this.messages.add({ severity: 'error', summary: 'Error', detail: 'Update failed.' });
+        error: (err: { error?: { message?: string } }) => {
+          this.messages.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: err?.error?.message ?? 'Update failed.',
+          });
         },
       });
   }
+
 }

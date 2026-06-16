@@ -87,7 +87,7 @@ import { ButtonModule } from 'primeng/button';
         border: 1px solid rgb(203 213 225 / 0.9) !important;
         background:
           radial-gradient(circle at 30% 20%, rgb(255 255 255 / 0.95), transparent 34%),
-          linear-gradient(135deg, #f8fafc, #eef2ff) !important;
+          linear-gradient(135deg, #f8fafc, var(--hms-color-primary-light)) !important;
         color: #0f172a !important;
         box-shadow:
           0 1px 2px rgb(15 23 42 / 0.08),
@@ -100,7 +100,7 @@ import { ButtonModule } from 'primeng/button';
       }
 
       .hms-surface-panel-back:hover {
-        border-color: rgb(16 185 129 / 0.55) !important;
+        border-color: var(--hms-color-primary-border) !important;
         color: #0f172a !important;
         transform: translateY(-1px);
         box-shadow:
@@ -113,7 +113,7 @@ import { ButtonModule } from 'primeng/button';
       }
 
       .hms-surface-panel-back:focus-visible {
-        outline: 2px solid rgb(34 197 94 / 0.55);
+        outline: 2px solid var(--hms-color-primary-border);
         outline-offset: 2px;
       }
 

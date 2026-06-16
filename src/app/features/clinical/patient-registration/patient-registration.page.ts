@@ -16,6 +16,7 @@ import { DoctorsApiService } from '../../../core/api/doctors-api.service';
 import { MeApiService } from '../../../core/api/me-api.service';
 import { PatientVisitsApiService } from '../../../core/api/patient-visits-api.service';
 import type { ClinicalService, CreatePatientVisitRequest, Doctor, Hospital, Patient } from '../../../core/models/api-contracts';
+import { AuthSessionService } from '../../../core/services/auth-session.service';
 import { doctorIsAvailableAt } from '../../../shared/utils/doctor-availability.util';
 import {
   PatientRegistrationSlipComponent,
@@ -45,6 +46,7 @@ interface SlipSnapshot {
   visitRemarks: string;
   totalAmount: number;
   discountAmount: number;
+  branchName: string | null;
 }
 
 @Component({
@@ -71,6 +73,7 @@ export class PatientRegistrationPage implements OnInit {
   private readonly doctorsApi = inject(DoctorsApiService);
   private readonly visitsApi = inject(PatientVisitsApiService);
   private readonly meApi = inject(MeApiService);
+  private readonly session = inject(AuthSessionService);
   private readonly messages = inject(MessageService);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -249,6 +252,13 @@ export class PatientRegistrationPage implements OnInit {
     return this.slipSnapshot?.discountAmount ?? 0;
   }
 
+  get slipBranchName(): string | null {
+    if (this.lines.length > 0) {
+      return this.session.activeBranch()?.name ?? null;
+    }
+    return this.slipSnapshot?.branchName ?? this.session.activeBranch()?.name ?? null;
+  }
+
   private doctorName(id: number | null): string {
     if (id == null || id <= 0) {
       return '—';
@@ -370,6 +380,7 @@ export class PatientRegistrationPage implements OnInit {
               visitRemarks: this.visitRemarks.trim(),
               totalAmount: this.totalAmount,
               discountAmount: this.discountAmount,
+              branchName: this.session.activeBranch()?.name ?? null,
             };
           } else {
             this.slipSnapshot = null;

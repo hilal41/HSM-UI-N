@@ -1,4 +1,16 @@
 <app-surface-panel class="hms-crud-surface" title="Roles" subtitle="System and custom permission sets">
+  <div surfacePanelActions class="hms-crud-actions">
+    <button
+      pButton
+      type="button"
+      label="New role"
+      icon="pi pi-plus"
+      severity="secondary"
+      class="hms-toolbar-solid"
+      (click)="openCreate()"
+    ></button>
+  </div>
+
   <div class="hms-crud-body-spacer" aria-hidden="true"></div>
   <div class="hms-crud-panel-body">
   @if (errorMessage) {
@@ -18,7 +30,7 @@
         <th>Name</th>
         <th>Description</th>
         <th>System</th>
-        <th class="w-24 text-end">View</th>
+        <th class="w-32 text-end">Actions</th>
       </tr>
     </ng-template>
     <ng-template #body let-row>
@@ -32,16 +44,29 @@
           />
         </td>
         <td class="text-end">
-          <button
-            pButton
-            type="button"
-            icon="pi pi-eye"
-            [text]="true"
-            severity="secondary"
-            (click)="openDetail(row)"
-            title="GET by id"
-            aria-label="View role"
-          ></button>
+          <div class="flex justify-end gap-1">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-pencil"
+              [text]="true"
+              severity="secondary"
+              (click)="openEdit(row)"
+              title="Edit role"
+              aria-label="Edit role"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              [disabled]="row.isSystemRole"
+              (click)="confirmDelete(row)"
+              title="Delete role"
+              aria-label="Delete role"
+            ></button>
+          </div>
         </td>
       </tr>
     </ng-template>
@@ -62,47 +87,3 @@
   </div>
 </app-surface-panel>
 
-<p-dialog
-  header="Role detail"
-  [(visible)]="detailOpen"
-  [modal]="true"
-  [style]="{ width: 'min(95vw, 28rem)' }"
-  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
-  styleClass="hms-crud-dialog"
-  (onHide)="closeDetail()"
->
-  <div class="hms-dialog-body">
-    <div class="hms-dialog-scroll">
-  @if (detailLoading) {
-    <app-hms-block-skeleton [lines]="10" ariaLabel="Loading role detail" />
-  } @else if (roleDetail) {
-    <dl class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-      <div>
-        <dt class="text-xs font-medium text-slate-500">ID</dt>
-        <dd class="font-mono text-slate-800">{{ roleDetail.id }}</dd>
-      </div>
-      <div>
-        <dt class="text-xs font-medium text-slate-500">Name</dt>
-        <dd class="text-slate-800">{{ roleDetail.name }}</dd>
-      </div>
-      <div class="sm:col-span-2">
-        <dt class="text-xs font-medium text-slate-500">Description</dt>
-        <dd class="text-slate-800">{{ roleDetail.description ?? '—' }}</dd>
-      </div>
-      <div class="sm:col-span-2">
-        <dt class="text-xs font-medium text-slate-500">System role</dt>
-        <dd>
-          <p-tag
-            [value]="roleDetail.isSystemRole ? 'Yes' : 'No'"
-            [severity]="roleDetail.isSystemRole ? 'success' : 'secondary'"
-          />
-        </dd>
-      </div>
-    </dl>
-  }
-    </div>
-  </div>
-  <ng-template #footer>
-    <button pButton type="button" label="Close" severity="secondary" (click)="closeDetail()"></button>
-  </ng-template>
-</p-dialog>

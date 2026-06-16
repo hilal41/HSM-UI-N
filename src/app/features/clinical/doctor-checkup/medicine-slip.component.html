@@ -125,6 +125,12 @@
                         <dt>Visit date</dt>
                         <dd>{{ formatDateTime(visit?.visitDate) }}</dd>
                       </div>
+                      @if (branchName?.trim()) {
+                        <div class="mslip-dl__row">
+                          <dt>Branch</dt>
+                          <dd>{{ branchName }}</dd>
+                        </div>
+                      }
                       <div class="mslip-dl__row">
                         <dt>Checkup ID</dt>
                         <dd class="mslip-mono">{{ checkup?.id || '—' }}</dd>

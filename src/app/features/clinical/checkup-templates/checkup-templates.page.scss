@@ -71,7 +71,7 @@
   padding: 0;
   border-radius: 0.5rem;
   border: 1px solid rgb(226 232 240 / 0.95);
-  background: #e6e9f3;
+  background: var(--hms-color-canvas);
   box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
   overflow: hidden;
 }
@@ -217,15 +217,15 @@
 
 /* Filled CTA — same emerald as HMS toolbar / p-button-success */
 :host ::ng-deep .cts-solid-neutral-btn.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link) {
-  background: #10b981 !important;
-  border-color: #10b981 !important;
+  background: var(--hms-color-primary-bright) !important;
+  border-color: var(--hms-color-primary-bright) !important;
   color: #ffffff !important;
   box-shadow: 0 1px 2px rgb(16 185 129 / 14%);
 }
 
 :host ::ng-deep .cts-solid-neutral-btn.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link):enabled:hover {
-  background: #059669 !important;
-  border-color: #059669 !important;
+  background: var(--hms-color-primary) !important;
+  border-color: var(--hms-color-primary) !important;
   color: #ffffff !important;
   box-shadow: 0 2px 6px rgb(16 185 129 / 20%);
 }

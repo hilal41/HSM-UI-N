@@ -95,12 +95,12 @@
             <button
               pButton
               type="button"
-              icon="pi pi-th-large"
+              icon="pi pi-sitemap"
               [text]="true"
               severity="secondary"
-              (click)="openModulesDialog(row)"
-              title="Modules"
-              aria-label="Modules"
+              (click)="openBranchDialog(row)"
+              title="Branches"
+              aria-label="Branches"
             ></button>
             <button
               pButton
@@ -205,6 +205,37 @@
         <p-toggleswitch inputId="u-ac" [(ngModel)]="formIsActive" name="uAc" />
         <label for="u-ac" class="text-sm text-slate-600">Active</label>
       </div>
+      @if (editingId == null && branchOptions.length) {
+        <div class="flex flex-col gap-1 sm:col-span-2">
+          <label class="hms-field-label" for="u-create-branches">Branches</label>
+          <p-multiselect
+            inputId="u-create-branches"
+            [(ngModel)]="formCreateBranchIds"
+            name="uCreateBranches"
+            [options]="branchOptions"
+            optionLabel="label"
+            optionValue="value"
+            display="chip"
+            placeholder="Assign branches (defaults to Main)"
+            styleClass="w-full"
+            appendTo="body"
+          />
+        </div>
+        <div class="flex flex-col gap-1 sm:col-span-2">
+          <label class="hms-field-label" for="u-create-default-branch">Default branch</label>
+          <p-select
+            inputId="u-create-default-branch"
+            [(ngModel)]="formCreateDefaultBranchId"
+            name="uCreateDefaultBranch"
+            [options]="filteredCreateDefaultBranchOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Default"
+            styleClass="w-full"
+            appendTo="body"
+          />
+        </div>
+      }
       </div>
     </div>
     <div class="hms-dialog-footer">
@@ -308,6 +339,63 @@
 </p-dialog>
 
 <p-dialog
+  header="User branches"
+  [(visible)]="branchDialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 28rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="grid grid-cols-1 gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="u-branches">Branches</label>
+          <p-multiselect
+            inputId="u-branches"
+            [(ngModel)]="selectedBranchIds"
+            name="uBranches"
+            [options]="branchOptions"
+            optionLabel="label"
+            optionValue="value"
+            display="chip"
+            placeholder="Branches"
+            styleClass="w-full"
+            appendTo="body"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="u-default-branch">Default branch</label>
+          <p-select
+            inputId="u-default-branch"
+            [(ngModel)]="defaultBranchId"
+            name="uDefaultBranch"
+            [options]="filteredDefaultBranchOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Default"
+            styleClass="w-full"
+            appendTo="body"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="branchDialogOpen = false"></button>
+      <button
+        pButton
+        type="button"
+        label="Save"
+        icon="pi pi-check"
+        severity="success"
+        [loading]="saving"
+        (click)="saveBranches()"
+      ></button>
+    </div>
+  </div>
+</p-dialog>
+
+<p-dialog
   header="User detail"
   [(visible)]="detailDialogOpen"
   [modal]="true"
@@ -377,7 +465,7 @@
         </div>
       </div>
       <div class="sm:col-span-2">
-        <span class="mb-2 block text-xs font-medium text-slate-500">Allowed modules</span>
+        <span class="mb-2 block text-xs font-medium text-slate-500">Allowed menus from role</span>
         <div class="flex flex-wrap gap-2">
           @for (m of userDetail.allowedModules; track m.id) {
             <p-tag severity="success" [value]="m.name" />
@@ -395,56 +483,3 @@
   </ng-template>
 </p-dialog>
 
-<p-dialog
-  header="User modules"
-  [(visible)]="modDialogOpen"
-  [modal]="true"
-  [style]="{ width: 'min(95vw, 28rem)' }"
-  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
-  styleClass="hms-crud-dialog"
->
-  <div class="hms-dialog-body">
-    <div class="hms-dialog-scroll">
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-    <div class="flex flex-col gap-1 sm:col-span-2">
-      <label class="hms-field-label" for="u-md">Department scope (optional)</label>
-      <p-inputNumber
-        inputId="u-md"
-        [(ngModel)]="modulesDeptId"
-        name="uMd"
-        [useGrouping]="false"
-        placeholder="Department id"
-        styleClass="w-full"
-      />
-    </div>
-    <div class="flex flex-col gap-1 sm:col-span-2">
-        <label class="hms-field-label" for="u-mods">Modules</label>
-      <p-multiselect
-        inputId="u-mods"
-        [(ngModel)]="selectedModuleIds"
-        name="uMods"
-        [options]="moduleOptions"
-        optionLabel="label"
-        optionValue="value"
-        display="chip"
-        placeholder="Modules"
-        styleClass="w-full"
-        appendTo="body"
-      />
-    </div>
-      </div>
-    </div>
-    <div class="hms-dialog-footer">
-      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="modDialogOpen = false"></button>
-      <button
-        pButton
-        type="button"
-        label="Save"
-        icon="pi pi-check"
-        severity="success"
-        [loading]="saving"
-        (click)="saveUserModules()"
-      ></button>
-    </div>
-  </div>
-</p-dialog>

@@ -1,0 +1,146 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Branches"
+  subtitle="Hospital locations — departments, doctors, and visits are scoped per branch"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    @if (canManageBranches()) {
+      <button
+        pButton
+        type="button"
+        label="New branch"
+        icon="pi pi-plus"
+        severity="secondary"
+        class="hms-toolbar-solid"
+        (click)="openCreate()"
+      ></button>
+    }
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    @if (errorMessage) {
+      <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+    }
+    <p-table
+      [showLoader]="false"
+      [value]="rows"
+      [loading]="loading"
+      styleClass="p-datatable-sm hms-crud-table"
+      [paginator]="true"
+      [rows]="10"
+    >
+      <ng-template #header>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Status</th>
+          <th>Main</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-row>
+        <tr>
+          <td class="font-mono text-xs">{{ row.code }}</td>
+          <td>{{ row.name }}</td>
+          <td>
+            <p-tag
+              [value]="row.status"
+              [severity]="row.status === 'Active' ? 'success' : 'secondary'"
+            />
+          </td>
+          <td>
+            @if (row.isMain) {
+              <p-tag value="Main" severity="info" />
+            }
+          </td>
+          <td class="text-end">
+            @if (canManageBranches()) {
+              <button
+                pButton
+                type="button"
+                icon="pi pi-pencil"
+                [text]="true"
+                severity="secondary"
+                class="mr-1"
+                (click)="openEdit(row)"
+                aria-label="Edit"
+              ></button>
+              @if (!row.isMain) {
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-trash"
+                  [text]="true"
+                  severity="danger"
+                  (click)="confirmDelete(row)"
+                  aria-label="Delete"
+                ></button>
+              }
+            }
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #loadingbody>
+        <app-hms-table-loading-body [cols]="5" />
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="5" class="hms-table-empty-cell text-center text-sm text-slate-500">
+            No branches yet.
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog
+  [(visible)]="dialogOpen"
+  [modal]="true"
+  [header]="editing ? 'Edit branch' : 'New branch'"
+  [style]="{ width: '28rem' }"
+  [draggable]="false"
+>
+  <div class="flex flex-col gap-3">
+    @if (!editing) {
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="br-code">Code</label>
+        <input pInputText id="br-code" class="w-full" [(ngModel)]="formCode" />
+      </div>
+    }
+    <div class="flex flex-col gap-1">
+      <label class="hms-field-label" for="br-name">Name</label>
+      <input pInputText id="br-name" class="w-full" [(ngModel)]="formName" />
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="hms-field-label" for="br-address">Address</label>
+      <input pInputText id="br-address" class="w-full" [(ngModel)]="formAddress" />
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="hms-field-label" for="br-phone">Phone</label>
+      <input pInputText id="br-phone" class="w-full" [(ngModel)]="formPhone" />
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="hms-field-label" for="br-email">Email</label>
+      <input pInputText id="br-email" class="w-full" [(ngModel)]="formEmail" />
+    </div>
+    @if (editing) {
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="br-status">Status</label>
+        <p-select
+          inputId="br-status"
+          [options]="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          [(ngModel)]="formStatus"
+          styleClass="w-full"
+        />
+      </div>
+    }
+  </div>
+  <ng-template #footer>
+    <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="dialogOpen = false"></button>
+    <button pButton type="button" label="Save" icon="pi pi-check" [loading]="saving" (click)="save()"></button>
+  </ng-template>
+</p-dialog>

@@ -1,4 +1,4 @@
-<div class="flex min-h-screen flex-col bg-[#e6e9f3] md:flex-row">
+<div class="flex min-h-screen flex-col bg-[var(--hms-color-canvas)] md:flex-row">
   <!-- Photo: Unsplash (healthcare) — left 50% on desktop, top strip on mobile -->
   <div class="relative h-40 shrink-0 overflow-hidden md:h-auto md:min-h-screen md:w-1/2">
     @for (slide of heroSlides; track slide.src; let i = $index) {
@@ -25,7 +25,7 @@
   <div
     class="flex flex-1 items-center justify-center px-4 py-8 md:w-1/2 md:px-8 md:py-12"
   >
-    <p-card styleClass="w-full max-w-md border border-[#e6e9f3] bg-[#FFFFFF] shadow-sm">
+    <p-card styleClass="w-full max-w-md border border-[var(--hms-color-border)] bg-[var(--hms-color-surface)] shadow-sm">
       <ng-template #title>
         <div class="text-center">
           <span class="text-2xl font-semibold text-slate-800">HMS</span>
@@ -77,9 +77,34 @@
           class="w-full"
           severity="success"
           [loading]="loading"
-          [disabled]="loading"
+          [disabled]="loading || branchPickerOpen"
           (click)="submit()"
         ></button>
+
+        @if (branchPickerOpen) {
+          <div class="mt-2 flex flex-col gap-3 rounded-lg border border-emerald-200 bg-emerald-50/60 p-3">
+            <p class="text-sm font-medium text-slate-700">Select your branch</p>
+            <p-select
+              [options]="branchOptions"
+              optionLabel="label"
+              optionValue="value"
+              [(ngModel)]="selectedBranchId"
+              placeholder="Choose branch"
+              styleClass="w-full"
+              appendTo="body"
+            />
+            <button
+              pButton
+              type="button"
+              label="Continue"
+              icon="pi pi-arrow-right"
+              class="w-full"
+              severity="success"
+              [loading]="loading"
+              (click)="confirmBranch()"
+            ></button>
+          </div>
+        }
 
         <div class="text-center text-sm">
           <a routerLink="/auth/forgot-password" class="text-emerald-900 underline decoration-emerald-800/40">

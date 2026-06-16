@@ -65,11 +65,11 @@ export class ProfilePage implements OnInit {
   }
 
   refreshAccessToken(): void {
-    const rt = this.session.refreshToken();
-    if (!rt) return;
+    const body = this.session.buildRefreshTokenRequest();
+    if (!body) return;
     this.refreshing = true;
     this.authApi
-      .refreshToken({ refreshToken: rt })
+      .refreshToken(body)
       .pipe(finalize(() => (this.refreshing = false)))
       .subscribe({
         next: (res) => {

@@ -33,6 +33,7 @@ export class PatientRegistrationSlipComponent implements OnChanges {
   @Input({ required: true }) totalAmount = 0;
   @Input({ required: true }) discountAmount = 0;
   @Input({ required: true }) ageYears = 0;
+  @Input() branchName: string | null = null;
 
   slipGeneratedLabel = '';
 

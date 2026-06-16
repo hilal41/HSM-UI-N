@@ -1,6 +1,6 @@
 /* Service search combobox — match `pr-pill-white` / registration inputs */
-$svc-pill-border: #0f172a;
-$svc-pill-text: #0f2744;
+$svc-pill-border: var(--hms-color-border-strong, var(--hms-color-text));
+$svc-pill-text: var(--hms-color-text);
 $svc-pill-hover-bg: #f1f5f9;
 $svc-pill-hover-border: #020617;
 $svc-pill-hover-text: #020617;
@@ -118,7 +118,7 @@ app-patient-registration-slip.pr-registration-slip {
 :host ::ng-deep button.pr-pill-white.p-button {
   background: #ffffff !important;
   border: 1px solid #0f172a !important;
-  color: #0f2744 !important;
+  color: $svc-pill-text !important;
   border-radius: 9999px !important;
   box-shadow: none !important;
   font-weight: 500;
@@ -133,7 +133,7 @@ app-patient-registration-slip.pr-registration-slip {
 }
 
 :host ::ng-deep button.pr-pill-white.p-button .p-button-label {
-  color: #0f2744 !important;
+  color: $svc-pill-text !important;
 }
 
 :host ::ng-deep button.pr-pill-white.p-button:not(:disabled):hover {
@@ -274,7 +274,7 @@ app-patient-registration-slip.pr-registration-slip {
   bottom: 0;
   width: 5px;
   border-radius: $pr-card-radius 0 0 $pr-card-radius;
-  background: linear-gradient(180deg, #16a34a 0%, #059669 50%, #0ea5a5 100%);
+  background: linear-gradient(180deg, var(--hms-color-primary-bright) 0%, var(--hms-color-primary) 100%);
   box-shadow: 1px 0 12px rgba(5, 150, 105, 0.22);
 }
 
@@ -292,7 +292,7 @@ app-patient-registration-slip.pr-registration-slip {
   font-weight: 700;
   letter-spacing: -0.015em;
   line-height: 1.25;
-  color: #0b2540;
+  color: var(--hms-color-text);
 }
 
 .patient-record-card__row {
@@ -335,7 +335,7 @@ app-patient-registration-slip.pr-registration-slip {
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #5b7088;
+  color: var(--hms-color-text-muted);
 }
 
 .patient-record-card__value {
@@ -349,28 +349,28 @@ app-patient-registration-slip.pr-registration-slip {
   font-size: 1.06rem;
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: #0b2540;
+  color: var(--hms-color-text);
 }
 
 .patient-record-card__value--mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.92rem;
   font-weight: 600;
-  color: #1e3a5f;
+  color: var(--hms-color-text);
 }
 
 .patient-record-card__value--age {
   font-size: 1rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: #0f766e;
+  color: var(--hms-color-primary-hover);
 }
 
 .patient-record-card__age-suffix {
   font-size: 0.82rem;
   font-weight: 600;
   margin-left: 0.125rem;
-  color: #5b7088;
+  color: var(--hms-color-text-muted);
 }
 
 .patient-record-card__value--address {
@@ -404,7 +404,7 @@ app-patient-registration-slip.pr-registration-slip {
   margin: 0;
   font-size: 0.84rem;
   line-height: 1.5;
-  color: #5b7088;
+  color: var(--hms-color-text-muted);
 }
 
 .patient-record-card__empty-shell {
@@ -430,7 +430,7 @@ app-patient-registration-slip.pr-registration-slip {
 
 .patient-record-card__empty-icon {
   font-size: 1.05rem;
-  color: #047857;
+  color: var(--hms-color-primary-hover);
 }
 
 .patient-record-card__empty-title {
@@ -439,7 +439,7 @@ app-patient-registration-slip.pr-registration-slip {
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.25;
-  color: #0b2540;
+  color: var(--hms-color-text);
 }
 
 .pr-raised-card--actions {
@@ -641,7 +641,7 @@ app-patient-registration-slip.pr-registration-slip {
     font-weight: 600;
     text-transform: none;
     letter-spacing: 0.02em;
-    color: #4a5568;
+    color: var(--hms-color-text-muted);
     background: transparent;
     border: none;
     border-bottom: 1px solid #e8e8e8;

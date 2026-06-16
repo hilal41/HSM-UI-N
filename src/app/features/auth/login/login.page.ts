@@ -6,9 +6,11 @@ import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { PasswordModule } from 'primeng/password';
+import { SelectModule } from 'primeng/select';
 import { finalize } from 'rxjs';
 import { AuthApiService } from '../../../core/api/auth-api.service';
 import { AuthSessionService } from '../../../core/services/auth-session.service';
+import type { BranchSummary, LoginResponse } from '../../../core/models/api-contracts';
 
 const heroImageUrl = (path: string) =>
   `${path}${path.includes('?') ? '&' : '?'}auto=format&fit=crop&w=1600&q=80`;
@@ -23,6 +25,7 @@ const heroImageUrl = (path: string) =>
     PasswordModule,
     ButtonModule,
     MessageModule,
+    SelectModule,
   ],
   templateUrl: './login.page.html',
 })
@@ -31,7 +34,6 @@ export class LoginPage implements OnInit, OnDestroy {
   private readonly session = inject(AuthSessionService);
   private readonly router = inject(Router);
 
-  /** Rotates every 3s; URLs from Unsplash (user-provided photos). */
   readonly heroSlides: readonly { src: string; alt: string }[] = [
     {
       src: heroImageUrl('https://plus.unsplash.com/premium_photo-1682130277144-423d6b582e56?ixlib=rb-4.1.0'),
@@ -63,6 +65,11 @@ export class LoginPage implements OnInit, OnDestroy {
   loading = false;
   errorMessage: string | null = null;
 
+  branchPickerOpen = false;
+  pendingLogin: LoginResponse | null = null;
+  branchOptions: { label: string; value: number }[] = [];
+  selectedBranchId: number | null = null;
+
   ngOnInit(): void {
     for (const slide of this.heroSlides) {
       const img = new Image();
@@ -91,14 +98,51 @@ export class LoginPage implements OnInit, OnDestroy {
       .login({ userNameOrEmail: u, password: this.password })
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
-        next: (res) => {
-          this.session.setSession(res);
-          void this.router.navigateByUrl('/app/dashboard');
-        },
+        next: (res) => this.handleLoginSuccess(res),
         error: (err: { error?: { message?: string } }) => {
           this.errorMessage =
             err?.error?.message ?? 'Sign-in failed. Check your credentials and try again.';
         },
       });
+  }
+
+  confirmBranch(): void {
+    if (!this.pendingLogin || this.selectedBranchId == null) {
+      this.errorMessage = 'Select a branch to continue.';
+      return;
+    }
+    this.loading = true;
+    this.authApi
+      .switchBranch({ branchId: this.selectedBranchId })
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: (res) => {
+          this.branchPickerOpen = false;
+          this.pendingLogin = null;
+          this.session.setSession(res);
+          void this.router.navigateByUrl('/app/dashboard');
+        },
+        error: () => {
+          this.errorMessage = 'Could not activate the selected branch.';
+        },
+      });
+  }
+
+  private handleLoginSuccess(res: LoginResponse): void {
+    const branches = res.branches ?? [];
+    const needsPicker = branches.length > 1 && (res.activeBranchId == null || res.activeBranchId <= 0);
+    if (needsPicker) {
+      this.pendingLogin = res;
+      this.branchOptions = branches.map((b: BranchSummary) => ({
+        label: b.isMain ? `${b.name} (Main)` : b.name,
+        value: b.id,
+      }));
+      this.selectedBranchId = branches.find((b) => b.isDefault)?.id ?? branches[0]?.id ?? null;
+      this.session.setSession(res);
+      this.branchPickerOpen = true;
+      return;
+    }
+    this.session.setSession(res);
+    void this.router.navigateByUrl('/app/dashboard');
   }
 }

@@ -1,0 +1,371 @@
+<div class="reports-root print-area">
+  <app-surface-panel
+    class="hms-crud-surface no-print"
+    title="Reports"
+    [subtitle]="rangeSubtitle()"
+  >
+    <div surfacePanelActions class="hms-crud-actions reports-toolbar">
+      @if (showBranchFilter()) {
+        <p-select
+          [(ngModel)]="selectedBranchFilter"
+          [options]="branchFilterOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Branch"
+          styleClass="reports-branch-select"
+          appendTo="body"
+          (ngModelChange)="onBranchFilterChange()"
+        />
+      }
+      <button
+        pButton
+        type="button"
+        label="Today"
+        class="hms-toolbar-chip"
+        [class.hms-toolbar-chip--active]="activePeriod() === 'today'"
+        severity="secondary"
+        [outlined]="activePeriod() !== 'today'"
+        (click)="applyPeriod('today')"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="This week"
+        class="hms-toolbar-chip"
+        [class.hms-toolbar-chip--active]="activePeriod() === 'week'"
+        severity="secondary"
+        [outlined]="activePeriod() !== 'week'"
+        (click)="applyPeriod('week')"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="This month"
+        class="hms-toolbar-chip"
+        [class.hms-toolbar-chip--active]="activePeriod() === 'month'"
+        severity="secondary"
+        [outlined]="activePeriod() !== 'month'"
+        (click)="applyPeriod('month')"
+      ></button>
+      <div class="reports-range-slot" [class.reports-range-slot--open]="showRangeRow()">
+        @if (!showRangeRow()) {
+          <button
+            pButton
+            type="button"
+            label="Custom range"
+            icon="pi pi-calendar"
+            class="hms-toolbar-chip"
+            [class.hms-toolbar-chip--active]="activePeriod() === 'range'"
+            severity="secondary"
+            [outlined]="activePeriod() !== 'range'"
+            (click)="openRangeRow()"
+          ></button>
+        } @else {
+          <p-datepicker
+            [(ngModel)]="fromDate"
+            dateFormat="yy-mm-dd"
+            [showIcon]="true"
+            iconDisplay="input"
+            appendTo="body"
+            styleClass="reports-date"
+          />
+          <p-datepicker
+            [(ngModel)]="toDate"
+            dateFormat="yy-mm-dd"
+            [showIcon]="true"
+            iconDisplay="input"
+            appendTo="body"
+            styleClass="reports-date"
+          />
+          <button
+            pButton
+            type="button"
+            label="Apply"
+            class="hms-toolbar-chip"
+            [class.hms-toolbar-chip--active]="activePeriod() === 'range'"
+            severity="secondary"
+            [outlined]="activePeriod() !== 'range'"
+            (click)="applyRange()"
+          ></button>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-times"
+            class="hms-toolbar-chip hms-toolbar-chip--icon"
+            severity="secondary"
+            [outlined]="true"
+            aria-label="Hide date range"
+            (click)="closeRangeRow()"
+          ></button>
+        }
+      </div>
+      <button
+        pButton
+        type="button"
+        label="Print report"
+        icon="pi pi-print"
+        class="hms-toolbar-solid"
+        [loading]="data.printLoading()"
+        [disabled]="data.state() !== 'ready'"
+        (click)="printReport()"
+      ></button>
+    </div>
+
+    <div class="hms-crud-body-spacer"></div>
+
+    <div class="reports-body hms-crud-panel-body">
+      @if (data.state() === 'loading') {
+        <p class="reports-muted">Loading report…</p>
+      } @else if (data.error()) {
+        <div class="reports-error" role="alert">
+          <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+          <span>{{ data.error() }}</span>
+        </div>
+      } @else if (data.state() === 'ready') {
+        <section class="reports-section reports-section--financial" aria-label="Financial summary">
+          <h2 class="reports-section__title">Financial summary</h2>
+          <div class="reports-stat-grid">
+            @for (card of data.financialCards(); track card.key) {
+              <app-dashboard-stat-card [card]="card" />
+            }
+          </div>
+        </section>
+
+        @if (data.trend().length) {
+          <section class="reports-section" aria-label="Daily breakdown">
+            <h2 class="reports-section__title">Daily breakdown</h2>
+            <div class="reports-table-wrap">
+              <table class="reports-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th class="reports-table__num">Visits</th>
+                    <th class="reports-table__num">Service</th>
+                    <th class="reports-table__num">Discount</th>
+                    <th class="reports-table__num">Net</th>
+                    <th class="reports-table__num">Received</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of data.trend(); track row.date) {
+                    <tr>
+                      <td>{{ row.date | date: 'mediumDate' }}</td>
+                      <td class="reports-table__num">{{ row.visitCount | number }}</td>
+                      <td class="reports-table__num">{{ row.totalServiceAmount | number: '1.0-0' }}</td>
+                      <td class="reports-table__num">{{ row.totalDiscount | number: '1.0-0' }}</td>
+                      <td class="reports-table__num">{{ row.netAmount | number: '1.0-0' }}</td>
+                      <td class="reports-table__num">{{ row.totalReceived | number: '1.0-0' }}</td>
+                    </tr>
+                  }
+                </tbody>
+                @if (data.financial(); as summary) {
+                  <tfoot>
+                    <tr class="reports-table__total-row">
+                      <th>Total</th>
+                      <th class="reports-table__num">{{ summary.visitCount | number }}</th>
+                      <th class="reports-table__num">{{ summary.totalServiceAmount | number: '1.0-0' }}</th>
+                      <th class="reports-table__num">{{ summary.totalDiscount | number: '1.0-0' }}</th>
+                      <th class="reports-table__num">{{ summary.netAmount | number: '1.0-0' }}</th>
+                      <th class="reports-table__num">{{ summary.totalReceived | number: '1.0-0' }}</th>
+                    </tr>
+                  </tfoot>
+                }
+              </table>
+            </div>
+          </section>
+        }
+
+        <section class="reports-section reports-section--visits" aria-label="Visit register">
+          <h2 class="reports-section__title">
+            Visit register
+            <span class="reports-section__count">({{ data.totalCount() | number }} visits)</span>
+          </h2>
+          <div class="reports-table-wrap reports-table-wrap--visits">
+            <p-table
+              [value]="data.visits()"
+              styleClass="reports-p-table hms-crud-table"
+            >
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Visit date</th>
+                  <th>Patient</th>
+                  <th>Phone</th>
+                  <th>Age</th>
+                  <th>Gender</th>
+                  <th>Doctor</th>
+                  <th>Services</th>
+                  <th class="reports-table__num">Total</th>
+                  <th class="reports-table__num">Discount</th>
+                  <th class="reports-table__num">Net</th>
+                  <th class="reports-table__num">Received</th>
+                  <th>Checkup</th>
+                  <th>Printed</th>
+                  <th>Remarks</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-row>
+                <tr>
+                  <td>{{ row.visitDate | date: 'short' }}</td>
+                  <td>{{ row.patientName }}</td>
+                  <td>{{ row.phone || '—' }}</td>
+                  <td class="tabular-nums">{{ row.ageYears }}</td>
+                  <td>{{ row.gender || '—' }}</td>
+                  <td>
+                    {{ row.doctorSummary || '—' }}
+                    @if (row.extraDoctorCount > 0) {
+                      <span class="reports-extra">+{{ row.extraDoctorCount }}</span>
+                    }
+                  </td>
+                  <td class="reports-services-cell">{{ serviceLines(row) }}</td>
+                  <td class="reports-table__num tabular-nums">{{ row.totalAmount | number: '1.0-0' }}</td>
+                  <td class="reports-table__num tabular-nums">{{ row.discountAmount | number: '1.0-0' }}</td>
+                  <td class="reports-table__num tabular-nums">{{ row.netAmount | number: '1.0-0' }}</td>
+                  <td class="reports-table__num tabular-nums">{{ row.receivedAmount | number: '1.0-0' }}</td>
+                  <td>{{ row.hasCheckup ? 'Yes' : 'No' }}</td>
+                  <td>{{ row.isPrinted ? 'Yes' : 'No' }}</td>
+                  <td class="reports-remarks-cell">{{ row.remarks || '—' }}</td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="14" class="reports-empty">No visits in this period.</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+
+          @if (data.totalCount() > data.pageSize()) {
+            <div class="reports-paginator">
+              <p-paginator
+                [rows]="data.pageSize()"
+                [totalRecords]="data.totalCount()"
+                [first]="(data.page() - 1) * data.pageSize()"
+                (onPageChange)="onPageChange($event)"
+              />
+            </div>
+          }
+        </section>
+      }
+    </div>
+  </app-surface-panel>
+
+  <!-- Print-only full report -->
+  @if (data.context(); as ctx) {
+    <div class="reports-print-sheet" aria-hidden="true">
+      <header class="reports-print-header">
+        <div>
+          <h1 class="reports-print-title">HMS {{ ctx.periodLabel }}</h1>
+          @if (ctx.hospitalName) {
+            <p class="reports-print-hospital">{{ ctx.hospitalName }}</p>
+          }
+        </div>
+        <div class="reports-print-meta">
+          <p>
+            <strong>Period:</strong>
+            {{ data.range().fromDate | date: 'mediumDate' }}
+            @if (data.range().fromDate !== data.range().toDate) {
+              — {{ data.range().toDate | date: 'mediumDate' }}
+            }
+          </p>
+          <p><strong>Generated:</strong> {{ ctx.generatedAt | date: 'medium' }}</p>
+        </div>
+      </header>
+
+      @if (data.financial(); as summary) {
+        <section class="reports-print-block">
+          <h2>Financial summary</h2>
+          <table class="reports-table reports-table--compact">
+            <tbody>
+              <tr>
+                <th>Visits</th>
+                <td class="reports-table__num">{{ summary.visitCount | number }}</td>
+                <th>Service charges</th>
+                <td class="reports-table__num">{{ summary.totalServiceAmount | number: '1.0-0' }}</td>
+              </tr>
+              <tr>
+                <th>Discount</th>
+                <td class="reports-table__num">{{ summary.totalDiscount | number: '1.0-0' }}</td>
+                <th>Net amount</th>
+                <td class="reports-table__num">{{ summary.netAmount | number: '1.0-0' }}</td>
+              </tr>
+              <tr>
+                <th>Received</th>
+                <td class="reports-table__num">{{ summary.totalReceived | number: '1.0-0' }}</td>
+                <th>Outstanding</th>
+                <td class="reports-table__num">{{ summary.outstandingAmount | number: '1.0-0' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        @if (data.trend().length) {
+          <section class="reports-print-block">
+            <h2>Daily breakdown</h2>
+            <table class="reports-table reports-table--compact">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th class="reports-table__num">Visits</th>
+                  <th class="reports-table__num">Service</th>
+                  <th class="reports-table__num">Discount</th>
+                  <th class="reports-table__num">Net</th>
+                  <th class="reports-table__num">Received</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of data.trend(); track row.date) {
+                  <tr>
+                    <td>{{ row.date | date: 'mediumDate' }}</td>
+                    <td class="reports-table__num">{{ row.visitCount | number }}</td>
+                    <td class="reports-table__num">{{ row.totalServiceAmount | number: '1.0-0' }}</td>
+                    <td class="reports-table__num">{{ row.totalDiscount | number: '1.0-0' }}</td>
+                    <td class="reports-table__num">{{ row.netAmount | number: '1.0-0' }}</td>
+                    <td class="reports-table__num">{{ row.totalReceived | number: '1.0-0' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </section>
+        }
+      }
+
+      <section class="reports-print-block">
+        <h2>Complete visit register ({{ data.printVisits().length | number }} visits)</h2>
+        <table class="reports-table reports-table--compact reports-table--visits-print">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Patient</th>
+              <th>Phone</th>
+              <th>Age</th>
+              <th>Doctor</th>
+              <th>Services</th>
+              <th class="reports-table__num">Total</th>
+              <th class="reports-table__num">Disc.</th>
+              <th class="reports-table__num">Net</th>
+              <th class="reports-table__num">Rcvd.</th>
+              <th>Chk.</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of data.printVisits(); track row.visitId) {
+              <tr>
+                <td>{{ row.visitDate | date: 'shortDate' }}</td>
+                <td>{{ row.patientName }}</td>
+                <td>{{ row.phone || '—' }}</td>
+                <td>{{ row.ageYears }}</td>
+                <td>{{ row.doctorSummary || '—' }}</td>
+                <td>{{ serviceLines(row) }}</td>
+                <td class="reports-table__num">{{ row.totalAmount | number: '1.0-0' }}</td>
+                <td class="reports-table__num">{{ row.discountAmount | number: '1.0-0' }}</td>
+                <td class="reports-table__num">{{ row.netAmount | number: '1.0-0' }}</td>
+                <td class="reports-table__num">{{ row.receivedAmount | number: '1.0-0' }}</td>
+                <td>{{ row.hasCheckup ? 'Y' : 'N' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    </div>
+  }
+</div>

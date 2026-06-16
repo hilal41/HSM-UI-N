@@ -73,7 +73,7 @@
   padding-bottom: var(--hms-main-pad);
   padding-inline: 0;
   min-width: 0;
-  background: #e6e9f3;
+  background: var(--hms-color-canvas);
   border-radius: 0.65rem;
 }
 
@@ -236,7 +236,7 @@
 }
 
 .rsd-preset--active {
-  border-color: #0f766e;
+  border-color: var(--hms-color-primary);
   background: #f0fdfa;
   box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.2);
 }

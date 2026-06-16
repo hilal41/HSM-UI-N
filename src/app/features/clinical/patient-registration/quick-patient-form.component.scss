@@ -1,5 +1,5 @@
 $qp-pill-border: #0f172a;
-$qp-pill-text: #0f2744;
+$qp-pill-text: var(--hms-color-text);
 $qp-pill-hover-bg: #f1f5f9;
 $qp-pill-hover-border: #020617;
 $qp-pill-hover-text: #020617;
@@ -286,7 +286,7 @@ $qp-required: #b91c1c;
 :host ::ng-deep .qp-input.p-inputtext:enabled:hover,
 :host ::ng-deep input.qp-input.p-inputtext:enabled:hover {
   background: #ffffff !important;
-  border-color: #047857 !important;
+  border-color: var(--hms-color-primary-hover) !important;
   color: #0f172a !important;
 }
 
@@ -294,7 +294,7 @@ $qp-required: #b91c1c;
 :host ::ng-deep input.qp-input.p-inputtext:enabled:focus {
   outline: none;
   background: #ffffff !important;
-  border-color: #047857 !important;
+  border-color: var(--hms-color-primary-hover) !important;
   color: #0f172a !important;
   box-shadow: none !important;
 }
@@ -371,7 +371,7 @@ $qp-required: #b91c1c;
 
 :host ::ng-deep .qp-datepicker:not(.p-disabled):hover {
   background: #ffffff !important;
-  border-color: #047857 !important;
+  border-color: var(--hms-color-primary-hover) !important;
 }
 
 :host ::ng-deep .qp-datepicker:not(.p-disabled):hover .p-datepicker-input.p-inputtext {
@@ -385,7 +385,7 @@ $qp-required: #b91c1c;
 
 :host ::ng-deep .qp-datepicker.p-datepicker.p-focus:not(.p-disabled),
 :host ::ng-deep .qp-datepicker.p-inputwrapper-focus:not(.p-disabled) {
-  border-color: #047857 !important;
+  border-color: var(--hms-color-primary-hover) !important;
   outline: none;
   box-shadow: none !important;
 }
@@ -423,18 +423,18 @@ $qp-required: #b91c1c;
 
 :host ::ng-deep .qp-select.p-select:not(.p-disabled):hover {
   background: #ffffff !important;
-  border-color: #047857 !important;
+  border-color: var(--hms-color-primary-hover) !important;
 }
 
 :host ::ng-deep .qp-select.p-select.p-focus {
   outline: none;
   background: #ffffff !important;
-  border-color: #047857 !important;
+  border-color: var(--hms-color-primary-hover) !important;
   box-shadow: none !important;
 }
 
 :host ::ng-deep .qp-select.p-select:focus-within {
-  border-color: #047857 !important;
+  border-color: var(--hms-color-primary-hover) !important;
   outline: none;
   box-shadow: none !important;
 }

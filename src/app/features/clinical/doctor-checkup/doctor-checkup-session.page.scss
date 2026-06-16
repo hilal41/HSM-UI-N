@@ -61,7 +61,7 @@
 :host ::ng-deep app-surface-panel.dcs-session-surface.hms-crud-surface .hms-crud-body-spacer {
   height: var(--hms-main-pad);
   min-height: var(--hms-main-pad);
-  background: #e6e9f3;
+  background: var(--hms-color-canvas);
 }
 
 /* Shelf: body color; gutters match shared header card spacing (`--hms-main-pad`). */
@@ -74,7 +74,7 @@
   margin-top: 0;
   padding: 0;
   min-width: 0;
-  background: #e6e9f3;
+  background: var(--hms-color-canvas);
   border-radius: 0;
 }
 

@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { branchRequiredGuard } from './core/guards/branch-required.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { menuAccessGuard } from './core/guards/menu-access.guard';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'app' },
@@ -22,6 +24,7 @@ export const routes: Routes = [
   {
     path: 'app',
     canActivate: [authGuard],
+    canActivateChild: [menuAccessGuard],
     loadComponent: () =>
       import('./shared/layout/main-shell/main-shell.component').then((m) => m.MainShellComponent),
     children: [
@@ -31,12 +34,18 @@ export const routes: Routes = [
         loadComponent: () => import('./features/dashboard/dashboard.page').then((m) => m.DashboardPage),
       },
       {
+        path: 'reports',
+        loadComponent: () => import('./features/reports/reports.page').then((m) => m.ReportsPage),
+      },
+      {
         path: 'clinical/departments',
+        canActivate: [branchRequiredGuard],
         loadComponent: () =>
           import('./features/clinical/departments/departments.page').then((m) => m.DepartmentsPage),
       },
       {
         path: 'clinical/doctors',
+        canActivate: [branchRequiredGuard],
         loadComponent: () => import('./features/clinical/doctors/doctors.page').then((m) => m.DoctorsPage),
       },
       {
@@ -46,6 +55,7 @@ export const routes: Routes = [
       },
       {
         path: 'clinical/patient-registration',
+        canActivate: [branchRequiredGuard],
         loadComponent: () =>
           import('./features/clinical/patient-registration/patient-registration.page').then(
             (m) => m.PatientRegistrationPage,
@@ -57,6 +67,16 @@ export const routes: Routes = [
           import('./features/clinical/service-categories/service-categories.page').then(
             (m) => m.ServiceCategoriesPage,
           ),
+      },
+      {
+        path: 'clinical/services/new',
+        loadComponent: () =>
+          import('./features/clinical/services/service-editor.page').then((m) => m.ServiceEditorPage),
+      },
+      {
+        path: 'clinical/services/edit/:id',
+        loadComponent: () =>
+          import('./features/clinical/services/service-editor.page').then((m) => m.ServiceEditorPage),
       },
       {
         path: 'clinical/services',
@@ -75,6 +95,7 @@ export const routes: Routes = [
       },
       {
         path: 'clinical/doctor-checkup/session/:visitId',
+        canActivate: [branchRequiredGuard],
         loadComponent: () =>
           import('./features/clinical/doctor-checkup/doctor-checkup-session.page').then(
             (m) => m.DoctorCheckupSessionPage,
@@ -82,6 +103,7 @@ export const routes: Routes = [
       },
       {
         path: 'clinical/doctor-checkup',
+        canActivate: [branchRequiredGuard],
         loadComponent: () =>
           import('./features/clinical/doctor-checkup/doctor-checkup.page').then((m) => m.DoctorCheckupPage),
       },
@@ -110,8 +132,23 @@ export const routes: Routes = [
           import('./features/administration/hospitals/hospitals.page').then((m) => m.HospitalsPage),
       },
       {
+        path: 'admin/branches',
+        loadComponent: () =>
+          import('./features/administration/branches/branches.page').then((m) => m.BranchesPage),
+      },
+      {
         path: 'admin/users',
         loadComponent: () => import('./features/administration/users/users.page').then((m) => m.UsersPage),
+      },
+      {
+        path: 'admin/roles/new',
+        loadComponent: () =>
+          import('./features/administration/roles/role-editor.page').then((m) => m.RoleEditorPage),
+      },
+      {
+        path: 'admin/roles/edit/:id',
+        loadComponent: () =>
+          import('./features/administration/roles/role-editor.page').then((m) => m.RoleEditorPage),
       },
       {
         path: 'admin/roles',

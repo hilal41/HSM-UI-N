@@ -170,6 +170,14 @@
                 <div [ngClass]="bodySectionClass()">
                   <section class="slip-block slip-block--totals">
                     <h3 class="slip-block__title">Visit</h3>
+                    @if (branchName?.trim()) {
+                      <dl class="slip-dl slip-dl--compact">
+                        <div class="slip-dl__row">
+                          <dt>Branch</dt>
+                          <dd>{{ branchName }}</dd>
+                        </div>
+                      </dl>
+                    }
                     @if (visitRemarks.trim()) {
                       <p class="slip-remarks">{{ visitRemarks }}</p>
                     }

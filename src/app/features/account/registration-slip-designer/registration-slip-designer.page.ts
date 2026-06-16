@@ -37,7 +37,7 @@ import {
 const DESIGNER_PREVIEW_LOGO_DATA_URL =
   'data:image/svg+xml,' +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="56" viewBox="0 0 96 56"><rect width="96" height="56" rx="8" fill="#0f766e"/><text x="48" y="34" text-anchor="middle" fill="#fff" font-size="13" font-family="system-ui,sans-serif">Logo</text></svg>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="56" viewBox="0 0 96 56"><rect width="96" height="56" rx="8" fill="#059669"/><text x="48" y="34" text-anchor="middle" fill="#fff" font-size="13" font-family="system-ui,sans-serif">Logo</text></svg>`,
   );
 
 const SAMPLE_PATIENT: Patient = {

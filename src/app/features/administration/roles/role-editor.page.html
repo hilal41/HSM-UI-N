@@ -1,0 +1,168 @@
+<app-surface-panel class="hms-crud-surface role-editor-surface" [title]="pageTitle">
+  <div surfacePanelActions class="hms-crud-actions role-editor-toolbar">
+    @if (!loading) {
+      <div class="role-editor-toolbar__fields">
+        <div class="role-editor-toolbar__field role-editor-toolbar__field--name">
+          <label class="hms-field-label hms-field-label--required" for="role-name">Role name</label>
+          <input
+            pInputText
+            id="role-name"
+            class="w-full"
+            [(ngModel)]="formName"
+            name="roleName"
+            [disabled]="roleDetail?.isSystemRole === true"
+            maxlength="100"
+          />
+        </div>
+
+        <div class="role-editor-toolbar__field role-editor-toolbar__field--desc">
+          <label class="hms-field-label" for="role-desc">Description</label>
+          <input
+            pInputText
+            id="role-desc"
+            class="w-full"
+            [(ngModel)]="formDescription"
+            name="roleDescription"
+            maxlength="500"
+          />
+        </div>
+      </div>
+    }
+
+    <button
+      pButton
+      type="button"
+      label="Cancel"
+      severity="secondary"
+      [outlined]="true"
+      class="hms-toolbar-chip"
+      (click)="cancel()"
+    ></button>
+    <button
+      pButton
+      type="button"
+      label="Save"
+      icon="pi pi-check"
+      severity="success"
+      class="hms-toolbar-solid"
+      [loading]="saving"
+      [disabled]="loading"
+      (click)="save()"
+    ></button>
+  </div>
+
+  <div surfacePanelHeaderFields class="role-editor-section-head">
+    <div class="role-editor-section-head__copy">
+      <h1 class="role-editor-section-head__title">Menu Permissions</h1>
+      <p class="role-editor-section-head__desc">Manage access by selecting View, New, Edit, and Delete for each page.</p>
+    </div>
+    @if (!loading) {
+      <div class="role-editor-section-head__meta">
+        <p-tag
+          [value]="roleDetail?.isSystemRole ? 'System role' : 'Custom role'"
+          [severity]="roleDetail?.isSystemRole ? 'success' : 'secondary'"
+        />
+        <span class="role-editor-section-head__count">{{ selectedMenuCount() }} selected</span>
+      </div>
+    }
+  </div>
+
+  <div class="hms-crud-panel-body role-editor-body">
+    @if (loadError) {
+      <p-message severity="error" [text]="loadError" styleClass="mb-3 w-full" />
+    }
+
+    @if (loading) {
+      <app-hms-block-skeleton [lines]="16" ariaLabel="Loading role editor" />
+    } @else {
+      <div class="role-editor-cards">
+        <div class="role-editor-cards__column">
+          @for (menu of leftColumnMenus; track menu.id; let last = $last) {
+            <ng-container
+              [ngTemplateOutlet]="menuCard"
+              [ngTemplateOutletContext]="{ $implicit: menu, fill: last }"
+            />
+          }
+        </div>
+        <div class="role-editor-cards__column">
+          @for (menu of rightColumnMenus; track menu.id; let last = $last) {
+            <ng-container
+              [ngTemplateOutlet]="menuCard"
+              [ngTemplateOutletContext]="{ $implicit: menu, fill: last }"
+            />
+          }
+        </div>
+      </div>
+
+      <ng-template #menuCard let-menu let-fill="fill">
+        <article class="role-editor-card role-editor-card--menu" [class.role-editor-card--fill]="fill">
+          <div class="role-editor-card__header">
+            <label class="role-editor-card__parent">
+              <p-checkbox
+                [binary]="true"
+                [inputId]="'role-menu-group-' + menu.id"
+                [ngModel]="isGroupFullySelected(menu)"
+                (ngModelChange)="setGroupSelected(menu, $event)"
+              />
+              <i [class]="menu.icon || 'pi pi-circle'" aria-hidden="true"></i>
+              <span>{{ menu.label }}</span>
+            </label>
+            <div class="role-editor-card__columns" aria-hidden="true">
+              @for (column of permissionColumns; track column.field) {
+                <span class="role-editor-card__column-label">{{ column.label }}</span>
+              }
+            </div>
+          </div>
+
+          @if (menu.children.length > 0) {
+            <div class="role-editor-card__children">
+              @for (child of menu.children; track child.id) {
+                <div class="role-editor-card__child-row">
+                  <label class="role-editor-card__child">
+                    <i [class]="child.icon || 'pi pi-angle-right'" aria-hidden="true"></i>
+                    <span>{{ child.label }}</span>
+                  </label>
+                  <div class="role-editor-card__columns">
+                    @for (column of permissionColumns; track column.field) {
+                      <label class="role-editor-card__permission">
+                        <p-checkbox
+                          [binary]="true"
+                          [inputId]="'role-menu-' + child.id + '-' + column.field"
+                          [ngModel]="getPermission(child.id)[column.field]"
+                          (ngModelChange)="setPermission(child.id, column.field, $event)"
+                        />
+                        <span class="sr-only">{{ column.label }} for {{ child.label }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          } @else if (isPageMenu(menu)) {
+            <div class="role-editor-card__children">
+              <div class="role-editor-card__child-row">
+                <label class="role-editor-card__child">
+                  <i [class]="menu.icon || 'pi pi-angle-right'" aria-hidden="true"></i>
+                  <span>{{ menu.label }}</span>
+                </label>
+                <div class="role-editor-card__columns">
+                  @for (column of permissionColumns; track column.field) {
+                    <label class="role-editor-card__permission">
+                      <p-checkbox
+                        [binary]="true"
+                        [inputId]="'role-menu-' + menu.id + '-' + column.field"
+                        [ngModel]="getPermission(menu.id)[column.field]"
+                        (ngModelChange)="setPermission(menu.id, column.field, $event)"
+                      />
+                      <span class="sr-only">{{ column.label }} for {{ menu.label }}</span>
+                    </label>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </article>
+      </ng-template>
+    }
+  </div>
+</app-surface-panel>

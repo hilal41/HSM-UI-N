@@ -1,5 +1,5 @@
 $qp-pill-border: #0f172a;
-$qp-pill-text: #0f2744;
+$qp-pill-text: var(--hms-color-text);
 $qp-pill-hover-border: #020617;
 $qp-border-soft: rgba(15, 81, 50, 0.1);
 
@@ -136,7 +136,7 @@ $qp-border-soft: rgba(15, 81, 50, 0.1);
   border-radius: 0.5rem;
   background: transparent;
   cursor: pointer;
-  color: #4a5568;
+  color: var(--hms-color-text-muted);
   font: inherit;
   box-sizing: border-box;
   user-select: none;

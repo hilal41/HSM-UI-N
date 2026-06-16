@@ -1,6 +1,6 @@
 $qp-border-soft: rgba(15, 81, 50, 0.1);
 $qp-pill-border: #0f172a;
-$qp-pill-text: #0f2744;
+$qp-pill-text: var(--hms-color-text);
 $qp-pill-hover-bg: #f1f5f9;
 $qp-pill-hover-border: #020617;
 $qp-pill-hover-text: #020617;
@@ -116,7 +116,7 @@ $qp-pill-hover-text: #020617;
 :host ::ng-deep .pr-flow-dialog button.pr-pill-white.p-button {
   background: #ffffff !important;
   border: 1px solid #0f172a !important;
-  color: #0f2744 !important;
+  color: var(--hms-color-text) !important;
   border-radius: 50px !important;
   box-shadow: none !important;
   font-weight: 500;
@@ -131,7 +131,7 @@ $qp-pill-hover-text: #020617;
 }
 
 :host ::ng-deep .pr-flow-dialog button.pr-pill-white.p-button .p-button-label {
-  color: #0f2744 !important;
+  color: var(--hms-color-text) !important;
 }
 
 :host ::ng-deep .pr-flow-dialog button.pr-pill-white.p-button:not(:disabled):hover {

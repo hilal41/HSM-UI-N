@@ -19,6 +19,54 @@ export interface UserSummary {
   roleName?: string | null;
   roleId?: number | null;
   hospitalId?: number | null;
+  activeBranchId?: number | null;
+}
+
+export interface BranchSummary {
+  id: number;
+  code: string;
+  name: string;
+  isMain: boolean;
+  isDefault: boolean;
+}
+
+export interface Branch {
+  id: number;
+  hospitalId: number;
+  code: string;
+  name: string;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  status: string;
+  isMain: boolean;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface CreateBranchRequest {
+  code: string;
+  name: string;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
+}
+
+export interface UpdateBranchRequest {
+  name: string;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  status: string;
+}
+
+export interface SwitchBranchRequest {
+  branchId: number;
+}
+
+export interface SetUserBranchesRequest {
+  branchIds: number[];
+  defaultBranchId?: number | null;
 }
 
 export interface LoginRequest {
@@ -32,10 +80,13 @@ export interface LoginResponse {
   user: UserSummary;
   roleName: string;
   expiresAt: string;
+  activeBranchId?: number | null;
+  branches?: BranchSummary[];
 }
 
 export interface RefreshTokenRequest {
   refreshToken: string;
+  branchId?: number | null;
 }
 
 export interface ChangePasswordRequest {
@@ -59,8 +110,11 @@ export interface MeResponse {
   roleName?: string | null;
   roleId?: number | null;
   hospitalId?: number | null;
+  activeBranchId?: number | null;
+  branches: BranchSummary[];
   departments: Department[];
   allowedModules: Module[];
+  menus: AppMenuTree[];
 }
 
 export interface AllowedModulesResponse {
@@ -69,6 +123,8 @@ export interface AllowedModulesResponse {
 
 export interface Department {
   id: number;
+  branchId?: number;
+  branchName?: string | null;
   departmentCode: string;
   name: string;
   headDoctorId?: number | null;
@@ -105,6 +161,8 @@ export interface UpdateDepartmentRequest {
 
 export interface Doctor {
   id: number;
+  branchId?: number;
+  branchName?: string | null;
   doctorNumber: string;
   firstName: string;
   lastName: string;
@@ -529,6 +587,7 @@ export interface User {
 
 export interface UserDetail extends User {
   departments: Department[];
+  branches: BranchSummary[];
   allowedModules: Module[];
 }
 
@@ -543,6 +602,8 @@ export interface CreateUserRequest {
   roleId?: number | null;
   hospitalId?: number | null;
   isActive?: boolean;
+  branchIds?: number[];
+  defaultBranchId?: number | null;
 }
 
 export interface UpdateUserRequest {
@@ -576,6 +637,80 @@ export interface Role {
   name: string;
   description?: string | null;
   isSystemRole: boolean;
+}
+
+export interface RoleDetail extends Role {
+  menuIds: number[];
+  menuPermissions: RoleMenuPermission[];
+  menuTree: AppMenuTree[];
+}
+
+export interface RoleMenuPermission {
+  menuId: number;
+  canView: boolean;
+  canCreate: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+}
+
+export interface CreateRoleRequest {
+  name: string;
+  description?: string | null;
+  menuIds: number[];
+  menuPermissions: RoleMenuPermission[];
+}
+
+export interface UpdateRoleRequest {
+  name?: string | null;
+  description?: string | null;
+  menuIds?: number[] | null;
+  menuPermissions?: RoleMenuPermission[] | null;
+}
+
+export interface SetRoleMenusRequest {
+  menuIds: number[];
+  menuPermissions: RoleMenuPermission[];
+}
+
+export interface AppMenu {
+  id: number;
+  parentId?: number | null;
+  code: string;
+  label: string;
+  route?: string | null;
+  icon?: string | null;
+  permissionKey?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  isVisible: boolean;
+}
+
+export interface AppMenuTree extends AppMenu {
+  children: AppMenuTree[];
+}
+
+export interface CreateMenuRequest {
+  parentId?: number | null;
+  code: string;
+  label: string;
+  route?: string | null;
+  icon?: string | null;
+  permissionKey?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  isVisible: boolean;
+}
+
+export interface UpdateMenuRequest {
+  parentId?: number | null;
+  code?: string | null;
+  label?: string | null;
+  route?: string | null;
+  icon?: string | null;
+  permissionKey?: string | null;
+  sortOrder?: number | null;
+  isActive?: boolean | null;
+  isVisible?: boolean | null;
 }
 
 export interface Module {
@@ -628,6 +763,8 @@ export interface PatientVisitDetailResponse {
 export interface PatientVisitResponse {
   id: number;
   hospitalId: number;
+  branchId: number;
+  branchName?: string | null;
   patientId: number;
   totalAmount: number;
   discountAmount: number;
@@ -672,6 +809,8 @@ export type PatientVisitHistoryPage = PagedResponse<PatientVisitHistoryItemRespo
 /** Registration visit log row (date range query, compact). */
 export interface PatientVisitRegisterLogItemResponse {
   visitId: number;
+  branchId: number;
+  branchName?: string | null;
   patientId: number;
   patientName: string;
   phone?: string | null;
@@ -685,6 +824,32 @@ export interface PatientVisitRegisterLogItemResponse {
   serviceSummary1?: string | null;
   serviceSummary2?: string | null;
   extraServiceCount: number;
+  totalAmount: number;
+  discountAmount: number;
+  netAmount: number;
+  receivedAmount: number;
+  remarks?: string | null;
 }
 
 export type PatientVisitRegisterLogPage = PagedResponse<PatientVisitRegisterLogItemResponse>;
+
+export interface FinancialTrendPoint {
+  date: string;
+  visitCount: number;
+  totalServiceAmount: number;
+  totalDiscount: number;
+  netAmount: number;
+  totalReceived: number;
+}
+
+export interface FinancialSummaryResponse {
+  fromDate: string;
+  toDate: string;
+  visitCount: number;
+  totalServiceAmount: number;
+  totalDiscount: number;
+  netAmount: number;
+  totalReceived: number;
+  outstandingAmount: number;
+  trend: FinancialTrendPoint[];
+}

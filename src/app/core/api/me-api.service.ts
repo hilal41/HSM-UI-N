@@ -2,7 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../tokens/api-base-url.token';
-import type { AllowedModulesResponse, Hospital, MeResponse, UpdateHospitalRequest } from '../models/api-contracts';
+import type {
+  AllowedModulesResponse,
+  AppMenuTree,
+  Hospital,
+  MeResponse,
+  UpdateHospitalRequest,
+} from '../models/api-contracts';
 
 @Injectable({ providedIn: 'root' })
 export class MeApiService {
@@ -15,6 +21,10 @@ export class MeApiService {
 
   getAllowedModules(): Observable<AllowedModulesResponse> {
     return this.http.get<AllowedModulesResponse>(`${this.base}/Me/allowed-modules`);
+  }
+
+  getMenus(): Observable<AppMenuTree[]> {
+    return this.http.get<AppMenuTree[]>(`${this.base}/Me/menus`);
   }
 
   getMyHospital(): Observable<Hospital> {
