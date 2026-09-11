@@ -4,18 +4,33 @@ import type { MenuItem } from 'primeng/api';
 import { Observable, tap } from 'rxjs';
 import { MeApiService } from '../api/me-api.service';
 import type { AppMenuTree } from '../models/api-contracts';
+import { AuthSessionService } from './auth-session.service';
 
 @Injectable({ providedIn: 'root' })
 export class MenuAccessService {
   private readonly api = inject(MeApiService);
   private readonly router = inject(Router);
+  private readonly session = inject(AuthSessionService);
 
   private readonly menusSignal = signal<AppMenuTree[]>([]);
   readonly menus = this.menusSignal.asReadonly();
   readonly menuItems = computed(() => this.toMenuItems(this.menusSignal()));
+  readonly navMenuItems = computed(() =>
+    this.toMenuItems(this.menusSignal().filter((m) => m.code !== 'account')),
+  );
+  readonly accountMenus = computed(() => {
+    const account = this.menusSignal().find((m) => m.code === 'account');
+    return account?.children ?? [];
+  });
+  readonly accountMenuItems = computed(() => this.toMenuItems(this.accountMenus()));
 
   loadMenus(): Observable<AppMenuTree[]> {
-    return this.api.getMenus().pipe(tap((menus) => this.menusSignal.set(menus)));
+    return this.api.getMenus().pipe(tap((menus) => this.setMenus(menus)));
+  }
+
+  /** Applies a tree already present in a `/me` response, avoiding a second round-trip. */
+  setMenus(menus: AppMenuTree[] | null | undefined): void {
+    this.menusSignal.set(this.normalizeMenuTree(menus));
   }
 
   clear(): void {
@@ -24,11 +39,17 @@ export class MenuAccessService {
 
   canAccessUrl(url: string): boolean {
     const cleanUrl = this.cleanUrl(url);
-    if (cleanUrl === '/app' || cleanUrl === '/app/dashboard' || cleanUrl === '/app/reports') {
+    if (cleanUrl === '/app' || cleanUrl === '/app/dashboard') {
       return true;
     }
 
     const routes = new Set(this.flatten(this.menusSignal()).map((m) => this.cleanUrl(m.route ?? '')));
+
+    // Legacy Branches URL redirects to Hospitals & Branches.
+    if (cleanUrl === '/app/admin/branches') {
+      return routes.has('/app/admin/hospitals') || routes.has('/app/admin/branches');
+    }
+
     if (routes.has(cleanUrl)) return true;
 
     // Allow child editor/session routes when their parent list menu is allowed.
@@ -42,7 +63,8 @@ export class MenuAccessService {
   }
 
   private toMenuItem(menu: AppMenuTree): MenuItem | null {
-    const children = menu.children
+    const childMenus = menu.children ?? [];
+    const children = childMenus
       .map((child) => this.toMenuItem(child))
       .filter((item): item is MenuItem => item != null);
 
@@ -50,7 +72,7 @@ export class MenuAccessService {
 
     const route = menu.route ?? undefined;
 
-    return {
+    const item: MenuItem = {
       label: menu.label,
       icon: menu.icon ?? undefined,
       routerLink: route,
@@ -59,12 +81,27 @@ export class MenuAccessService {
             void this.router.navigateByUrl(route);
           }
         : undefined,
-      items: children.length > 0 ? children : undefined,
     };
+
+    if (children.length > 0) {
+      item.items = children;
+    }
+
+    return item;
+  }
+
+  private normalizeMenuTree(menus: AppMenuTree[] | null | undefined): AppMenuTree[] {
+    if (!Array.isArray(menus)) {
+      return [];
+    }
+    return menus.map((menu) => ({
+      ...menu,
+      children: this.normalizeMenuTree(menu.children),
+    }));
   }
 
   private flatten(menus: AppMenuTree[]): AppMenuTree[] {
-    return menus.flatMap((menu) => [menu, ...this.flatten(menu.children)]);
+    return menus.flatMap((menu) => [menu, ...this.flatten(menu.children ?? [])]);
   }
 
   private cleanUrl(url: string): string {
