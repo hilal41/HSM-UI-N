@@ -1,4 +1,8 @@
+@import './registration-btn-size';
+
 $pr-header-line: rgba(15, 81, 50, 0.1);
+$qp-border-soft: rgba(15, 81, 50, 0.1);
+$qp-pill-hover-bg: var(--hms-color-canvas);
 
 .pr-register-log-scroll {
   display: flex;
@@ -8,57 +12,22 @@ $pr-header-line: rgba(15, 81, 50, 0.1);
   padding-bottom: 0.35rem !important;
 }
 
-.pr-register-log-headrow {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-  width: 100%;
-}
-
-.pr-register-log-headrow__left {
-  display: flex;
-  flex-direction: column;
-  gap: 0.12rem;
-  min-width: 0;
-}
-
 .pr-register-log-headrow__title {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 600;
-  color: #0f172a;
-  line-height: 1.15;
-  white-space: nowrap;
-}
-
-.pr-register-log-headrow__sub {
-  margin: 0;
-  font-size: 0.66rem;
+  letter-spacing: -0.02em;
+  color: var(--hms-color-text);
   line-height: 1.25;
-  color: #64748b;
-}
-
-.pr-register-log-headrow__sub strong {
-  color: #334155;
-  font-weight: 600;
-}
-
-.pr-register-log-headrow__filters {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.32rem;
-  margin-left: auto;
 }
 
 .pr-register-log-toolbar {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 0.45rem 0.75rem;
-  margin-bottom: 0.65rem;
-  padding-bottom: 0.65rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem 0.75rem;
+  margin-bottom: 0.875rem;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid $pr-header-line;
 }
 
@@ -66,26 +35,27 @@ $pr-header-line: rgba(15, 81, 50, 0.1);
   margin: 0;
   flex: 1 1 12rem;
   min-width: 0;
-  font-size: 0.78rem;
+  font-size: 0.8125rem;
   line-height: 1.45;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 .pr-register-log-toolbar__hint strong {
-  color: #0f172a;
+  color: var(--hms-color-text);
   font-weight: 600;
+}
+
+.pr-register-log-toolbar__chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  margin-left: auto;
 }
 
 .pr-register-log-toolbar__more {
   flex-shrink: 0;
-}
-
-.pr-register-log-toolbar__chip {
-  min-height: 1.48rem !important;
-}
-
-.pr-register-log-toolbar__more {
-  min-height: 1.48rem !important;
 }
 
 .pr-register-log-filters {
@@ -112,8 +82,8 @@ $pr-header-line: rgba(15, 81, 50, 0.1);
   align-items: center;
   gap: 0.5rem;
   margin-top: 0.65rem;
-  font-size: 0.78rem;
-  color: #475569;
+  font-size: 0.8125rem;
+  color: var(--hms-color-text-muted);
 }
 
 .pr-register-log-filters__actions {
@@ -124,31 +94,26 @@ $pr-header-line: rgba(15, 81, 50, 0.1);
 }
 
 @media (max-width: 900px) {
-  .pr-register-log-headrow {
-    flex-wrap: wrap;
-    align-items: flex-start;
+  .pr-register-log-toolbar {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .pr-register-log-headrow__title {
-    white-space: normal;
-    font-size: 0.95rem;
-  }
-
-  .pr-register-log-headrow__sub {
-    font-size: 0.62rem;
-  }
-
-  .pr-register-log-headrow__filters {
+  .pr-register-log-toolbar__chips {
     justify-content: flex-start;
     margin-left: 0;
     width: 100%;
+  }
+
+  .pr-register-log-headrow__title {
+    font-size: 0.95rem;
   }
 }
 
 .pr-register-log-muted {
   margin: 0;
   font-size: 0.8125rem;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 .pr-register-log-content-area {
@@ -160,8 +125,8 @@ $pr-header-line: rgba(15, 81, 50, 0.1);
 
 .pr-register-log-state {
   flex: 1 1 auto;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  border-radius: 0.5rem;
+  border: 1px solid $qp-border-soft;
+  border-radius: 0.65rem;
   background: #fafafa;
   display: flex;
   align-items: center;
@@ -174,8 +139,8 @@ $pr-header-line: rgba(15, 81, 50, 0.1);
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  border-radius: 0.5rem;
+  border: 1px solid $qp-border-soft;
+  border-radius: 0.65rem;
   background: #fafafa;
 }
 
@@ -198,11 +163,11 @@ $pr-header-line: rgba(15, 81, 50, 0.1);
   top: 0;
   z-index: 1;
   font-size: 0.65rem;
-  font-weight: 600;
+  font-weight: var(--hms-table-head-weight);
   text-transform: none;
   letter-spacing: 0.02em;
-  color: var(--hms-color-text-muted);
-  background: #f8fafc;
+  color: var(--hms-table-head-color);
+  background: var(--hms-color-primary-light);
   border-bottom: 1px solid #e8e8e8;
 }
 
@@ -221,7 +186,7 @@ $pr-header-line: rgba(15, 81, 50, 0.1);
 
 .pr-register-log-table__dt {
   font-weight: 600;
-  color: #0f172a;
+  color: var(--hms-color-text);
   font-size: 0.78rem;
 }
 
@@ -233,12 +198,12 @@ $pr-header-line: rgba(15, 81, 50, 0.1);
 .pr-register-log-table__mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.72rem;
-  color: #475569;
+  color: var(--hms-color-text-muted);
 }
 
 .pr-register-log-svc {
   display: block;
-  color: #334155;
+  color: var(--hms-color-text);
   line-height: 1.35;
   word-break: break-word;
 }
@@ -247,7 +212,7 @@ $pr-header-line: rgba(15, 81, 50, 0.1);
   margin-top: 0.2rem;
   font-size: 0.65rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 .pr-register-log-print {
@@ -255,9 +220,9 @@ $pr-header-line: rgba(15, 81, 50, 0.1);
   font-weight: 600;
   padding: 0.12rem 0.45rem;
   border-radius: 9999px;
-  border: 1px solid #e2e8f0;
-  color: #64748b;
-  background: #fff;
+  border: 1px solid var(--hms-color-border);
+  color: var(--hms-color-text-muted);
+  background: var(--hms-color-surface);
 }
 
 .pr-register-log-print--yes {
@@ -267,7 +232,7 @@ $pr-header-line: rgba(15, 81, 50, 0.1);
 }
 
 .pr-register-log-print--no {
-  border-color: #e2e8f0;
+  border-color: var(--hms-color-border);
 }
 
 .pr-register-log-paginator {
@@ -287,7 +252,7 @@ $pr-header-line: rgba(15, 81, 50, 0.1);
 
 :host ::ng-deep .pr-register-log-paginator .p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
   background: #064e3b;
-  color: #fff;
+  color: var(--hms-color-surface);
 }
 
 :host ::ng-deep .pr-register-log-dialog.hms-crud-dialog.p-dialog {
@@ -296,6 +261,11 @@ $pr-header-line: rgba(15, 81, 50, 0.1);
 
 :host ::ng-deep .pr-register-log-dialog.hms-crud-dialog .p-dialog-content {
   padding: 0 !important;
+}
+
+:host ::ng-deep .pr-register-log-dialog.hms-crud-dialog .p-dialog-header {
+  padding: 1rem 1.25rem 0.65rem;
+  border-bottom: 1px solid $qp-border-soft;
 }
 
 :host ::ng-deep .pr-register-log-dialog.hms-crud-dialog .hms-dialog-body {
@@ -310,78 +280,48 @@ $pr-header-line: rgba(15, 81, 50, 0.1);
 }
 
 :host ::ng-deep .pr-register-log-dialog button.pr-pill-white.p-button {
-  background: #ffffff !important;
-  border: 1px solid #0f172a !important;
+  @include pr-uniform-button-size;
+  background: var(--hms-color-surface) !important;
+  border: 1px solid var(--hms-color-text) !important;
   color: var(--hms-color-text) !important;
   border-radius: 50px !important;
   box-shadow: none !important;
   font-weight: 500;
-  font-size: 0.8125rem !important;
-  padding-block: 0.4rem !important;
+  font-size: 0.75rem !important;
   padding-inline: 1rem !important;
+  gap: 0.35rem;
+}
+
+:host ::ng-deep .pr-register-log-dialog button.pr-pill-white.p-button .p-button-icon,
+:host ::ng-deep .pr-register-log-dialog button.pr-pill-white.p-button .p-button-label {
+  color: var(--hms-color-text) !important;
 }
 
 :host ::ng-deep .pr-register-log-dialog button.pr-pill-white.p-button:not(:disabled):hover {
-  background: #f1f5f9 !important;
-  border-color: #020617 !important;
-  color: #020617 !important;
+  background: $qp-pill-hover-bg !important;
+  border-color: var(--hms-color-text) !important;
+  color: var(--hms-color-text) !important;
 }
 
-:host ::ng-deep .pr-register-log-dialog button.pr-pill-white.p-button:not(.p-button-outlined) {
-  background: var(--hms-color-primary-light) !important;
-  border-color: #6ee7b7 !important;
-  color: #065f46 !important;
+:host ::ng-deep .pr-register-log-dialog button.pr-pill-white.p-button:not(:disabled):hover .p-button-icon,
+:host ::ng-deep .pr-register-log-dialog button.pr-pill-white.p-button:not(:disabled):hover .p-button-label {
+  color: var(--hms-color-text) !important;
 }
 
-:host ::ng-deep .pr-register-log-dialog button.pr-pill-white.p-button:not(.p-button-outlined):not(:disabled):hover {
-  background: #dcfce7 !important;
-  border-color: #34d399 !important;
-  color: #065f46 !important;
+:host ::ng-deep .pr-register-log-dialog button.pr-pill-white.p-button:focus-visible {
+  outline: 2px solid var(--hms-color-text);
+  outline-offset: 2px;
 }
 
 :host ::ng-deep .pr-register-log-dialog button.pr-register-log-toolbar__chip--active.p-button {
-  background: var(--hms-color-primary-light) !important;
-  border-color: #6ee7b7 !important;
-  color: #065f46 !important;
+  background: var(--hms-color-surface) !important;
+  border-color: var(--hms-color-text) !important;
+  color: var(--hms-color-text) !important;
+  box-shadow: 0 0 0 1px var(--hms-color-text) !important;
 }
 
 :host ::ng-deep .pr-register-log-dialog button.pr-register-log-toolbar__chip--active.p-button:not(:disabled):hover {
-  background: #dcfce7 !important;
-  border-color: #34d399 !important;
-  color: #065f46 !important;
-}
-
-:host
-  ::ng-deep
-  .pr-register-log-dialog
-  .pr-register-log-headrow__filters
-  > button.pr-pill-white.p-button.pr-register-log-toolbar__chip,
-:host
-  ::ng-deep
-  .pr-register-log-dialog
-  .pr-register-log-headrow__filters
-  > button.pr-pill-white.p-button.pr-register-log-toolbar__more {
-  font-size: 0.58rem !important;
-  padding-block: 0.02rem !important;
-  padding-inline: 0.34rem !important;
-  min-height: 1.48rem !important;
-}
-
-:host
-  ::ng-deep
-  .pr-register-log-dialog
-  .pr-register-log-headrow__filters
-  > button.p-button
-  .p-button-label {
-  font-size: 0.58rem !important;
-  font-weight: 600 !important;
-}
-
-:host
-  ::ng-deep
-  .pr-register-log-dialog
-  .pr-register-log-headrow__filters
-  > button.p-button
-  .p-button-icon {
-  font-size: 0.56rem !important;
+  background: $qp-pill-hover-bg !important;
+  border-color: var(--hms-color-text) !important;
+  box-shadow: 0 0 0 1px var(--hms-color-text) !important;
 }

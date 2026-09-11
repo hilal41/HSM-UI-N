@@ -1,0 +1,290 @@
+<app-surface-panel
+  class="hms-crud-surface pos-surface"
+  title="Dispense / POS"
+  subtitle="Tap a medicine to add it to the cart. Stock is taken from the earliest-expiring batch."
+>
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+
+  <div class="hms-crud-panel-body pos-shell">
+    <section class="pos-stage" aria-label="Product till">
+      <div class="pos-panel pos-panel--toolbar">
+        @if (patientLabel) {
+          <div class="pos-patient">
+            <span class="pos-patient__badge"><i class="pi pi-user" aria-hidden="true"></i></span>
+            <div>
+              <div class="pos-patient__label">Patient</div>
+              <div class="pos-patient__name">{{ patientLabel }}</div>
+            </div>
+          </div>
+        }
+
+        <div class="pos-toolbar">
+          <div class="pos-mode" role="group" aria-label="Sale type">
+            <button
+              pButton
+              type="button"
+              label="OTC"
+              class="hms-toolbar-chip pos-mode__btn"
+              [class.hms-toolbar-chip--active]="saleType === 'Otc'"
+              (click)="saleType = 'Otc'"
+            ></button>
+            <button
+              pButton
+              type="button"
+              label="Rx"
+              class="hms-toolbar-chip pos-mode__btn"
+              [class.hms-toolbar-chip--active]="saleType === 'Rx'"
+              (click)="saleType = 'Rx'"
+            ></button>
+          </div>
+          <div class="pos-search" [class.is-focused]="searchFocused()">
+            <i class="pi pi-search" aria-hidden="true"></i>
+            <input
+              pInputText
+              class="pos-search__input"
+              [ngModel]="search()"
+              (ngModelChange)="onSearchChange($event)"
+              (focus)="onSearchFocus()"
+              (blur)="onSearchBlur()"
+              [placeholder]="searchPlaceholder()"
+              autocomplete="off"
+              aria-label="Search medicine"
+            />
+          </div>
+          <div class="pos-toolbar__meta">
+            <span>{{ catalogCount() }} available</span>
+          </div>
+        </div>
+      </div>
+
+      @if (catalogLoading && topSellers().length === 0) {
+        <div class="pos-panel pos-panel--fav">
+          <header class="pos-panel__head">
+            <h2 class="pos-panel__title">Top sellers</h2>
+          </header>
+          <div class="pos-empty">
+            <div class="pos-empty__icon"><i class="pi pi-spin pi-spinner" aria-hidden="true"></i></div>
+            <p>Loading till…</p>
+          </div>
+        </div>
+      } @else if (topSellers().length > 0) {
+        <div class="pos-panel pos-panel--fav">
+          <header class="pos-panel__head">
+            <h2 class="pos-panel__title">Top sellers</h2>
+            <span class="pos-panel__meta">{{ topSellers().length }} items</span>
+          </header>
+          <div class="pos-fav-grid">
+            @for (item of topSellers(); track item.medicineId; let i = $index) {
+              <button
+                type="button"
+                class="pos-tile pos-tile--fav"
+                [class.is-oos]="item.qtyOnHand <= 0"
+                (click)="addProduct(item)"
+                [attr.aria-label]="'Add ' + item.medicineName"
+              >
+                <span class="pos-tile__rank">{{ i + 1 }}</span>
+                <span class="pos-tile__avatar" aria-hidden="true">{{ item.initials }}</span>
+                <span class="pos-tile__name">{{ item.medicineName }}</span>
+                <span class="pos-tile__sub">
+                  @if (item.strength) {
+                    {{ item.strength }}
+                  } @else if (item.soldQty > 0) {
+                    {{ item.soldQty | number: '1.0-0' }} sold
+                  } @else {
+                    {{ item.medicineCode }}
+                  }
+                </span>
+                <span class="pos-tile__foot">
+                  <span class="pos-tile__price">
+                    @if (item.salePrice > 0) {
+                      {{ item.salePrice | number: '1.2-2' }}
+                    } @else {
+                      —
+                    }
+                  </span>
+                  <span class="pos-tile__stock" [class.is-low]="item.isLowStock" [class.is-oos]="item.qtyOnHand <= 0">
+                    @if (item.qtyOnHand > 0) {
+                      {{ item.qtyOnHand | number: '1.0-0' }}
+                    } @else {
+                      OOS
+                    }
+                  </span>
+                </span>
+              </button>
+            }
+            @for (_ of favGhosts(); track _) {
+              <div class="pos-tile pos-tile--ghost" aria-hidden="true"></div>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="pos-panel pos-panel--list">
+        <header class="pos-panel__head">
+          <h2 class="pos-panel__title">Quick list</h2>
+          <span class="pos-panel__meta">{{ productList().length }} medicines</span>
+        </header>
+
+        <div class="pos-panel__body">
+          <div class="pos-product-grid">
+            @for (item of productList(); track item.medicineId) {
+              <button
+                type="button"
+                class="pos-tile"
+                [class.is-oos]="item.qtyOnHand <= 0"
+                (click)="addProduct(item)"
+                [attr.aria-label]="'Add ' + item.medicineName"
+              >
+                <span class="pos-tile__avatar" aria-hidden="true">{{ item.initials }}</span>
+                <span class="pos-tile__name">{{ item.medicineName }}</span>
+                <span class="pos-tile__sub">
+                  {{ item.form || item.medicineCode }}
+                  @if (item.strength) {
+                    · {{ item.strength }}
+                  }
+                </span>
+                <span class="pos-tile__foot">
+                  <span class="pos-tile__price">
+                    @if (item.salePrice > 0) {
+                      {{ item.salePrice | number: '1.2-2' }}
+                    } @else {
+                      —
+                    }
+                  </span>
+                  <span class="pos-tile__stock" [class.is-low]="item.isLowStock" [class.is-oos]="item.qtyOnHand <= 0">
+                    @if (item.qtyOnHand > 0) {
+                      {{ item.qtyOnHand | number: '1.0-0' }}
+                    } @else {
+                      OOS
+                    }
+                  </span>
+                </span>
+              </button>
+            } @empty {
+              <div class="pos-empty pos-empty--grid">
+                <div class="pos-empty__icon"><i class="pi pi-inbox" aria-hidden="true"></i></div>
+                <p>No matching medicines.</p>
+                <span class="pos-empty__hint">Add medicines and receive stock to fill the till.</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="pos-till" aria-label="Sale cart">
+      <div class="pos-card__accent" aria-hidden="true"></div>
+
+      <header class="pos-till__head">
+        <div>
+          <p class="pos-till__eyebrow">{{ saleType === 'Rx' ? 'Prescription sale' : 'Over-the-counter' }}</p>
+          <h2>Cart</h2>
+        </div>
+        <div class="pos-till__stats">
+          <span>{{ lineCount }} lines</span>
+          <span>{{ itemsQty | number: '1.0-0' }} qty</span>
+        </div>
+      </header>
+
+      <div class="pos-till__lines">
+        @if (lines.length === 0) {
+          <div class="pos-empty pos-empty--cart">
+            <div class="pos-empty__icon"><i class="pi pi-shopping-bag" aria-hidden="true"></i></div>
+            <p>Tap a product tile to start the sale.</p>
+          </div>
+        } @else {
+          @for (line of lines; track $index) {
+            <div class="pos-line">
+              <div class="pos-line__name" [title]="line.medicineName">{{ line.medicineName }}</div>
+              <div class="pos-stepper">
+                <button type="button" (click)="bumpQty($index, -1)" aria-label="Decrease">−</button>
+                <p-inputNumber
+                  [(ngModel)]="line.qty"
+                  [min]="0.01"
+                  [minFractionDigits]="0"
+                  [maxFractionDigits]="2"
+                  inputStyleClass="pos-stepper__input"
+                />
+                <button type="button" (click)="bumpQty($index, 1)" aria-label="Increase">+</button>
+              </div>
+              <div class="pos-line__amt">
+                @if (line.unitPrice > 0) {
+                  {{ line.qty * line.unitPrice | number: '1.2-2' }}
+                } @else {
+                  —
+                }
+              </div>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-times"
+                class="p-button-text p-button-sm p-button-danger"
+                (click)="removeLine($index)"
+                aria-label="Remove"
+              ></button>
+            </div>
+          }
+        }
+      </div>
+
+      <footer class="pos-till__foot">
+        <div class="pos-adj">
+          <label class="pos-adj__field">
+            <span>Discount</span>
+            <p-inputNumber [(ngModel)]="discount" mode="decimal" [minFractionDigits]="2" styleClass="w-full" inputStyleClass="w-full" />
+          </label>
+          <label class="pos-adj__field">
+            <span>Tax</span>
+            <p-inputNumber [(ngModel)]="tax" mode="decimal" [minFractionDigits]="2" styleClass="w-full" inputStyleClass="w-full" />
+          </label>
+        </div>
+        <label class="pos-adj__field">
+          <span>Note</span>
+          <input pInputText class="w-full" [(ngModel)]="notes" placeholder="Optional" />
+        </label>
+
+        <div class="pos-total">
+          <div class="pos-total__row">
+            <span>Subtotal</span>
+            <span>{{ subTotalEstimate | number: '1.2-2' }}</span>
+          </div>
+          <div class="pos-total__grand">
+            <span>Total</span>
+            <strong>{{ totalEstimate | number: '1.2-2' }}</strong>
+          </div>
+        </div>
+
+        <div class="pos-actions">
+          <button
+            pButton
+            type="button"
+            label="Clear"
+            [outlined]="true"
+            [disabled]="lines.length === 0"
+            (click)="clearCart()"
+          ></button>
+          <button
+            pButton
+            type="button"
+            label="Complete sale"
+            icon="pi pi-check"
+            class="hms-toolbar-solid pos-pay-btn"
+            [loading]="saving"
+            [disabled]="lines.length === 0"
+            (click)="complete()"
+          ></button>
+        </div>
+
+        @if (lastSale) {
+          <div class="pos-done">
+            <i class="pi pi-check-circle" aria-hidden="true"></i>
+            <div>
+              <strong>{{ lastSale.saleNo }}</strong>
+              <span>{{ lastSale.total | number: '1.2-2' }} · {{ lastSale.lines.length }} line(s)</span>
+            </div>
+          </div>
+        }
+      </footer>
+    </aside>
+  </div>
+</app-surface-panel>

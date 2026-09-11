@@ -64,8 +64,8 @@ export class CheckupTemplateEditorPage implements OnInit {
   isCreateMode = true;
 
   get pageTitle(): string {
-    if (this.isCreateMode) return 'New custom template';
-    return this.editingBuiltIn ? 'Edit library template' : 'Edit custom template';
+    if (this.isCreateMode) return 'New Custom Template';
+    return this.editingBuiltIn ? 'Edit Library Template' : 'Edit Custom Template';
   }
 
   get pageSubtitle(): string {

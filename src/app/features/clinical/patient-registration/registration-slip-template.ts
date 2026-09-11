@@ -1,5 +1,8 @@
 /** Stored in Hospital.registrationSlipTemplateJson (API) and used when printing the slip. */
 
+import type { SlipPresetOption } from '../../../shared/slip-designer/slip-preset.util';
+import { SLIP_CUSTOM_PRESET_ID } from '../../../shared/slip-designer/slip-preset.util';
+
 export const SLIP_SECTION_IDS = [
   'hospital',
   'header',
@@ -25,26 +28,47 @@ export type SlipHorizontalAlign = 'left' | 'center' | 'right';
 /** Where the logo sits relative to hospital text (when shown and image exists). */
 export type LogoPlacement = 'none' | 'inline-start' | 'inline-end' | 'above-center';
 
-/** Preset bundles — each is visually distinct; user can tweak after applying. */
-export const SLIP_PRESET_OPTIONS: { id: string; name: string; blurb: string }[] = [
-  { id: 'classic', name: 'Classic', blurb: 'Balanced left layout, grid table, standard spacing.' },
-  { id: 'branded', name: 'Branded center', blurb: 'Logo on top, centered hospital & header, airy padding.' },
-  { id: 'compact', name: 'Compact ticket', blurb: 'Tight margins, smaller type — receipt style.' },
-  { id: 'formal', name: 'Formal serif', blurb: 'Serif font, logo left, stronger rules, professional tone.' },
-  { id: 'minimal', name: 'Minimal', blurb: 'Soft borders, no table grid, generous white space.' },
-  { id: 'bold', name: 'Bold clinical', blurb: 'Larger type, logo right, high-contrast body text.' },
-  { id: 'centered', name: 'Centered', blurb: 'Logo above, title & body blocks centered including table.' },
+export const SLIP_DEFAULT_PRESET_ID = 'modern-clinical';
+
+/** Five modern preset bundles — pick one, then customize and save. */
+export const SLIP_PRESET_OPTIONS: SlipPresetOption[] = [
+  {
+    id: 'modern-clinical',
+    name: 'Modern Clinical',
+    blurb: 'Teal accents, logo left, clean grid — recommended for most hospitals.',
+    recommended: true,
+  },
+  {
+    id: 'clean-center',
+    name: 'Clean Center',
+    blurb: 'Centered hospital block, logo above, airy margins for clinic branding.',
+  },
+  {
+    id: 'professional-formal',
+    name: 'Professional Formal',
+    blurb: 'Serif letterhead, strong rules, formal signature footer.',
+  },
+  {
+    id: 'compact-receipt',
+    name: 'Compact Receipt',
+    blurb: 'Tight spacing and smaller type — counter or thermal printers.',
+  },
+  {
+    id: 'minimal-white',
+    name: 'Minimal White',
+    blurb: 'Soft muted palette, no table grid, generous whitespace.',
+  },
 ];
 
-/** Preset id → partial template merged over defaults. */
 const SLIP_PRESET_PATCHES: Record<string, Partial<RegistrationSlipTemplate>> = {
-  classic: {
-    presetId: 'classic',
+  'modern-clinical': {
+    presetId: 'modern-clinical',
     hospitalBlockAlign: 'left',
     headerTextAlign: 'left',
     bodySectionsAlign: 'left',
-    hospitalShowLogo: false,
-    logoPlacement: 'none',
+    hospitalShowLogo: true,
+    logoPlacement: 'inline-start',
+    logoMaxHeightPx: 48,
     globalTextScale: 1,
     paddingTopMm: 6,
     paddingRightMm: 6,
@@ -58,18 +82,23 @@ const SLIP_PRESET_PATCHES: Record<string, Partial<RegistrationSlipTemplate>> = {
     titleFontSizePx: 18,
     headingFontSizePx: 10,
     tableFontSizePx: 11,
+    lineHeight: 1.35,
+    bodyColor: '#0f172a',
+    titleColor: '#0f766e',
+    mutedColor: '#64748b',
+    borderColor: '#e2e8f0',
     showTableGrid: true,
     fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
   },
-  branded: {
-    presetId: 'branded',
+  'clean-center': {
+    presetId: 'clean-center',
     hospitalBlockAlign: 'center',
     headerTextAlign: 'center',
     bodySectionsAlign: 'center',
     hospitalShowLogo: true,
     logoPlacement: 'above-center',
     logoMaxHeightPx: 56,
-    globalTextScale: 1.05,
+    globalTextScale: 1.04,
     paddingTopMm: 8,
     paddingRightMm: 8,
     paddingBottomMm: 8,
@@ -82,34 +111,15 @@ const SLIP_PRESET_PATCHES: Record<string, Partial<RegistrationSlipTemplate>> = {
     titleFontSizePx: 22,
     headingFontSizePx: 10,
     tableFontSizePx: 11,
-    showTableGrid: true,
     lineHeight: 1.45,
-  },
-  compact: {
-    presetId: 'compact',
-    hospitalBlockAlign: 'left',
-    headerTextAlign: 'left',
-    bodySectionsAlign: 'left',
-    hospitalShowLogo: false,
-    logoPlacement: 'none',
-    globalTextScale: 0.92,
-    paddingTopMm: 3,
-    paddingRightMm: 3,
-    paddingBottomMm: 3,
-    paddingLeftMm: 3,
-    marginTopMm: 0,
-    marginRightMm: 0,
-    marginBottomMm: 0,
-    marginLeftMm: 0,
-    baseFontSizePx: 10,
-    titleFontSizePx: 14,
-    headingFontSizePx: 9,
-    tableFontSizePx: 9,
-    lineHeight: 1.25,
+    bodyColor: '#0f172a',
+    titleColor: '#0f172a',
+    mutedColor: '#64748b',
+    borderColor: '#e2e8f0',
     showTableGrid: true,
   },
-  formal: {
-    presetId: 'formal',
+  'professional-formal': {
+    presetId: 'professional-formal',
     hospitalBlockAlign: 'left',
     headerTextAlign: 'left',
     bodySectionsAlign: 'left',
@@ -121,20 +131,40 @@ const SLIP_PRESET_PATCHES: Record<string, Partial<RegistrationSlipTemplate>> = {
     paddingRightMm: 7,
     paddingBottomMm: 7,
     paddingLeftMm: 7,
-    marginTopMm: 0,
-    marginRightMm: 0,
-    marginBottomMm: 0,
-    marginLeftMm: 0,
     fontFamily: 'Georgia, "Times New Roman", serif',
     borderColor: '#94a3b8',
+    bodyColor: '#1e293b',
+    titleColor: '#0f172a',
+    mutedColor: '#64748b',
     baseFontSizePx: 12,
     titleFontSizePx: 19,
     headingFontSizePx: 10,
     tableFontSizePx: 11,
     showTableGrid: true,
+    footerText:
+      'This document is issued by the hospital registration desk.\nAuthorized signature: _________________________________',
   },
-  minimal: {
-    presetId: 'minimal',
+  'compact-receipt': {
+    presetId: 'compact-receipt',
+    hospitalBlockAlign: 'left',
+    headerTextAlign: 'left',
+    bodySectionsAlign: 'left',
+    hospitalShowLogo: false,
+    logoPlacement: 'none',
+    globalTextScale: 0.92,
+    paddingTopMm: 3,
+    paddingRightMm: 3,
+    paddingBottomMm: 3,
+    paddingLeftMm: 3,
+    baseFontSizePx: 10,
+    titleFontSizePx: 14,
+    headingFontSizePx: 9,
+    tableFontSizePx: 9,
+    lineHeight: 1.25,
+    showTableGrid: true,
+  },
+  'minimal-white': {
+    presetId: 'minimal-white',
     hospitalBlockAlign: 'left',
     headerTextAlign: 'left',
     bodySectionsAlign: 'left',
@@ -147,52 +177,14 @@ const SLIP_PRESET_PATCHES: Record<string, Partial<RegistrationSlipTemplate>> = {
     paddingLeftMm: 10,
     borderColor: '#f1f5f9',
     bodyColor: '#334155',
+    titleColor: '#334155',
+    mutedColor: '#64748b',
     showTableGrid: false,
     baseFontSizePx: 13,
     titleFontSizePx: 17,
     headingFontSizePx: 9,
     tableFontSizePx: 11,
     lineHeight: 1.5,
-  },
-  bold: {
-    presetId: 'bold',
-    hospitalBlockAlign: 'left',
-    headerTextAlign: 'left',
-    bodySectionsAlign: 'left',
-    hospitalShowLogo: true,
-    logoPlacement: 'inline-end',
-    logoMaxHeightPx: 52,
-    globalTextScale: 1.08,
-    paddingTopMm: 5,
-    paddingRightMm: 6,
-    paddingBottomMm: 5,
-    paddingLeftMm: 6,
-    baseFontSizePx: 13,
-    titleFontSizePx: 20,
-    headingFontSizePx: 11,
-    tableFontSizePx: 12,
-    bodyColor: '#0f172a',
-    titleColor: '#0f172a',
-    showTableGrid: true,
-  },
-  centered: {
-    presetId: 'centered',
-    hospitalBlockAlign: 'center',
-    headerTextAlign: 'center',
-    bodySectionsAlign: 'center',
-    hospitalShowLogo: true,
-    logoPlacement: 'above-center',
-    logoMaxHeightPx: 64,
-    globalTextScale: 1,
-    paddingTopMm: 6,
-    paddingRightMm: 8,
-    paddingBottomMm: 6,
-    paddingLeftMm: 8,
-    baseFontSizePx: 12,
-    titleFontSizePx: 20,
-    headingFontSizePx: 10,
-    tableFontSizePx: 11,
-    showTableGrid: true,
   },
 };
 
@@ -294,17 +286,17 @@ function pickLogoPlacement(v: unknown, fallback: LogoPlacement): LogoPlacement {
 
 function pickPresetId(v: unknown): string {
   if (typeof v !== 'string' || !v.trim()) {
-    return 'custom';
+    return SLIP_CUSTOM_PRESET_ID;
   }
   const id = v.trim().slice(0, 40);
-  return SLIP_PRESET_OPTIONS.some((p) => p.id === id) ? id : 'custom';
+  return SLIP_PRESET_OPTIONS.some((p) => p.id === id) ? id : SLIP_CUSTOM_PRESET_ID;
 }
 
-export function defaultRegistrationSlipTemplate(): RegistrationSlipTemplate {
+function baseRegistrationSlipTemplate(): RegistrationSlipTemplate {
   const pad = 6;
   return {
     version: 1,
-    presetId: 'classic',
+    presetId: SLIP_DEFAULT_PRESET_ID,
     sectionOrder: [...SLIP_SECTION_IDS],
     hiddenSections: [],
     slipTitle: 'Patient registration slip',
@@ -344,6 +336,10 @@ export function defaultRegistrationSlipTemplate(): RegistrationSlipTemplate {
   };
 }
 
+export function defaultRegistrationSlipTemplate(): RegistrationSlipTemplate {
+  return applySlipPresetId(SLIP_DEFAULT_PRESET_ID);
+}
+
 export const SLIP_ALIGN_OPTIONS: { label: string; value: SlipHorizontalAlign }[] = [
   { label: 'Left', value: 'left' },
   { label: 'Center', value: 'center' },
@@ -362,14 +358,14 @@ export function applySlipPresetId(
   presetId: string,
   current?: Pick<RegistrationSlipTemplate, 'sectionOrder' | 'hiddenSections'>,
 ): RegistrationSlipTemplate {
-  const d = defaultRegistrationSlipTemplate();
+  const d = baseRegistrationSlipTemplate();
   const patch = SLIP_PRESET_PATCHES[presetId];
   const known = !!patch;
   const p = known ? patch! : {};
   return {
     ...d,
     ...p,
-    presetId: known ? presetId : 'classic',
+    presetId: known ? presetId : SLIP_DEFAULT_PRESET_ID,
     sectionOrder: current?.sectionOrder ? [...current.sectionOrder] : d.sectionOrder,
     hiddenSections: current?.hiddenSections ? [...current.hiddenSections] : d.hiddenSections,
   };
@@ -421,7 +417,7 @@ function pickFontFamily(v: unknown, fallback: string): string {
 }
 
 export function parseRegistrationSlipTemplateJson(json: string | null | undefined): RegistrationSlipTemplate {
-  const base = defaultRegistrationSlipTemplate();
+  const base = baseRegistrationSlipTemplate();
   if (!json || !json.trim()) {
     return base;
   }

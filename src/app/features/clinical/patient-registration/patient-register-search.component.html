@@ -1,18 +1,31 @@
 <div class="prs-body">
-  <div class="prs-search-row">
-    <span class="prs-search-icon" aria-hidden="true">
-      <i class="pi pi-search"></i>
-    </span>
-    <input
-      pInputText
-      type="search"
-      class="prs-search-input w-full"
-      [(ngModel)]="term"
-      (ngModelChange)="onTermChange()"
-      placeholder="Search name, phone, reg no…"
-      autocomplete="off"
-      id="prs-term"
-    />
+  <div class="prs-toolbar">
+    <div class="prs-search" [class.is-focused]="searchFocused">
+      <i class="pi pi-search" aria-hidden="true"></i>
+      <input
+        pInputText
+        type="text"
+        inputmode="search"
+        enterkeyhint="search"
+        class="prs-search__input"
+        [ngModel]="term"
+        (ngModelChange)="onSearchChange($event)"
+        (focus)="onSearchFocus()"
+        (blur)="onSearchBlur()"
+        [placeholder]="searchPlaceholder"
+        aria-label="Search patients"
+        autocomplete="off"
+        id="prs-term"
+      />
+    </div>
+    <button
+      pButton
+      type="button"
+      label="Register new patient"
+      icon="pi pi-user-plus"
+      class="prs-toolbar__register pr-pill-white"
+      (click)="registerNew.emit()"
+    ></button>
   </div>
 
   @if (searchError) {
@@ -38,6 +51,10 @@
           <i class="pi pi-user-plus prs-register-prompt__icon" aria-hidden="true"></i>
           <span class="prs-register-prompt__hint">Tap to register a patient</span>
         </button>
+      </div>
+    } @else if (term.trim().length > 0 && term.trim().length < minSearchLength) {
+      <div class="prs-state-fill">
+        <p class="prs-hint">Keep typing to search…</p>
       </div>
     } @else if (items.length === 0 && !loading) {
       <div class="prs-state-fill">

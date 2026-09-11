@@ -1,0 +1,171 @@
+<div class="dcm-panel" role="region" aria-label="Lab test search and assignment">
+  <div class="dcm-head">
+    <span class="dcm-title">Lab tests</span>
+    <span class="dcm-sub">Search lab tests and add — saved with checkup.</span>
+  </div>
+
+  <div class="dcm-block">
+    <div class="dcm-lbl-row">
+      <label class="dcm-lbl" for="dcl-search">Search</label>
+      @if (searchLoading) {
+        <span class="dcm-muted">Searching…</span>
+      }
+    </div>
+
+    <div class="dcm-medicine-search-area" #labSearchArea>
+      <div class="dcm-search-combo">
+        <div class="dcm-search-combo__field">
+          <button
+            type="button"
+            class="dcm-results-trigger"
+            [class.dcm-results-trigger--open]="testListOpen"
+            [attr.aria-expanded]="testListOpen"
+            aria-haspopup="listbox"
+            [attr.aria-controls]="testListOpen ? 'dcl-result-list' : null"
+            aria-label="Show or hide lab test results"
+            (click)="toggleTestList($event)"
+          >
+            <i class="pi pi-chevron-down" aria-hidden="true"></i>
+          </button>
+          <input
+            id="dcl-search"
+            type="text"
+            name="dclSearch"
+            class="dcm-search-combo__input"
+            [(ngModel)]="searchInput"
+            (ngModelChange)="onSearchInput()"
+            placeholder="Name, code…"
+            aria-label="Search lab tests"
+            autocomplete="off"
+          />
+          <button
+            type="button"
+            class="dcm-page-size-trigger"
+            [attr.aria-expanded]="pageSizeMenuOpen"
+            aria-haspopup="listbox"
+            aria-label="Results per page"
+            (click)="togglePageSizeMenu($event)"
+          >
+            <span class="dcm-page-size-value">{{ searchPageSize }}</span>
+            <i class="pi pi-chevron-down" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        @if (pageSizeMenuOpen) {
+          <div class="dcm-page-size-popover" role="listbox" aria-label="Per page">
+            @for (opt of pageSizePresets; track opt) {
+              <button type="button" class="dcm-page-size-opt" role="option" (click)="selectPageSize(opt)">
+                {{ opt }} per page
+              </button>
+            }
+            <div class="dcm-page-size-custom" (click)="$event.stopPropagation()">
+              <span class="dcm-page-size-custom-lbl">Custom</span>
+              <div class="dcm-page-size-custom-row">
+                <input
+                  type="number"
+                  name="dclCustomPs"
+                  class="dcm-page-size-custom-input"
+                  min="1"
+                  max="1000"
+                  [(ngModel)]="customPageSizeDraft"
+                  (keydown.enter)="applyCustomPageSize()"
+                />
+                <button
+                  pButton
+                  type="button"
+                  label="Apply"
+                  size="small"
+                  severity="secondary"
+                  (click)="applyCustomPageSize()"
+                ></button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      @if (testListOpen) {
+        <ul id="dcl-result-list" class="dcm-result-list" aria-live="polite">
+          @for (t of searchRows; track t.id) {
+            <li
+              class="dcm-result-row"
+              [class.dcm-result-row--staged]="isStaged(t)"
+              [class.dcm-result-row--disabled]="!canAdd(t)"
+              role="button"
+              tabindex="0"
+              [attr.aria-disabled]="canAdd(t) ? null : 'true'"
+              [attr.aria-label]="
+                canAdd(t) ? 'Add ' + t.name + ' to this visit' : t.name + ' already added'
+              "
+              (click)="onResultRowClick(t)"
+              (keydown.enter)="onResultRowClick(t)"
+              (keydown.space)="$event.preventDefault(); onResultRowClick(t)"
+            >
+              <div class="dcm-result-text">
+                <span class="dcm-result-name">{{ t.name }}</span>
+                <span class="dcm-result-meta font-mono">{{ t.code }}</span>
+                @if (t.sampleType) {
+                  <span class="dcm-result-meta">{{ t.sampleType }} · {{ t.price | number: '1.2-2' }}</span>
+                } @else {
+                  <span class="dcm-result-meta">{{ t.price | number: '1.2-2' }}</span>
+                }
+              </div>
+              @if (!canAdd(t)) {
+                <span class="dcm-result-row-hint dcm-result-row-hint--done" aria-hidden="true">Added</span>
+              }
+            </li>
+          } @empty {
+            <li class="dcm-empty">{{ searchLoading ? '…' : 'No matches on this page.' }}</li>
+          }
+        </ul>
+        <div class="dcm-pager">
+          <button
+            pButton
+            type="button"
+            label="Prev"
+            size="small"
+            severity="secondary"
+            [outlined]="true"
+            [disabled]="searchPage <= 1 || searchLoading"
+            (click)="goSearchPrev()"
+          ></button>
+          <span class="dcm-pager-meta">Page {{ searchPage }} / {{ searchTotalPages }} · {{ searchTotal }} total</span>
+          <button
+            pButton
+            type="button"
+            label="Next"
+            size="small"
+            severity="secondary"
+            [outlined]="true"
+            [disabled]="!hasNextSearchPage || searchLoading"
+            (click)="goSearchNext()"
+          ></button>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="dcm-block dcm-block--staged">
+    <span class="dcm-lbl">Selected for this checkup</span>
+    <ul class="dcm-staged-list">
+      @for (id of stagedTestIds; track id) {
+        <li class="dcm-staged-row dcm-staged-row--lab">
+          <span class="dcm-staged-label">{{ labelFor(id) }}</span>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-times"
+            [rounded]="true"
+            [text]="true"
+            severity="danger"
+            class="dcm-icon-btn"
+            (click)="removeTest(id)"
+            [attr.aria-label]="'Remove ' + labelFor(id)"
+          ></button>
+        </li>
+      } @empty {
+        <li class="dcm-empty">No tests selected yet.</li>
+      }
+    </ul>
+  </div>
+</div>

@@ -1,0 +1,69 @@
+<app-surface-panel class="hms-crud-surface" title="Returns" subtitle="Return sold medicines to stock">
+  <div surfacePanelActions class="hms-crud-actions">
+    <button pButton type="button" label="New return" icon="pi pi-plus" class="hms-toolbar-solid" (click)="createOpen = true"></button>
+  </div>
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    <p-table
+      [value]="rows"
+      [lazy]="true"
+      [paginator]="showPaginator"
+      [alwaysShowPaginator]="false"
+      [rows]="tablePageSize"
+      [totalRecords]="totalCount"
+      [loading]="loading"
+      [showLoader]="false"
+      (onLazyLoad)="onLazyLoad($event)"
+      styleClass="p-datatable-sm hms-crud-table"
+    >
+      <ng-template pTemplate="header">
+        <tr><th>Return</th><th>Date</th><th>Sale Id</th><th>Reason</th><th>Lines</th></tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td class="font-mono text-sm">{{ row.returnNo }}</td>
+          <td>{{ row.returnDate | date: 'short' }}</td>
+          <td>{{ row.saleId }}</td>
+          <td>{{ row.reason || '—' }}</td>
+          <td>{{ row.lines.length }}</td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state
+              icon="pi pi-replay"
+              title="No returns yet"
+              description="Customer and supplier returns will be listed here."
+            />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog [(visible)]="createOpen" header="Create return" [modal]="true" [style]="{ width: '36rem' }">
+  <div class="flex flex-col gap-3">
+    <div class="flex gap-2">
+      <input pInputText [(ngModel)]="saleIdInput" placeholder="Sale Id" />
+      <button pButton type="button" label="Load" (click)="loadSale()"></button>
+    </div>
+    <input pInputText [(ngModel)]="reason" placeholder="Reason" />
+    @if (sale) {
+      <div class="text-sm">
+        <p><strong>{{ sale.saleNo }}</strong> · {{ sale.total }}</p>
+        @for (l of sale.lines; track l.id) {
+          <div class="flex items-center gap-2 py-1">
+            <span class="flex-1">{{ l.medicineName }} (sold {{ l.qty }})</span>
+            <p-inputNumber [(ngModel)]="returnQtys[l.id]" [min]="0" [max]="l.qty" />
+          </div>
+        }
+      </div>
+    }
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancel" class="p-button-text" (click)="createOpen = false"></button>
+    <button pButton type="button" label="Return" [loading]="saving" [disabled]="!sale" (click)="submitReturn()"></button>
+  </ng-template>
+</p-dialog>

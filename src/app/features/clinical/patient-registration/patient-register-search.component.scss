@@ -1,6 +1,10 @@
-$qp-pill-border: #0f172a;
+@import './registration-btn-size';
+
+$qp-pill-border: var(--hms-color-text);
 $qp-pill-text: var(--hms-color-text);
-$qp-pill-hover-border: #020617;
+$qp-pill-hover-bg: var(--hms-color-canvas);
+$qp-pill-hover-border: var(--hms-color-text);
+$qp-pill-hover-text: var(--hms-color-text);
 $qp-border-soft: rgba(15, 81, 50, 0.1);
 
 :host {
@@ -21,13 +25,37 @@ $qp-border-soft: rgba(15, 81, 50, 0.1);
   padding: 0.875rem 1.25rem 0.75rem;
 }
 
-.prs-search-row {
+/* Toolbar: search left (grows), register button right — matched pill height/shape */
+.prs-toolbar {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  min-width: 0;
-  width: 100%;
+  gap: var(--hms-space, 0.65rem);
   flex-shrink: 0;
+  min-width: 0;
+}
+
+.prs-search {
+  --prs-search-icon-inset: 1rem;
+  --prs-search-icon-size: 0.95rem;
+  --prs-search-text-gap: 0.55rem;
+  --prs-search-input-padding-start: calc(
+    var(--prs-search-icon-inset) + var(--prs-search-icon-size) + var(--prs-search-text-gap)
+  );
+
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--hms-color-text);
+  border-radius: 50px;
+  background: var(--hms-color-surface);
+  box-shadow: none;
+  overflow: hidden;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
 
   input {
     user-select: text;
@@ -35,42 +63,143 @@ $qp-border-soft: rgba(15, 81, 50, 0.1);
   }
 }
 
-.prs-search-icon {
-  display: flex;
-  color: #64748b;
-  font-size: 0.9rem;
-  flex-shrink: 0;
+.prs-search:focus-within {
+  border-color: var(--hms-color-text);
+  box-shadow: 0 0 0 1px var(--hms-color-text);
 }
 
-:host ::ng-deep .prs-search-input.p-inputtext,
-:host ::ng-deep input.prs-search-input.p-inputtext {
+.prs-search > .pi-search {
+  position: absolute;
+  left: var(--prs-search-icon-inset);
+  top: 50%;
+  transform: translateY(-50%);
+  width: var(--prs-search-icon-size);
+  height: var(--prs-search-icon-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--hms-color-text-subtle);
+  font-size: 0.9rem;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 2;
+  transition: color 160ms ease;
+}
+
+.prs-search.is-focused > .pi-search {
+  color: var(--hms-color-text);
+}
+
+/* Match register pill: wrapper owns border; inner input stays borderless */
+:host ::ng-deep .p-dialog .prs-search input.prs-search__input.p-inputtext.p-component,
+:host ::ng-deep .prs-search input.prs-search__input.p-inputtext.p-component,
+:host ::ng-deep .prs-search .prs-search__input.p-inputtext.p-component {
   width: 100%;
   box-sizing: border-box;
-  background: #ffffff !important;
-  border: 1px solid $qp-pill-border !important;
+  @include pr-uniform-button-size;
+  min-height: 1.9rem !important;
+  height: 1.9rem !important;
+  max-height: 1.9rem !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-inline-end: 1rem !important;
+  padding-inline-start: var(--prs-search-input-padding-start) !important;
+  font-size: 0.75rem !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+  background: transparent !important;
+  border: 0 !important;
   border-radius: 0 !important;
-  padding: 0.4rem 1rem !important;
-  font-size: 0.8125rem !important;
+  color: var(--hms-color-text, var(--hms-color-text)) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+:host ::ng-deep .prs-search.is-focused input.prs-search__input.p-inputtext,
+:host ::ng-deep .prs-search input.prs-search__input.p-inputtext:focus,
+:host ::ng-deep .prs-search input.prs-search__input.p-inputtext:enabled:focus,
+:host ::ng-deep .prs-search input.prs-search__input.p-inputtext:focus-visible {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+:host ::ng-deep .prs-search input.prs-search__input::-webkit-search-decoration,
+:host ::ng-deep .prs-search input.prs-search__input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  display: none;
+}
+
+:host ::ng-deep .prs-search input.prs-search__input.p-inputtext::placeholder {
+  color: var(--hms-color-text-subtle) !important;
+  opacity: 1;
   font-weight: 500;
-  color: $qp-pill-text !important;
-  box-shadow: none !important;
 }
 
-:host ::ng-deep .prs-search-input.p-inputtext:enabled:focus {
-  outline: none;
+:host ::ng-deep button.prs-toolbar__register.p-button {
+  @include pr-uniform-button-size;
+  flex: 0 0 auto;
+  margin-left: auto;
+  background: var(--hms-color-surface) !important;
+  border: 1px solid var(--hms-color-text) !important;
+  color: var(--hms-color-text) !important;
+  border-radius: 50px !important;
+  box-shadow: none !important;
+  font-weight: 500;
+  font-size: 0.75rem !important;
+  padding-inline: 1rem !important;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+:host ::ng-deep button.prs-toolbar__register.p-button .p-button-icon {
+  color: var(--hms-color-text) !important;
+}
+
+:host ::ng-deep button.prs-toolbar__register.p-button .p-button-label {
+  color: var(--hms-color-text) !important;
+}
+
+:host ::ng-deep button.prs-toolbar__register.p-button:not(:disabled):hover {
+  background: $qp-pill-hover-bg !important;
   border-color: $qp-pill-hover-border !important;
-  box-shadow: none !important;
+  color: $qp-pill-hover-text !important;
 }
 
-:host ::ng-deep .prs-search-input.p-inputtext:focus-visible {
+:host ::ng-deep button.prs-toolbar__register.p-button:not(:disabled):hover .p-button-icon {
+  color: $qp-pill-hover-text !important;
+}
+
+:host ::ng-deep button.prs-toolbar__register.p-button:focus-visible {
   outline: 2px solid $qp-pill-border;
   outline-offset: 2px;
+}
+
+@media (max-width: 520px) {
+  .prs-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .prs-search {
+    flex: 1 1 100%;
+    order: 1;
+  }
+
+  :host ::ng-deep button.prs-toolbar__register.p-button {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    order: 2;
+  }
 }
 
 .prs-error {
   margin: 0;
   font-size: 0.8125rem;
-  color: #b91c1c;
+  color: var(--hms-color-danger);
   flex-shrink: 0;
 }
 
@@ -112,10 +241,9 @@ $qp-border-soft: rgba(15, 81, 50, 0.1);
 
 .prs-loading-text {
   font-size: 0.8125rem;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
-/* Same look as services table empty CTA (`services-empty-cta`) */
 .prs-register-prompt {
   margin: 0.35rem;
   border-radius: 0.5rem;
@@ -151,13 +279,13 @@ $qp-border-soft: rgba(15, 81, 50, 0.1);
 .prs-register-prompt__icon {
   font-size: 3.75rem;
   line-height: 1;
-  color: #94a3b8;
+  color: var(--hms-color-text-subtle);
 }
 
 .prs-register-prompt__hint {
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 .prs-hint {
@@ -165,7 +293,7 @@ $qp-border-soft: rgba(15, 81, 50, 0.1);
   padding: 0 0.5rem;
   text-align: center;
   font-size: 0.8125rem;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 .prs-list {
@@ -186,7 +314,7 @@ $qp-border-soft: rgba(15, 81, 50, 0.1);
   margin-bottom: 0.25rem;
   border: 1px solid transparent;
   border-radius: 0.5rem;
-  background: #ffffff;
+  background: var(--hms-color-surface);
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
@@ -204,18 +332,18 @@ $qp-border-soft: rgba(15, 81, 50, 0.1);
 .prs-hit__name {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--hms-color-text);
 }
 
 .prs-hit__meta {
   font-size: 0.72rem;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
   font-variant-numeric: tabular-nums;
 }
 
 .prs-hit__reg {
   font-weight: 500;
-  color: #475569;
+  color: var(--hms-color-text-muted);
 }
 
 .prs-hit__sep {
@@ -225,7 +353,7 @@ $qp-border-soft: rgba(15, 81, 50, 0.1);
 
 .prs-hit__city {
   font-size: 0.68rem;
-  color: #94a3b8;
+  color: var(--hms-color-text-subtle);
   margin-top: 0.1rem;
 }
 

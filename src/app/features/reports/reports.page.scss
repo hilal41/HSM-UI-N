@@ -55,7 +55,7 @@ app-reports-page app-surface-panel.hms-crud-surface .hms-surface-panel-body {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
-  gap: var(--hms-main-pad);
+  gap: var(--hms-card-gap);
   min-height: 0;
   min-width: 0;
 }
@@ -63,12 +63,12 @@ app-reports-page app-surface-panel.hms-crud-surface .hms-surface-panel-body {
 .reports-section {
   display: flex;
   flex-direction: column;
-  gap: var(--hms-page-gutter);
+  gap: var(--hms-card-gap);
   padding: var(--hms-card-padding);
   border-radius: var(--hms-space);
-  border: 1px solid var(--hms-color-border);
+  border: var(--hms-card-border);
   background: var(--hms-color-surface);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  box-shadow: var(--hms-shadow-card);
   flex-shrink: 0;
 }
 
@@ -79,12 +79,12 @@ app-reports-page app-surface-panel.hms-crud-surface .hms-surface-panel-body {
 }
 
 .reports-section--financial {
-  padding: var(--hms-main-pad);
+  padding: var(--hms-card-padding);
 }
 
 .reports-stat-grid {
   display: grid;
-  gap: var(--hms-main-pad);
+  gap: var(--hms-card-gap);
   grid-template-columns: repeat(1, minmax(0, 1fr));
   align-items: stretch;
 }
@@ -143,19 +143,20 @@ app-reports-page app-surface-panel.hms-crud-surface .hms-surface-panel-body {
 .reports-error {
   display: flex;
   align-items: center;
-  gap: var(--hms-page-gutter);
+  gap: var(--hms-card-gap);
   padding: var(--hms-card-padding);
   border-radius: var(--hms-space);
   border: 1px solid #fecaca;
-  background: #fef2f2;
-  color: #b91c1c;
+  background: var(--hms-color-danger-light);
+  color: var(--hms-color-danger);
   font-size: 0.8rem;
 }
 
 .reports-table-wrap {
   overflow: auto;
-  border: 1px solid var(--hms-color-border);
+  border: var(--hms-card-border);
   border-radius: var(--hms-space);
+  box-shadow: var(--hms-shadow-card);
 }
 
 .reports-table-wrap--visits {
@@ -196,7 +197,7 @@ app-reports-page .reports-table-wrap--visits .p-datatable-tbody > tr:only-child 
   display: flex;
   flex-shrink: 0;
   justify-content: flex-end;
-  margin-top: var(--hms-page-gutter);
+  margin-top: var(--hms-card-gap);
 }
 
 .reports-table {
@@ -214,9 +215,9 @@ app-reports-page .reports-table-wrap--visits .p-datatable-tbody > tr:only-child 
 }
 
 .reports-table thead th {
-  background: #f8fafc;
-  color: var(--hms-color-text-muted);
-  font-weight: 600;
+  background: var(--hms-color-primary-light);
+  color: var(--hms-table-head-color);
+  font-weight: var(--hms-table-head-weight);
   white-space: nowrap;
 }
 
@@ -264,7 +265,7 @@ app-reports-page .reports-table-wrap--visits .p-datatable-tbody > tr:only-child 
 
 @media print {
   body {
-    background: #fff !important;
+    background: var(--hms-color-surface) !important;
   }
 
   app-reports-page {

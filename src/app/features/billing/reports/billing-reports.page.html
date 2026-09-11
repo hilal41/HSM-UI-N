@@ -1,0 +1,116 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Billing Reports"
+  subtitle="Daily collection by cashier and day-end summary"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <input
+      type="date"
+      class="bill-date-input"
+      [(ngModel)]="businessDate"
+      (change)="load()"
+      aria-label="Business date"
+    />
+    <button
+      pButton
+      type="button"
+      icon="pi pi-refresh"
+      severity="secondary"
+      [outlined]="true"
+      class="hms-toolbar-chip hms-toolbar-chip--icon"
+      (click)="load()"
+      [loading]="loading"
+      aria-label="Refresh"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+
+  <div class="hms-crud-panel-body bill-reports-root">
+    @if (summary) {
+      <div class="bill-reports">
+        <div class="bill-kpi-grid">
+          @for (card of kpiCards; track card.key) {
+            <app-dashboard-stat-card [card]="card" />
+          }
+        </div>
+
+        <section class="bill-panel">
+          <div class="bill-panel__head">
+            <span class="bill-panel__icon" aria-hidden="true"><i class="pi pi-building"></i></span>
+            <h2 class="bill-panel__title">Head Session</h2>
+          </div>
+          <div class="bill-panel__body">
+            @if (summary.headSession) {
+              <div class="bill-head-row">
+                <code>{{ summary.headSession.sessionNo }}</code>
+                <span class="bill-head-row__muted">{{ summary.headSession.cashierUserName }}</span>
+                <p-tag
+                  [value]="summary.headSession.status"
+                  [severity]="summary.headSession.status === 'Open' ? 'success' : 'secondary'"
+                />
+              </div>
+            } @else {
+              <div class="bill-empty">
+                <span class="bill-empty__icon" aria-hidden="true"><i class="pi pi-inbox"></i></span>
+                <p>No head session for this date</p>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="bill-panel">
+          <div class="bill-panel__head">
+            <span class="bill-panel__icon" aria-hidden="true"><i class="pi pi-users"></i></span>
+            <h2 class="bill-panel__title">Collections By Cashier</h2>
+          </div>
+          <div class="bill-panel__body">
+            <p-table
+              [value]="summary.collections"
+              styleClass="p-datatable-sm hms-crud-table"
+              [showLoader]="false"
+            >
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Cashier</th>
+                  <th>Session</th>
+                  <th class="text-right">Cash</th>
+                  <th class="text-right">Card</th>
+                  <th class="text-right">Bank</th>
+                  <th class="text-right">Other</th>
+                  <th class="text-right">Total</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-r>
+                <tr>
+                  <td>{{ r.cashierUserName }}</td>
+                  <td class="font-mono text-sm">{{ r.sessionNo }}</td>
+                  <td class="text-right">{{ r.cashCollected | currency: 'PKR':'symbol-narrow':'1.2-2' }}</td>
+                  <td class="text-right">{{ r.cardCollected | currency: 'PKR':'symbol-narrow':'1.2-2' }}</td>
+                  <td class="text-right">{{ r.bankCollected | currency: 'PKR':'symbol-narrow':'1.2-2' }}</td>
+                  <td class="text-right">{{ r.otherCollected | currency: 'PKR':'symbol-narrow':'1.2-2' }}</td>
+                  <td class="text-right font-semibold">{{ r.totalCollected | currency: 'PKR':'symbol-narrow':'1.2-2' }}</td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="7">
+                    <div class="bill-empty">
+                      <span class="bill-empty__icon" aria-hidden="true"><i class="pi pi-chart-bar"></i></span>
+                      <p>No payments for this date</p>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </section>
+      </div>
+    } @else if (!loading) {
+      <div class="bill-empty">
+        <span class="bill-empty__icon" aria-hidden="true"><i class="pi pi-calendar"></i></span>
+        <p>Select a date to load the report</p>
+      </div>
+    }
+  </div>
+</app-surface-panel>

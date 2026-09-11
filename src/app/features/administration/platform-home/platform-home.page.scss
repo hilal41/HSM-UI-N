@@ -1,0 +1,453 @@
+:host {
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.plat-dash {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  animation: plat-fade-up 0.45s ease both;
+}
+
+@keyframes plat-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.plat-hero {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  border-radius: 0.85rem;
+  color: #ecfdf5;
+  background:
+    radial-gradient(ellipse 80% 120% at 100% 0%, rgb(245 158 11 / 0.22), transparent 55%),
+    linear-gradient(135deg, #042f2e 0%, #134e4a 42%, #0f766e 100%);
+  border: 1px solid rgb(94 234 212 / 0.18);
+  box-shadow: 0 12px 32px rgb(15 23 42 / 0.12);
+}
+
+.plat-hero__glow {
+  position: absolute;
+  inset: auto -10% -40% auto;
+  width: 14rem;
+  height: 14rem;
+  border-radius: 50%;
+  background: rgb(20 184 166 / 0.25);
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.plat-hero__copy {
+  position: relative;
+  z-index: 1;
+  max-width: 36rem;
+}
+
+.plat-hero__eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5eead4;
+}
+
+.plat-hero__title {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.plat-hero__sub {
+  margin: 0.45rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: rgb(236 253 245 / 0.78);
+}
+
+.plat-hero__actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+:host ::ng-deep .plat-hero__btn.p-button {
+  min-height: 2.1rem !important;
+}
+
+:host ::ng-deep .plat-hero__btn--primary.p-button {
+  background: #f59e0b !important;
+  border-color: #f59e0b !important;
+  color: #042f2e !important;
+  font-weight: 700 !important;
+}
+
+:host ::ng-deep .plat-hero__btn--primary.p-button:not(:disabled):hover {
+  background: #fbbf24 !important;
+  border-color: #fbbf24 !important;
+}
+
+:host ::ng-deep .plat-hero .p-button-outlined {
+  color: #ecfdf5 !important;
+  border-color: rgb(236 253 245 / 0.45) !important;
+  background: transparent !important;
+}
+
+:host ::ng-deep .plat-hero .p-button-outlined:not(:disabled):hover {
+  background: rgb(255 255 255 / 0.1) !important;
+}
+
+.plat-stats {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .plat-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .plat-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .plat-stat--hero {
+    grid-column: span 1;
+  }
+}
+
+.plat-stat {
+  position: relative;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.9rem 1rem;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  border: 1px solid var(--hms-color-border, #d5e2df);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+  animation: plat-fade-up 0.5s ease both;
+}
+
+.plat-stat:nth-child(2) {
+  animation-delay: 0.04s;
+}
+.plat-stat:nth-child(3) {
+  animation-delay: 0.08s;
+}
+.plat-stat:nth-child(4) {
+  animation-delay: 0.12s;
+}
+.plat-stat:nth-child(5) {
+  animation-delay: 0.16s;
+}
+.plat-stat:nth-child(6) {
+  animation-delay: 0.2s;
+}
+
+.plat-stat:hover {
+  transform: translateY(-2px);
+  border-color: var(--hms-color-primary-border, rgb(15 118 110 / 0.28));
+  box-shadow: 0 8px 22px var(--hms-platform-glow, rgb(20 184 166 / 0.18));
+}
+
+.plat-stat--hero {
+  background: linear-gradient(160deg, #ffffff 0%, #f0fdfa 100%);
+  border-color: rgb(15 118 110 / 0.22);
+}
+
+.plat-stat--alert {
+  border-color: rgb(245 158 11 / 0.45);
+  background: linear-gradient(160deg, #fffbeb 0%, #ffffff 70%);
+}
+
+.plat-stat__icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.7rem;
+  font-size: 0.95rem;
+  color: #0f766e;
+  background: rgb(15 118 110 / 0.1);
+  border: 1px solid rgb(15 118 110 / 0.18);
+}
+
+.plat-stat__icon--warn {
+  color: #b45309;
+  background: rgb(245 158 11 / 0.12);
+  border-color: rgb(245 158 11 / 0.28);
+}
+
+.plat-stat__icon--muted {
+  color: #64748b;
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+
+.plat-stat__body {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.plat-stat__label {
+  margin: 0;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hms-color-text-subtle, #8a9a98);
+}
+
+.plat-stat__value {
+  margin: 0.2rem 0 0;
+  font-size: clamp(1.35rem, 2vw, 1.7rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--hms-color-text, #0f172a);
+  font-variant-numeric: tabular-nums;
+}
+
+.plat-stat__hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.72rem;
+  color: var(--hms-color-text-muted, #5b6b6a);
+}
+
+.plat-stat__status-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+}
+
+.plat-stat__app {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--hms-color-text, #0f172a);
+}
+
+.plat-stat__meter {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgb(15 118 110 / 0.08);
+}
+
+.plat-stat__meter-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #0f766e, #14b8a6);
+  transition: width 0.4s ease;
+}
+
+.plat-panel {
+  padding: 0.95rem 1rem 1.05rem;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  border: 1px solid var(--hms-color-border, #d5e2df);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.plat-panel__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin-bottom: 0.85rem;
+}
+
+.plat-panel__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--hms-color-text, #0f172a);
+}
+
+.plat-panel__sub {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  color: var(--hms-color-text-muted, #5b6b6a);
+}
+
+:host ::ng-deep .plat-panel__cta.p-button {
+  min-height: 1.9rem !important;
+}
+
+.plat-actions {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .plat-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .plat-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1400px) {
+  .plat-actions {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.plat-action {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  text-align: left;
+  border-radius: 0.65rem;
+  border: 1px solid var(--hms-color-border, #d5e2df);
+  background: #f7fbfa;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.plat-action:hover {
+  transform: translateY(-1px);
+  border-color: rgb(15 118 110 / 0.35);
+  background: #ffffff;
+  box-shadow: 0 6px 16px rgb(15 118 110 / 0.1);
+}
+
+.plat-action--accent {
+  background: linear-gradient(135deg, #fff7ed, #ffffff);
+  border-color: rgb(245 158 11 / 0.35);
+}
+
+.plat-action--accent:hover {
+  border-color: rgb(245 158 11 / 0.55);
+  box-shadow: 0 6px 16px rgb(245 158 11 / 0.14);
+}
+
+.plat-action__icon {
+  display: grid;
+  place-items: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  border-radius: 0.6rem;
+  color: #0f766e;
+  background: rgb(15 118 110 / 0.1);
+  border: 1px solid rgb(15 118 110 / 0.16);
+  font-size: 0.9rem;
+}
+
+.plat-action--accent .plat-action__icon {
+  color: #b45309;
+  background: rgb(245 158 11 / 0.14);
+  border-color: rgb(245 158 11 / 0.28);
+}
+
+.plat-action__text {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.plat-action__label {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--hms-color-text, #0f172a);
+}
+
+.plat-action__hint {
+  font-size: 0.7rem;
+  color: var(--hms-color-text-muted, #5b6b6a);
+}
+
+.plat-action__arrow {
+  color: var(--hms-color-text-subtle, #8a9a98);
+  font-size: 0.75rem;
+  transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.plat-action:hover .plat-action__arrow {
+  transform: translateX(3px);
+  color: #0f766e;
+}
+
+.plat-table__name {
+  font-weight: 650;
+  color: var(--hms-color-text, #0f172a);
+}
+
+.plat-table__meta {
+  margin-top: 0.1rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.68rem;
+  color: var(--hms-color-text-subtle, #8a9a98);
+}
+
+.plat-table__date {
+  font-size: 0.8rem;
+  color: var(--hms-color-text-muted, #5b6b6a);
+}
+
+.plat-table__empty {
+  text-align: center;
+  padding: 1.5rem 0.75rem !important;
+  color: var(--hms-color-text-muted, #5b6b6a);
+  font-size: 0.85rem;
+}
+
+:host ::ng-deep .plat-table.p-datatable .p-datatable-thead > tr > th {
+  background: #f0fdfa !important;
+  color: var(--hms-table-head-color) !important;
+  font-weight: var(--hms-table-head-weight);
+  border-color: var(--hms-color-border, #d5e2df) !important;
+  font-size: 0.68rem !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+:host ::ng-deep .plat-table.p-datatable .p-datatable-tbody > tr:hover {
+  background: #f7fbfa !important;
+}

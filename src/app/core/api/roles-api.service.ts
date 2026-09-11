@@ -1,9 +1,10 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { API_BASE_URL } from '../tokens/api-base-url.token';
 import type {
   CreateRoleRequest,
+  PagedResponse,
   Role,
   RoleDetail,
   SetRoleMenusRequest,
@@ -16,7 +17,15 @@ export class RolesApiService {
   private readonly base = inject(API_BASE_URL);
 
   getAll(): Observable<Role[]> {
-    return this.http.get<Role[]>(`${this.base}/Roles`);
+    const params = new HttpParams().set('page', '1').set('pageSize', '100');
+    return this.http
+      .get<PagedResponse<Role>>(`${this.base}/Roles`, { params })
+      .pipe(map((res) => res.items ?? []));
+  }
+
+  /** For user create/edit dropdown; allowed with Users view permission. */
+  getForAssignment(): Observable<Role[]> {
+    return this.http.get<Role[]>(`${this.base}/Roles/for-assignment`);
   }
 
   getById(id: number): Observable<RoleDetail> {

@@ -33,12 +33,7 @@
 /* Card 1 — title, subtitle, code, name (uniform `--hms-card-padding` inset) */
 .cte-title-card {
   flex-shrink: 0;
-  border-radius: 0.5rem;
-  border: 1px solid rgb(226 232 240 / 0.95);
-  background: #fff;
   padding: var(--cte-card-pad);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
-  box-sizing: border-box;
 }
 
 /* One row: title + subtitle | Code | Display name (wraps on small screens) */
@@ -67,7 +62,7 @@
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: -0.01em;
-  color: #0f172a;
+  color: var(--hms-color-text);
 }
 
 .cte-title-card__sub {
@@ -76,7 +71,7 @@
   min-width: 0;
   font-size: 0.72rem;
   line-height: 1.4;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 .cte-title-card__fields {
@@ -152,7 +147,7 @@
 .cte-hint-line {
   font-size: 0.65rem;
   line-height: 1.3;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 .cte-field.p-inputtext {

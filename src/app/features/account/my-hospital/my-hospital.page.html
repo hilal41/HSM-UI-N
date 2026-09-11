@@ -1,112 +1,263 @@
-<app-surface-panel title="My hospital">
-  @if (loading) {
-    <app-hms-block-skeleton [lines]="12" ariaLabel="Loading hospital" />
-  } @else if (errorMessage) {
-    <p-message severity="warn" [text]="errorMessage" styleClass="w-full" />
-  } @else if (hospital) {
-    <div class="flex max-w-xl flex-col gap-4">
-      <div class="flex flex-wrap gap-2 text-sm text-slate-600">
-        <span class="font-mono text-xs text-slate-500">#{{ hospital.id }}</span>
-        <span>{{ hospital.code }}</span>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-slate-600" for="mh-name">Name</label>
-        <input pInputText id="mh-name" class="w-full" [(ngModel)]="name" name="hName" />
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-slate-600" for="mh-address">Address</label>
-        <input pInputText id="mh-address" class="w-full" [(ngModel)]="address" name="hAddress" />
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-slate-600" for="mh-phone">Phone</label>
-        <input pInputText id="mh-phone" class="w-full" [(ngModel)]="phone" name="hPhone" />
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-slate-600" for="mh-email">Email</label>
-        <input pInputText id="mh-email" type="email" class="w-full" [(ngModel)]="email" name="hEmail" />
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-slate-600" for="mh-website">Website</label>
-        <input pInputText id="mh-website" type="url" class="w-full" [(ngModel)]="website" name="hWebsite" placeholder="https://…" />
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-slate-600" for="mh-reg">Business / registration number</label>
-        <input
-          pInputText
-          id="mh-reg"
-          class="w-full"
-          [(ngModel)]="businessRegistrationNumber"
-          name="hReg"
-          placeholder="Tax ID, NTN, trade licence…"
-        />
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-slate-600" for="mh-tag">Tagline</label>
-        <input pInputText id="mh-tag" class="w-full" [(ngModel)]="tagline" name="hTag" placeholder="Short line shown on letterhead / slips" />
-      </div>
-
-      <div class="flex flex-col gap-2">
-        <span class="text-xs font-medium text-slate-600">Logo (stored as base64)</span>
-        @if (logoBase64) {
-          <img [src]="logoBase64" alt="Hospital logo preview" class="max-h-24 max-w-xs rounded border border-slate-200 object-contain" />
-        } @else {
-          <span class="text-xs text-slate-500">No logo uploaded.</span>
-        }
-        <div class="flex flex-wrap items-center gap-2">
-          <input
-            type="file"
-            accept="image/*"
-            class="text-xs text-slate-600 file:mr-2 file:rounded file:border file:border-slate-300 file:bg-white file:px-2 file:py-1"
-            (change)="onLogoFileChange($event)"
-          />
-          @if (logoBase64) {
-            <button pButton type="button" label="Remove logo" severity="secondary" [text]="true" (click)="clearLogo()"></button>
-          }
-        </div>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-slate-600" for="mh-status">Status</label>
-        <p-select
-          inputId="mh-status"
-          [(ngModel)]="status"
-          name="hStatus"
-          [options]="statusOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Status"
-          styleClass="w-full"
-          appendTo="body"
-        />
-      </div>
-
-      @if (hospital.enabledModules.length) {
-        <div>
-          <h3 class="mb-2 text-sm font-medium text-slate-500">Enabled modules</h3>
-          <div class="flex flex-wrap gap-2">
-            @for (m of hospital.enabledModules; track m.id) {
-              <p-tag severity="success" [value]="m.name" />
-            }
-          </div>
-        </div>
-      }
-
+<app-surface-panel class="hms-crud-surface mh-surface" title="Hospital profile" subtitle="Identity, contact details, compliance, and branding">
+  <div surfacePanelActions class="hms-crud-actions">
+    @if (canEdit) {
       <button
         pButton
         type="button"
         label="Save changes"
-        icon="pi pi-save"
+        icon="pi pi-check"
         severity="success"
+        class="hms-toolbar-solid"
         [loading]="saving"
         (click)="save()"
       ></button>
-    </div>
-  }
+    }
+  </div>
+
+  <div class="hms-crud-panel-body mh-body">
+    @if (loading) {
+      <app-hms-block-skeleton [lines]="14" ariaLabel="Loading hospital" />
+    } @else if (errorMessage) {
+      <p-message severity="warn" [text]="errorMessage" styleClass="w-full" />
+    } @else if (hospital) {
+      <div class="mh-shell">
+
+        <!-- Hero -->
+        <header class="mh-hero">
+          <div class="mh-hero__brand">
+            @if (logoBase64) {
+              <img [src]="logoBase64" alt="Hospital logo" class="mh-hero__logo" />
+            } @else {
+              <div class="mh-hero__logo-fallback" aria-hidden="true">
+                <i class="pi pi-building"></i>
+              </div>
+            }
+          </div>
+          <div class="mh-hero__main">
+            <p class="mh-hero__eyebrow">Hospital profile</p>
+            <h2 class="mh-hero__name">{{ displayName }}</h2>
+            @if (tagline) {
+              <p class="mh-hero__tagline">{{ tagline }}</p>
+            }
+            <div class="mh-hero__badges">
+              <span class="mh-hero-badge mh-hero-badge--code">
+                <i class="pi pi-hashtag" aria-hidden="true"></i>
+                {{ hospital.code }}
+              </span>
+              @if (hospitalTypeLabel) {
+                <span class="mh-hero-badge">
+                  <i class="pi pi-briefcase" aria-hidden="true"></i>
+                  {{ hospitalTypeLabel }}
+                </span>
+              }
+              @if (hospitalSizeLabel) {
+                <span class="mh-hero-badge">
+                  <i class="pi pi-chart-bar" aria-hidden="true"></i>
+                  {{ hospitalSizeLabel }}
+                </span>
+              }
+            </div>
+          </div>
+          <div class="mh-hero__aside">
+            <p-tag [severity]="statusSeverity" [value]="status ?? 'Unknown'" />
+            <span class="mh-hero__status-hint">Status is managed by the platform administrator</span>
+          </div>
+        </header>
+
+        <!-- Cards -->
+        <div class="mh-grid">
+
+          <!-- Hospital details -->
+          <section class="mh-card">
+            <header class="mh-card__head">
+              <span class="mh-card__icon" aria-hidden="true"><i class="pi pi-building"></i></span>
+              <div class="mh-card__head-text">
+                <h3 class="mh-card__title">Hospital details</h3>
+                <p class="mh-card__subtitle">Identity and operational information</p>
+              </div>
+            </header>
+            <div class="mh-fields">
+              <div class="mh-field">
+                <label class="hms-field-label hms-field-label--required" for="mh-name">Name</label>
+                <input pInputText id="mh-name" class="w-full" [(ngModel)]="name" name="hName" placeholder="City General Hospital" />
+              </div>
+              <div class="mh-field">
+                <label class="hms-field-label" for="mh-address">Address</label>
+                <input pInputText id="mh-address" class="w-full" [(ngModel)]="address" name="hAddress" placeholder="Street, city, country" />
+              </div>
+              <div class="mh-field">
+                <label class="hms-field-label" for="mh-reg">Business / registration number</label>
+                <input
+                  pInputText
+                  id="mh-reg"
+                  class="w-full"
+                  [(ngModel)]="businessRegistrationNumber"
+                  name="hReg"
+                  placeholder="Tax ID, NTN, trade licence…"
+                />
+              </div>
+            </div>
+          </section>
+
+          <!-- Contact details -->
+          <section class="mh-card">
+            <header class="mh-card__head">
+              <span class="mh-card__icon mh-card__icon--contact" aria-hidden="true"><i class="pi pi-phone"></i></span>
+              <div class="mh-card__head-text">
+                <h3 class="mh-card__title">Contact details</h3>
+                <p class="mh-card__subtitle">Phone, email, and web presence</p>
+              </div>
+            </header>
+            <div class="mh-fields">
+              <div class="mh-field">
+                <label class="hms-field-label" for="mh-phone">Phone</label>
+                <input pInputText id="mh-phone" class="w-full" [(ngModel)]="phone" name="hPhone" placeholder="+1 …" />
+              </div>
+              <div class="mh-field">
+                <label class="hms-field-label" for="mh-email">Email</label>
+                <input pInputText id="mh-email" type="email" class="w-full" [(ngModel)]="email" name="hEmail" placeholder="contact@hospital.com" />
+              </div>
+              <div class="mh-field">
+                <label class="hms-field-label" for="mh-website">Website</label>
+                <input pInputText id="mh-website" type="url" class="w-full" [(ngModel)]="website" name="hWebsite" placeholder="https://…" />
+              </div>
+            </div>
+          </section>
+
+          <!-- Compliance -->
+          <section class="mh-card">
+            <header class="mh-card__head">
+              <span class="mh-card__icon" aria-hidden="true"><i class="pi pi-verified"></i></span>
+              <div class="mh-card__head-text">
+                <h3 class="mh-card__title">Compliance</h3>
+                <p class="mh-card__subtitle">License, tax, and classification</p>
+              </div>
+            </header>
+            <div class="mh-fields">
+              <div class="mh-field">
+                <label class="hms-field-label" for="mh-license">License number</label>
+                <input pInputText id="mh-license" class="w-full" [(ngModel)]="licenseNumber" name="hLicense" />
+              </div>
+              <div class="mh-field">
+                <label class="hms-field-label" for="mh-tax">Tax number</label>
+                <input pInputText id="mh-tax" class="w-full" [(ngModel)]="taxNumber" name="hTax" />
+              </div>
+              <div class="mh-fields-row">
+                <div class="mh-field">
+                  <label class="hms-field-label" for="mh-type">Hospital type</label>
+                  <p-select
+                    inputId="mh-type"
+                    [(ngModel)]="hospitalType"
+                    name="hType"
+                    [options]="hospitalTypeOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Select type"
+                    [showClear]="true"
+                    styleClass="w-full"
+                    appendTo="body"
+                  />
+                </div>
+                <div class="mh-field">
+                  <label class="hms-field-label" for="mh-size">Hospital size</label>
+                  <p-select
+                    inputId="mh-size"
+                    [(ngModel)]="hospitalSize"
+                    name="hSize"
+                    [options]="hospitalSizeOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Select size"
+                    [showClear]="true"
+                    styleClass="w-full"
+                    appendTo="body"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Branding -->
+          <section class="mh-card">
+            <header class="mh-card__head">
+              <span class="mh-card__icon mh-card__icon--brand" aria-hidden="true"><i class="pi pi-image"></i></span>
+              <div class="mh-card__head-text">
+                <h3 class="mh-card__title">Branding</h3>
+                <p class="mh-card__subtitle">Tagline and logo shown on reports and printed slips</p>
+              </div>
+            </header>
+            <div class="mh-fields">
+              <div class="mh-field">
+                <label class="hms-field-label" for="mh-tag">Tagline</label>
+                <input
+                  pInputText
+                  id="mh-tag"
+                  class="w-full"
+                  [(ngModel)]="tagline"
+                  name="hTag"
+                  placeholder="Short line shown on letterhead / slips"
+                />
+              </div>
+              <div class="mh-field">
+                <span class="hms-field-label">Logo</span>
+                <div class="mh-logo-wrap">
+                  @if (logoBase64) {
+                    <div class="mh-logo-preview">
+                      <img [src]="logoBase64" alt="Hospital logo preview" class="mh-logo-preview__img" />
+                      <div class="mh-logo-preview__meta">
+                        <span class="mh-logo-preview__label">Current logo</span>
+                        <button
+                          pButton
+                          type="button"
+                          label="Remove"
+                          icon="pi pi-trash"
+                          severity="danger"
+                          [text]="true"
+                          size="small"
+                          (click)="clearLogo()"
+                        ></button>
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="mh-logo-empty">
+                      <i class="pi pi-image" aria-hidden="true"></i>
+                      <span>No logo uploaded yet</span>
+                    </div>
+                  }
+                  <div class="mh-logo-upload-row">
+                    <label class="mh-file-btn">
+                      <i class="pi pi-upload" aria-hidden="true"></i>
+                      Choose image
+                      <input type="file" accept="image/*" class="mh-file-hidden" (change)="onLogoFileChange($event)" />
+                    </label>
+                    <span class="mh-logo-hint">PNG, JPEG or SVG · max 2 MB</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Enabled modules -->
+          @if (hospital.enabledModules.length) {
+            <section class="mh-card mh-card--wide">
+              <header class="mh-card__head">
+                <span class="mh-card__icon mh-card__icon--modules" aria-hidden="true"><i class="pi pi-th-large"></i></span>
+                <div class="mh-card__head-text">
+                  <h3 class="mh-card__title">Enabled modules</h3>
+                  <p class="mh-card__subtitle">Licensed features active on this hospital</p>
+                </div>
+                <span class="mh-module-badge">{{ hospital.enabledModules.length }} active</span>
+              </header>
+              <div class="mh-tags">
+                @for (m of hospital.enabledModules; track m.id) {
+                  <p-tag severity="success" [value]="m.name" />
+                }
+              </div>
+            </section>
+          }
+
+        </div>
+      </div>
+    }
+  </div>
 </app-surface-panel>

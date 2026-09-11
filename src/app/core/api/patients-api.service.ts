@@ -5,6 +5,7 @@ import { API_BASE_URL } from '../tokens/api-base-url.token';
 import type {
   CreatePatientRequest,
   Patient,
+  PatientImportResult,
   PatientSearchHit,
   PagedResponse,
   UpdatePatientRequest,
@@ -61,5 +62,23 @@ export class PatientsApiService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/clinical/patients/${id}`);
+  }
+
+  /** GET /clinical/patients/export — optional status/search filters. */
+  exportExcel(query: { status?: string; search?: string } = {}): Observable<Blob> {
+    let params = new HttpParams();
+    if (query.status) params = params.set('status', query.status);
+    if (query.search) params = params.set('search', query.search);
+    return this.http.get(`${this.base}/clinical/patients/export`, {
+      params,
+      responseType: 'blob',
+    });
+  }
+
+  /** POST /clinical/patients/import — multipart field name `file` (.xlsx). */
+  importExcel(file: File): Observable<PatientImportResult> {
+    const fd = new FormData();
+    fd.append('file', file, file.name);
+    return this.http.post<PatientImportResult>(`${this.base}/clinical/patients/import`, fd);
   }
 }

@@ -1,15 +1,21 @@
-<app-surface-panel class="hms-crud-surface" title="Menus" subtitle="Manage navigation items used in role permissions">
-  <div surfacePanelActions class="hms-crud-actions">
-    <button
-      pButton
-      type="button"
-      label="New menu"
-      icon="pi pi-plus"
-      severity="secondary"
-      class="hms-toolbar-solid"
-      (click)="openCreate()"
-    ></button>
-  </div>
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Menus"
+  [subtitle]="isPlatformUser() ? 'Manage navigation items used in role permissions' : 'Pages licensed for your hospital'"
+>
+  @if (isPlatformUser()) {
+    <div surfacePanelActions class="hms-crud-actions">
+      <button
+        pButton
+        type="button"
+        label="New menu"
+        icon="pi pi-plus"
+        severity="secondary"
+        class="hms-toolbar-solid"
+        (click)="openCreate()"
+      ></button>
+    </div>
+  }
 
   <div class="hms-crud-body-spacer" aria-hidden="true"></div>
   <div class="hms-crud-panel-body">
@@ -22,7 +28,8 @@
     [loading]="loading"
     [tableStyle]="{ 'min-width': '100%' }"
     styleClass="p-datatable-sm hms-crud-table"
-    [paginator]="true"
+    [paginator]="showPaginator"
+    [alwaysShowPaginator]="false"
     [rows]="20"
   >
     <ng-template #header>
@@ -33,7 +40,9 @@
         <th>Route</th>
         <th>Visible</th>
         <th>Active</th>
-        <th class="w-32 text-end">Actions</th>
+        @if (isPlatformUser()) {
+          <th class="w-32 text-end">Actions</th>
+        }
       </tr>
     </ng-template>
     <ng-template #body let-row>
@@ -48,49 +57,56 @@
         <td>
           <p-tag [value]="row.isActive ? 'Yes' : 'No'" [severity]="row.isActive ? 'success' : 'secondary'" />
         </td>
-        <td class="text-end">
-          <div class="flex justify-end gap-1">
-            <button
-              pButton
-              type="button"
-              icon="pi pi-pencil"
-              [text]="true"
-              severity="secondary"
-              (click)="openEdit(row)"
-              title="Edit menu"
-              aria-label="Edit menu"
-            ></button>
-            <button
-              pButton
-              type="button"
-              icon="pi pi-trash"
-              [text]="true"
-              severity="danger"
-              (click)="confirmDelete(row)"
-              title="Delete menu"
-              aria-label="Delete menu"
-            ></button>
-          </div>
-        </td>
+        @if (isPlatformUser()) {
+          <td class="text-end">
+            <div class="flex justify-end gap-1">
+              <button
+                pButton
+                type="button"
+                icon="pi pi-pencil"
+                [text]="true"
+                severity="secondary"
+                (click)="openEdit(row)"
+                title="Edit menu"
+                aria-label="Edit menu"
+              ></button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                (click)="confirmDelete(row)"
+                title="Delete menu"
+                aria-label="Delete menu"
+              ></button>
+            </div>
+          </td>
+        }
       </tr>
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="7" class="hms-table-empty-cell text-center text-sm text-slate-500">
-          <div class="flex flex-col items-center justify-center gap-2 py-4">
-            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
-            <span>No menus found.</span>
-          </div>
+        <td [attr.colspan]="isPlatformUser() ? 7 : 6" class="hms-table-empty-cell hms-table-empty-cell--crud">
+          <app-hms-crud-empty-state
+            icon="pi pi-th-large"
+            title="No menus yet"
+            description="Configure navigation items used in role permissions and hospital licensing."
+            [actionable]="isPlatformUser()"
+            actionLabel="Click to add a menu"
+            (action)="openCreate()"
+          />
         </td>
       </tr>
     </ng-template>
     <ng-template pTemplate="loadingbody" let-columns>
-      <app-hms-table-loading-body [cols]="columns?.length || 7" />
+      <app-hms-table-loading-body [cols]="columns?.length || (isPlatformUser() ? 7 : 6)" />
     </ng-template>
   </p-table>
   </div>
 </app-surface-panel>
 
+@if (isPlatformUser()) {
 <p-dialog
   [header]="editingId == null ? 'New menu' : 'Edit menu'"
   [(visible)]="dialogOpen"
@@ -177,3 +193,4 @@
     <button pButton type="button" label="Save" icon="pi pi-check" severity="success" [loading]="saving" (click)="save()"></button>
   </ng-template>
 </p-dialog>
+}

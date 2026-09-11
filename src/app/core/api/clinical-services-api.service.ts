@@ -4,8 +4,10 @@ import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../tokens/api-base-url.token';
 import type {
   ClinicalService,
+  ClinicalServiceLabProfile,
   CreateClinicalServiceRequest,
   PagedResponse,
+  SaveClinicalServiceLabProfileRequest,
   UpdateClinicalServiceRequest,
 } from '../models/api-contracts';
 
@@ -46,5 +48,13 @@ export class ClinicalServicesApiService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/clinical/services/${id}`);
+  }
+
+  getLabProfile(serviceId: number): Observable<ClinicalServiceLabProfile> {
+    return this.http.get<ClinicalServiceLabProfile>(`${this.base}/clinical/services/${serviceId}/lab-profile`);
+  }
+
+  saveLabProfile(serviceId: number, body: SaveClinicalServiceLabProfileRequest): Observable<ClinicalServiceLabProfile> {
+    return this.http.put<ClinicalServiceLabProfile>(`${this.base}/clinical/services/${serviceId}/lab-profile`, body);
   }
 }

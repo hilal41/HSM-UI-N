@@ -1,0 +1,241 @@
+<app-surface-panel
+  class="hms-crud-surface bill-cashier-surface"
+  title="Cashier"
+  subtitle="Head account closes once per day. Sub cashiers remit into the head when they close."
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <input
+      type="date"
+      class="bill-date-input"
+      [(ngModel)]="businessDate"
+      (change)="reload()"
+      aria-label="Business date"
+    />
+    <button
+      pButton
+      type="button"
+      icon="pi pi-refresh"
+      severity="secondary"
+      [outlined]="true"
+      class="hms-toolbar-chip hms-toolbar-chip--icon"
+      (click)="reload()"
+      [loading]="loading"
+      aria-label="Refresh"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+
+  <div class="hms-crud-panel-body bill-cashier-shell bill-cashier-root">
+    <div class="bill-stack" aria-label="Cash sessions">
+      <section class="bill-card">
+        <div class="bill-card__accent" aria-hidden="true"></div>
+        <div class="bill-card__head">
+          <span class="bill-card__icon" aria-hidden="true"><i class="pi pi-building"></i></span>
+          <div>
+            <p class="bill-card__eyebrow">Branch day</p>
+            <h2 class="bill-card__title">Head Account</h2>
+          </div>
+        </div>
+        @if (head) {
+          <p class="bill-card__session">
+            <code>{{ head.sessionNo }}</code>
+            · {{ head.cashierUserName }}
+          </p>
+          <div class="bill-mini-grid">
+            <div class="bill-mini">
+              <span class="bill-mini__label">Float</span>
+              <span class="bill-mini__value">{{ head.openingFloat | currency: 'PKR':'symbol-narrow':'1.2-2' }}</span>
+            </div>
+            <div class="bill-mini">
+              <span class="bill-mini__label">Open Subs</span>
+              <span class="bill-mini__value">{{ head.openChildCount }}</span>
+            </div>
+            <div class="bill-mini">
+              <span class="bill-mini__label">Status</span>
+              <span class="bill-mini__value"><p-tag value="Open" severity="success" /></span>
+            </div>
+          </div>
+        } @else {
+          <p class="bill-card__hint">No open head session for this date.</p>
+          <div class="bill-card__actions">
+            <div class="bill-field">
+              <label class="hms-field-label" for="head-float">Opening Float</label>
+              <p-inputNumber
+                inputId="head-float"
+                [(ngModel)]="openingFloat"
+                mode="decimal"
+                [minFractionDigits]="2"
+                styleClass="w-full"
+                inputStyleClass="w-full"
+              />
+            </div>
+            <button
+              pButton
+              type="button"
+              label="Open Head"
+              class="hms-toolbar-solid"
+              [loading]="saving"
+              (click)="openHead()"
+            ></button>
+          </div>
+        }
+      </section>
+
+      <section class="bill-card">
+        <div class="bill-card__accent" aria-hidden="true"></div>
+        <div class="bill-card__head">
+          <span class="bill-card__icon" aria-hidden="true"><i class="pi pi-user"></i></span>
+          <div>
+            <p class="bill-card__eyebrow">My till</p>
+            <h2 class="bill-card__title">Sub Session</h2>
+          </div>
+        </div>
+        @if (mySub) {
+          <p class="bill-card__session">
+            <code>{{ mySub.sessionNo }}</code>
+            under {{ mySub.parentSessionNo || '—' }}
+          </p>
+          <div class="bill-mini-grid">
+            <div class="bill-mini">
+              <span class="bill-mini__label">Float</span>
+              <span class="bill-mini__value">{{ mySub.openingFloat | currency: 'PKR':'symbol-narrow':'1.2-2' }}</span>
+            </div>
+            <div class="bill-mini">
+              <span class="bill-mini__label">Cash Collected</span>
+              <span class="bill-mini__value">{{ mySub.cashCollected | currency: 'PKR':'symbol-narrow':'1.2-2' }}</span>
+            </div>
+          </div>
+          <div class="bill-card__actions">
+            <div class="bill-field">
+              <label class="hms-field-label" for="sub-declared">Declared Cash</label>
+              <p-inputNumber
+                inputId="sub-declared"
+                [(ngModel)]="subDeclaredCash"
+                mode="decimal"
+                [minFractionDigits]="2"
+                styleClass="w-full"
+                inputStyleClass="w-full"
+              />
+            </div>
+            <button
+              pButton
+              type="button"
+              label="Close & Remit"
+              class="hms-toolbar-solid"
+              [loading]="saving"
+              (click)="closeSub()"
+            ></button>
+          </div>
+        } @else {
+          <p class="bill-card__hint">You do not have an open sub session.</p>
+          <div class="bill-card__actions">
+            <div class="bill-field">
+              <label class="hms-field-label" for="sub-float">Opening Float</label>
+              <p-inputNumber
+                inputId="sub-float"
+                [(ngModel)]="openingFloat"
+                mode="decimal"
+                [minFractionDigits]="2"
+                styleClass="w-full"
+                inputStyleClass="w-full"
+              />
+            </div>
+            <button
+              pButton
+              type="button"
+              label="Open Sub"
+              class="hms-toolbar-solid"
+              [loading]="saving"
+              [disabled]="!head"
+              (click)="openSub()"
+            ></button>
+          </div>
+        }
+      </section>
+
+      @if (head) {
+        <section class="bill-card">
+          <div class="bill-card__accent bill-card__accent--danger" aria-hidden="true"></div>
+          <div class="bill-card__head">
+            <span class="bill-card__icon bill-card__icon--danger" aria-hidden="true"
+              ><i class="pi pi-lock"></i
+            ></span>
+            <div>
+              <p class="bill-card__eyebrow">Day close</p>
+              <h2 class="bill-card__title">Close Head</h2>
+            </div>
+          </div>
+          <p class="bill-card__hint">Close only after all sub cashiers have remitted.</p>
+          <div class="bill-card__actions">
+            <div class="bill-field">
+              <label class="hms-field-label" for="head-declared">Declared Cash</label>
+              <p-inputNumber
+                inputId="head-declared"
+                [(ngModel)]="headDeclaredCash"
+                mode="decimal"
+                [minFractionDigits]="2"
+                styleClass="w-full"
+                inputStyleClass="w-full"
+              />
+            </div>
+            <button
+              pButton
+              type="button"
+              label="Close Head"
+              severity="danger"
+              [outlined]="true"
+              [loading]="saving"
+              (click)="closeHead()"
+            ></button>
+          </div>
+        </section>
+      }
+    </div>
+
+    <section class="bill-panel" aria-label="Sessions today">
+      <div class="bill-panel__head">
+        <span class="bill-panel__icon" aria-hidden="true"><i class="pi pi-list"></i></span>
+        <h2 class="bill-panel__title">Sessions Today</h2>
+      </div>
+      <div class="bill-panel__body">
+        <p-table [value]="sessions" styleClass="p-datatable-sm hms-crud-table" [showLoader]="false">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Session</th>
+              <th>Type</th>
+              <th>Cashier</th>
+              <th>Status</th>
+              <th class="text-right">Cash</th>
+              <th class="text-right">Variance</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-s>
+            <tr>
+              <td class="font-mono text-sm">{{ s.sessionNo }}</td>
+              <td>{{ s.sessionType }}</td>
+              <td>{{ s.cashierUserName }}</td>
+              <td>
+                <p-tag [value]="s.status" [severity]="s.status === 'Open' ? 'success' : 'secondary'" />
+              </td>
+              <td class="text-right">{{ s.cashCollected | currency: 'PKR':'symbol-narrow':'1.2-2' }}</td>
+              <td class="text-right">
+                {{ s.status === 'Closed' ? (s.variance | currency: 'PKR':'symbol-narrow':'1.2-2') : '—' }}
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="6">
+                <div class="bill-empty">
+                  <span class="bill-empty__icon" aria-hidden="true"><i class="pi pi-wallet"></i></span>
+                  <p>No sessions for this date</p>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </section>
+  </div>
+</app-surface-panel>

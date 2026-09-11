@@ -4,7 +4,7 @@
   subtitle="Hospital locations — departments, doctors, and visits are scoped per branch"
 >
   <div surfacePanelActions class="hms-crud-actions">
-    @if (canManageBranches()) {
+    @if (canWriteBranches()) {
       <button
         pButton
         type="button"
@@ -22,40 +22,73 @@
     @if (errorMessage) {
       <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
     }
+    @if (isPlatformUser()) {
+      <div class="mb-4 max-w-md">
+        <label class="hms-field-label mb-1 block" for="br-filter-hospital">Hospital</label>
+        <p-select
+          inputId="br-filter-hospital"
+          [options]="hospitalOptions"
+          optionLabel="label"
+          optionValue="value"
+          [(ngModel)]="filterHospitalId"
+          placeholder="All hospitals"
+          [showClear]="true"
+          styleClass="w-full"
+          appendTo="body"
+          (onChange)="load()"
+        />
+      </div>
+    }
     <p-table
       [showLoader]="false"
       [value]="rows"
       [loading]="loading"
       styleClass="p-datatable-sm hms-crud-table"
-      [paginator]="true"
+      [paginator]="showPaginator"
+      [alwaysShowPaginator]="false"
       [rows]="10"
     >
       <ng-template #header>
         <tr>
+          @if (isPlatformUser()) {
+            <th>Hospital ID</th>
+          }
           <th>Code</th>
           <th>Name</th>
           <th>Status</th>
+          <th>Time zone</th>
+          <th>Currency</th>
           <th>Main</th>
           <th class="text-end">Actions</th>
         </tr>
       </ng-template>
       <ng-template #body let-row>
         <tr>
+          @if (isPlatformUser()) {
+            <td class="text-xs text-slate-500">{{ row.hospitalId }}</td>
+          }
           <td class="font-mono text-xs">{{ row.code }}</td>
-          <td>{{ row.name }}</td>
+          <td>
+            {{ row.name }}
+            @if (row.closureReason) {
+              <span class="ml-1 text-[0.68rem] text-orange-600" [title]="row.closureReason">⚠ {{ row.closureReason }}</span>
+            }
+          </td>
           <td>
             <p-tag
               [value]="row.status"
-              [severity]="row.status === 'Active' ? 'success' : 'secondary'"
+              [severity]="statusSeverity(row.status)"
             />
           </td>
+          <td class="text-xs text-slate-500">{{ row.timeZoneId }}</td>
+          <td class="text-xs font-mono text-slate-500">{{ row.currencyCode }}</td>
           <td>
             @if (row.isMain) {
               <p-tag value="Main" severity="info" />
             }
           </td>
           <td class="text-end">
-            @if (canManageBranches()) {
+            @if (canWriteBranches()) {
               <button
                 pButton
                 type="button"
@@ -82,12 +115,19 @@
         </tr>
       </ng-template>
       <ng-template #loadingbody>
-        <app-hms-table-loading-body [cols]="5" />
+        <app-hms-table-loading-body [cols]="isPlatformUser() ? 8 : 7" />
       </ng-template>
       <ng-template #emptymessage>
         <tr>
-          <td colspan="5" class="hms-table-empty-cell text-center text-sm text-slate-500">
-            No branches yet.
+          <td [attr.colspan]="isPlatformUser() ? 8 : 7" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state
+              icon="pi pi-map-marker"
+              [title]="hasActiveFilter ? 'No matching branches' : 'No branches yet'"
+              [description]="hasActiveFilter ? 'Try selecting a different hospital or clear the filter.' : 'Add branch locations for departments, visits, and inventory.'"
+              [actionable]="!hasActiveFilter && canWriteBranches()"
+              actionLabel="Click to add a branch"
+              (action)="openCreate()"
+            />
           </td>
         </tr>
       </ng-template>
@@ -99,35 +139,95 @@
   [(visible)]="dialogOpen"
   [modal]="true"
   [header]="editing ? 'Edit branch' : 'New branch'"
-  [style]="{ width: '28rem' }"
+  [style]="{ width: '32rem' }"
   [draggable]="false"
 >
   <div class="flex flex-col gap-3">
-    @if (!editing) {
+
+    @if (!editing && isPlatformUser()) {
       <div class="flex flex-col gap-1">
-        <label class="hms-field-label" for="br-code">Code</label>
-        <input pInputText id="br-code" class="w-full" [(ngModel)]="formCode" />
+        <label class="hms-field-label hms-field-label--required" for="br-hospital">Hospital</label>
+        <p-select
+          inputId="br-hospital"
+          [options]="hospitalOptions"
+          optionLabel="label"
+          optionValue="value"
+          [(ngModel)]="formHospitalId"
+          placeholder="Select hospital"
+          styleClass="w-full"
+          appendTo="body"
+        />
       </div>
     }
+
+    @if (!editing) {
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="br-code">Code</label>
+        <input pInputText id="br-code" class="w-full" [(ngModel)]="formCode" placeholder="e.g. OPD, LAB, MAIN" />
+      </div>
+    }
+
     <div class="flex flex-col gap-1">
-      <label class="hms-field-label" for="br-name">Name</label>
+      <label class="hms-field-label hms-field-label--required" for="br-name">Name</label>
       <input pInputText id="br-name" class="w-full" [(ngModel)]="formName" />
     </div>
+
     <div class="flex flex-col gap-1">
       <label class="hms-field-label" for="br-address">Address</label>
       <input pInputText id="br-address" class="w-full" [(ngModel)]="formAddress" />
     </div>
-    <div class="flex flex-col gap-1">
-      <label class="hms-field-label" for="br-phone">Phone</label>
-      <input pInputText id="br-phone" class="w-full" [(ngModel)]="formPhone" />
-    </div>
-    <div class="flex flex-col gap-1">
-      <label class="hms-field-label" for="br-email">Email</label>
-      <input pInputText id="br-email" class="w-full" [(ngModel)]="formEmail" />
-    </div>
-    @if (editing) {
+
+    <div class="grid grid-cols-2 gap-3">
       <div class="flex flex-col gap-1">
-        <label class="hms-field-label" for="br-status">Status</label>
+        <label class="hms-field-label" for="br-phone">Phone</label>
+        <input pInputText id="br-phone" class="w-full" [(ngModel)]="formPhone" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="br-email">Email</label>
+        <input pInputText id="br-email" class="w-full" [(ngModel)]="formEmail" />
+      </div>
+    </div>
+
+    <p-divider styleClass="my-1" />
+
+    <div class="grid grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="br-tz">Time zone</label>
+        <p-select
+          inputId="br-tz"
+          [options]="commonTimeZones"
+          optionLabel="label"
+          optionValue="value"
+          [(ngModel)]="formTimeZoneId"
+          styleClass="w-full"
+          appendTo="body"
+          [filter]="true"
+          filterPlaceholder="Search time zones"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="br-currency">Currency</label>
+        <p-select
+          inputId="br-currency"
+          [options]="commonCurrencies"
+          optionLabel="label"
+          optionValue="value"
+          [(ngModel)]="formCurrencyCode"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="hms-field-label" for="br-country">Country code <span class="text-[0.65rem] text-slate-400">(ISO 3166 — e.g. PK, AE, US)</span></label>
+      <input pInputText id="br-country" class="w-full uppercase" [(ngModel)]="formCountryCode" maxlength="2" placeholder="PK" />
+    </div>
+
+    @if (editing) {
+      <p-divider styleClass="my-1" />
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="br-status">Status</label>
         <p-select
           inputId="br-status"
           [options]="statusOptions"
@@ -137,7 +237,34 @@
           styleClass="w-full"
         />
       </div>
+
+      @if (isTemporarilyClosed) {
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label hms-field-label--required" for="br-closure-reason">Closure reason</label>
+          <textarea
+            pTextarea
+            id="br-closure-reason"
+            class="w-full"
+            rows="2"
+            [(ngModel)]="formClosureReason"
+            placeholder="e.g. Renovation works until end of month"
+          ></textarea>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="br-reopen">Expected reopen date</label>
+          <p-datepicker
+            inputId="br-reopen"
+            [(ngModel)]="formReopenDate"
+            [showIcon]="true"
+            dateFormat="dd/mm/yy"
+            [minDate]="$any(null)"
+            styleClass="w-full"
+            appendTo="body"
+          />
+        </div>
+      }
     }
+
   </div>
   <ng-template #footer>
     <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="dialogOpen = false"></button>

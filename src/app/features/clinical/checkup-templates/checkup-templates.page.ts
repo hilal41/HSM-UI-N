@@ -56,9 +56,9 @@ export class CheckupTemplatesPage implements OnInit {
       .pipe(finalize(() => (this.loadingStudio = false)))
       .subscribe({
         next: ({ library, page: p }) => {
-          this.libraryRows = library;
-          this.rows = p.items;
-          this.totalCount = p.totalCount;
+          this.libraryRows = Array.isArray(library) ? library : [];
+          this.rows = Array.isArray(p.items) ? p.items : [];
+          this.totalCount = p.totalCount ?? 0;
           this.cdr.markForCheck();
         },
         error: () => {
@@ -69,9 +69,10 @@ export class CheckupTemplatesPage implements OnInit {
   }
 
   filteredLibrary(): CheckupTemplate[] {
+    const rows = Array.isArray(this.libraryRows) ? this.libraryRows : [];
     const s = this.searchInput.trim().toLowerCase();
-    if (!s) return this.libraryRows;
-    return this.libraryRows.filter(
+    if (!s) return rows;
+    return rows.filter(
       (r) => r.code.toLowerCase().includes(s) || r.name.toLowerCase().includes(s),
     );
   }
@@ -97,8 +98,8 @@ export class CheckupTemplatesPage implements OnInit {
       .pipe(finalize(() => (this.loadingStudio = false)))
       .subscribe({
         next: (res) => {
-          this.rows = res.items;
-          this.totalCount = res.totalCount;
+          this.rows = Array.isArray(res.items) ? res.items : [];
+          this.totalCount = res.totalCount ?? 0;
           this.cdr.markForCheck();
         },
         error: () => {

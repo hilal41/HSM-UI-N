@@ -9,10 +9,18 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TextareaModule } from 'primeng/textarea';
 import { finalize } from 'rxjs';
+import { HospitalConfigurationApiService } from '../../../core/api/hospital-configuration-api.service';
 import { MeApiService } from '../../../core/api/me-api.service';
 import type { Hospital, Patient } from '../../../core/models/api-contracts';
 import { HmsBlockSkeletonComponent } from '../../../shared/components/hms-block-skeleton/hms-block-skeleton.component';
 import { SurfacePanelComponent } from '../../../shared/components/surface-panel/surface-panel.component';
+import { SlipTemplateGalleryComponent } from '../../../shared/slip-designer/slip-template-gallery.component';
+import {
+  SLIP_CUSTOM_PRESET_ID,
+  isKnownPresetId,
+  markSlipPresetCustom,
+  presetDisplayName,
+} from '../../../shared/slip-designer/slip-preset.util';
 import {
   PatientRegistrationSlipComponent,
   type PatientRegistrationSlipLineVm,
@@ -21,6 +29,7 @@ import {
   LOGO_PLACEMENT_OPTIONS,
   SLIP_ALIGN_OPTIONS,
   SLIP_FONT_OPTIONS,
+  SLIP_DEFAULT_PRESET_ID,
   SLIP_PRESET_OPTIONS,
   SLIP_SECTION_IDS,
   SLIP_SECTION_LABELS,
@@ -37,7 +46,7 @@ import {
 const DESIGNER_PREVIEW_LOGO_DATA_URL =
   'data:image/svg+xml,' +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="56" viewBox="0 0 96 56"><rect width="96" height="56" rx="8" fill="#059669"/><text x="48" y="34" text-anchor="middle" fill="#fff" font-size="13" font-family="system-ui,sans-serif">Logo</text></svg>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="56" viewBox="0 0 96 56"><rect width="96" height="56" rx="8" fill="#2563eb"/><text x="48" y="34" text-anchor="middle" fill="#fff" font-size="13" font-family="system-ui,sans-serif">Logo</text></svg>`,
   );
 
 const SAMPLE_PATIENT: Patient = {
@@ -86,12 +95,14 @@ const SAMPLE_LINES: PatientRegistrationSlipLineVm[] = [
     CheckboxModule,
     DragDropModule,
     PatientRegistrationSlipComponent,
+    SlipTemplateGalleryComponent,
   ],
   templateUrl: './registration-slip-designer.page.html',
   styleUrl: './registration-slip-designer.page.scss',
 })
 export class RegistrationSlipDesignerPage implements OnInit {
   private readonly meApi = inject(MeApiService);
+  private readonly configApi = inject(HospitalConfigurationApiService);
   private readonly messages = inject(MessageService);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -99,6 +110,8 @@ export class RegistrationSlipDesignerPage implements OnInit {
   saving = false;
   hospital: Hospital | null = null;
   draft: RegistrationSlipTemplate = defaultRegistrationSlipTemplate();
+  /** Last gallery preset applied in this session (for “Based on” when marked custom). */
+  basedOnPresetId: string | null = null;
 
   readonly samplePatient = SAMPLE_PATIENT;
   readonly sampleLines = SAMPLE_LINES;
@@ -123,6 +136,9 @@ export class RegistrationSlipDesignerPage implements OnInit {
           this.draft = cloneRegistrationSlipTemplate(
             parseRegistrationSlipTemplateJson(h.registrationSlipTemplateJson),
           );
+          this.basedOnPresetId = isKnownPresetId(this.draft.presetId, this.presetOptions)
+            ? this.draft.presetId
+            : null;
           this.syncLegacyPagePadding();
           this.cdr.markForCheck();
         },
@@ -161,6 +177,7 @@ export class RegistrationSlipDesignerPage implements OnInit {
   }
 
   applyPreset(presetId: string): void {
+    this.basedOnPresetId = presetId;
     this.draft = cloneRegistrationSlipTemplate(
       applySlipPresetId(presetId, {
         sectionOrder: this.draft.sectionOrder,
@@ -171,8 +188,43 @@ export class RegistrationSlipDesignerPage implements OnInit {
     this.cdr.markForCheck();
   }
 
-  isPresetActive(id: string): boolean {
-    return this.draft.presetId === id;
+  onManualEdit(): void {
+    if (this.draft.presetId !== SLIP_CUSTOM_PRESET_ID && isKnownPresetId(this.draft.presetId, this.presetOptions)) {
+      this.basedOnPresetId = this.draft.presetId;
+    }
+    this.draft = markSlipPresetCustom(this.draft);
+    this.cdr.markForCheck();
+  }
+
+  get layoutStatusLabel(): string {
+    if (this.draft.presetId !== SLIP_CUSTOM_PRESET_ID) {
+      return presetDisplayName(this.draft.presetId, this.presetOptions);
+    }
+    if (this.basedOnPresetId) {
+      return `Based on: ${presetDisplayName(this.basedOnPresetId, this.presetOptions)}`;
+    }
+    return 'Custom layout';
+  }
+
+  get galleryActivePresetId(): string {
+    if (this.draft.presetId !== SLIP_CUSTOM_PRESET_ID) {
+      return this.draft.presetId;
+    }
+    return this.basedOnPresetId ?? '';
+  }
+
+  get canResetToTemplate(): boolean {
+    return (
+      this.draft.presetId !== SLIP_CUSTOM_PRESET_ID &&
+      isKnownPresetId(this.draft.presetId, this.presetOptions)
+    );
+  }
+
+  resetToTemplate(): void {
+    if (!this.canResetToTemplate) {
+      return;
+    }
+    this.applyPreset(this.draft.presetId);
   }
 
   private syncLegacyPagePadding(): void {
@@ -194,17 +246,18 @@ export class RegistrationSlipDesignerPage implements OnInit {
       hidden.add(id);
     }
     this.draft.hiddenSections = SLIP_SECTION_IDS.filter((x) => hidden.has(x));
-    this.cdr.markForCheck();
+    this.onManualEdit();
   }
 
   onSectionDrop(event: CdkDragDrop<SlipSectionId[]>): void {
     moveItemInArray(this.draft.sectionOrder, event.previousIndex, event.currentIndex);
     this.draft = { ...this.draft, sectionOrder: [...this.draft.sectionOrder] };
-    this.cdr.markForCheck();
+    this.onManualEdit();
   }
 
   resetDefaults(): void {
     this.draft = defaultRegistrationSlipTemplate();
+    this.basedOnPresetId = SLIP_DEFAULT_PRESET_ID;
     this.syncLegacyPagePadding();
     this.cdr.markForCheck();
   }
@@ -215,18 +268,13 @@ export class RegistrationSlipDesignerPage implements OnInit {
     }
     this.syncLegacyPagePadding();
     this.saving = true;
-    this.meApi
-      .updateMyHospital({
-        registrationSlipTemplateJson: serializeRegistrationSlipTemplate(this.draft),
-      })
+    const templateJson = serializeRegistrationSlipTemplate(this.draft);
+    this.configApi
+      .saveRegistrationSlip(templateJson)
       .pipe(finalize(() => (this.saving = false)))
       .subscribe({
-        next: (h) => {
-          this.hospital = h;
-          this.draft = cloneRegistrationSlipTemplate(
-            parseRegistrationSlipTemplateJson(h.registrationSlipTemplateJson),
-          );
-          this.syncLegacyPagePadding();
+        next: () => {
+          this.hospital = { ...this.hospital!, registrationSlipTemplateJson: templateJson };
           this.messages.add({
             severity: 'success',
             summary: 'Saved',
@@ -234,11 +282,11 @@ export class RegistrationSlipDesignerPage implements OnInit {
           });
           this.cdr.markForCheck();
         },
-        error: () => {
+        error: (err: { error?: { message?: string } }) => {
           this.messages.add({
             severity: 'error',
             summary: 'Save failed',
-            detail: 'Could not save slip design.',
+            detail: err?.error?.message ?? 'Could not save slip design.',
           });
           this.cdr.markForCheck();
         },

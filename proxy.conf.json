@@ -1,0 +1,17 @@
+{
+  "/api": {
+    "target": "http://localhost:5090",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/media": {
+    "target": "http://localhost:5090",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/configuration-images": {
+    "target": "http://localhost:5090",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

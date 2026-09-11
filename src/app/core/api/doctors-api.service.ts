@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../tokens/api-base-url.token';
-import type { CreateDoctorRequest, Doctor, PagedResponse, UpdateDoctorRequest } from '../models/api-contracts';
+import type { CreateDoctorRequest, Doctor, DoctorImportResult, PagedResponse, UpdateDoctorRequest } from '../models/api-contracts';
 
 export interface DoctorsQuery {
   departmentId?: number;
@@ -39,5 +39,23 @@ export class DoctorsApiService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/clinical/doctors/${id}`);
+  }
+
+  /** GET /clinical/doctors/export */
+  exportExcel(query: { departmentId?: number; status?: string } = {}): Observable<Blob> {
+    let params = new HttpParams();
+    if (query.departmentId != null) params = params.set('departmentId', String(query.departmentId));
+    if (query.status) params = params.set('status', query.status);
+    return this.http.get(`${this.base}/clinical/doctors/export`, {
+      params,
+      responseType: 'blob',
+    });
+  }
+
+  /** POST /clinical/doctors/import — multipart field name `file` (.xlsx). */
+  importExcel(file: File): Observable<DoctorImportResult> {
+    const fd = new FormData();
+    fd.append('file', file, file.name);
+    return this.http.post<DoctorImportResult>(`${this.base}/clinical/doctors/import`, fd);
   }
 }

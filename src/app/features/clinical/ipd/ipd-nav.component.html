@@ -1,0 +1,12 @@
+<nav class="ipd-nav" aria-label="IPD sections">
+  @for (tab of tabs; track tab.route) {
+    <a
+      class="ipd-nav__link"
+      [routerLink]="tab.route"
+      routerLinkActive="ipd-nav__link--active"
+      [routerLinkActiveOptions]="{ exact: tab.exact }"
+    >
+      {{ tab.label }}
+    </a>
+  }
+</nav>

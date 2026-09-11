@@ -1,5 +1,8 @@
 /** Stored in Hospital.medicineSlipTemplateJson and used when printing prescription slips. */
 
+import type { SlipPresetOption } from '../../../shared/slip-designer/slip-preset.util';
+import { SLIP_CUSTOM_PRESET_ID } from '../../../shared/slip-designer/slip-preset.util';
+
 export const MEDICINE_SLIP_SECTION_IDS = [
   'hospital',
   'header',
@@ -49,13 +52,35 @@ export const MEDICINE_SLIP_COLUMN_LABELS: Record<MedicineSlipColumnId, string> =
 export type MedicineSlipHorizontalAlign = 'left' | 'center' | 'right';
 export type MedicineSlipLogoPlacement = 'none' | 'inline-start' | 'inline-end' | 'above-center';
 
-export const MEDICINE_SLIP_PRESET_OPTIONS: { id: string; name: string; blurb: string }[] = [
-  { id: 'classic', name: 'Classic Rx', blurb: 'Balanced prescription format with full medicine details.' },
-  { id: 'compact', name: 'Compact Rx', blurb: 'Small receipt-style medicine slip with tight spacing.' },
-  { id: 'branded', name: 'Branded clinic', blurb: 'Logo centered above a clean prescription header.' },
-  { id: 'formal', name: 'Formal serif', blurb: 'Serif typography and strong clinical table rules.' },
-  { id: 'minimal', name: 'Minimal', blurb: 'Soft borders and light typography for simple prescriptions.' },
-  { id: 'bold', name: 'Bold Rx', blurb: 'High contrast text with larger medicine rows.' },
+export const MEDICINE_SLIP_DEFAULT_PRESET_ID = 'modern-clinical';
+
+export const MEDICINE_SLIP_PRESET_OPTIONS: SlipPresetOption[] = [
+  {
+    id: 'modern-clinical',
+    name: 'Modern Clinical',
+    blurb: 'Teal accents, logo left, clean Rx table — recommended for most hospitals.',
+    recommended: true,
+  },
+  {
+    id: 'clean-center',
+    name: 'Clean Center',
+    blurb: 'Centered clinic header with logo above and balanced prescription layout.',
+  },
+  {
+    id: 'professional-formal',
+    name: 'Professional Formal',
+    blurb: 'Serif letterhead and strong rules for formal prescriptions.',
+  },
+  {
+    id: 'compact-receipt',
+    name: 'Compact Receipt',
+    blurb: 'Tight receipt-style Rx with essential medicine columns only.',
+  },
+  {
+    id: 'minimal-white',
+    name: 'Minimal White',
+    blurb: 'Soft muted palette, no grid lines, premium minimal Rx slip.',
+  },
 ];
 
 export const MEDICINE_SLIP_FONT_OPTIONS: { label: string; value: string }[] = [
@@ -128,13 +153,14 @@ export interface MedicineSlipTemplate {
 const DEFAULT_FOOTER = 'Doctor signature: _________________________________';
 
 const PRESET_PATCHES: Record<string, Partial<MedicineSlipTemplate>> = {
-  classic: {
-    presetId: 'classic',
+  'modern-clinical': {
+    presetId: 'modern-clinical',
     hospitalBlockAlign: 'left',
     headerTextAlign: 'left',
     bodySectionsAlign: 'left',
-    hospitalShowLogo: false,
-    logoPlacement: 'none',
+    hospitalShowLogo: true,
+    logoPlacement: 'inline-start',
+    logoMaxHeightPx: 48,
     paddingTopMm: 6,
     paddingRightMm: 6,
     paddingBottomMm: 6,
@@ -143,10 +169,43 @@ const PRESET_PATCHES: Record<string, Partial<MedicineSlipTemplate>> = {
     titleFontSizePx: 18,
     headingFontSizePx: 10,
     tableFontSizePx: 11,
+    bodyColor: '#0f172a',
+    titleColor: '#0f766e',
+    mutedColor: '#64748b',
+    borderColor: '#e2e8f0',
     showTableGrid: true,
   },
-  compact: {
-    presetId: 'compact',
+  'clean-center': {
+    presetId: 'clean-center',
+    hospitalBlockAlign: 'center',
+    headerTextAlign: 'center',
+    bodySectionsAlign: 'left',
+    hospitalShowLogo: true,
+    logoPlacement: 'above-center',
+    logoMaxHeightPx: 56,
+    paddingTopMm: 8,
+    paddingRightMm: 8,
+    paddingBottomMm: 8,
+    paddingLeftMm: 8,
+    globalTextScale: 1.04,
+    lineHeight: 1.45,
+    showTableGrid: true,
+  },
+  'professional-formal': {
+    presetId: 'professional-formal',
+    hospitalBlockAlign: 'left',
+    headerTextAlign: 'left',
+    bodySectionsAlign: 'left',
+    hospitalShowLogo: true,
+    logoPlacement: 'inline-start',
+    logoMaxHeightPx: 48,
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    borderColor: '#94a3b8',
+    showTableGrid: true,
+    footerText: 'Doctor signature: _________________________________',
+  },
+  'compact-receipt': {
+    presetId: 'compact-receipt',
     hospitalBlockAlign: 'left',
     headerTextAlign: 'left',
     bodySectionsAlign: 'left',
@@ -163,36 +222,10 @@ const PRESET_PATCHES: Record<string, Partial<MedicineSlipTemplate>> = {
     tableFontSizePx: 9,
     lineHeight: 1.25,
     visibleMedicineColumns: ['medicineName', 'strength', 'usageShortCode'],
-  },
-  branded: {
-    presetId: 'branded',
-    hospitalBlockAlign: 'center',
-    headerTextAlign: 'center',
-    bodySectionsAlign: 'left',
-    hospitalShowLogo: true,
-    logoPlacement: 'above-center',
-    logoMaxHeightPx: 56,
-    paddingTopMm: 8,
-    paddingRightMm: 8,
-    paddingBottomMm: 8,
-    paddingLeftMm: 8,
-    globalTextScale: 1.04,
-    lineHeight: 1.45,
-  },
-  formal: {
-    presetId: 'formal',
-    hospitalBlockAlign: 'left',
-    headerTextAlign: 'left',
-    bodySectionsAlign: 'left',
-    hospitalShowLogo: true,
-    logoPlacement: 'inline-start',
-    logoMaxHeightPx: 48,
-    fontFamily: 'Georgia, "Times New Roman", serif',
-    borderColor: '#94a3b8',
     showTableGrid: true,
   },
-  minimal: {
-    presetId: 'minimal',
+  'minimal-white': {
+    presetId: 'minimal-white',
     hospitalBlockAlign: 'left',
     headerTextAlign: 'left',
     bodySectionsAlign: 'left',
@@ -204,24 +237,10 @@ const PRESET_PATCHES: Record<string, Partial<MedicineSlipTemplate>> = {
     paddingLeftMm: 10,
     borderColor: '#f1f5f9',
     bodyColor: '#334155',
+    titleColor: '#334155',
+    mutedColor: '#64748b',
     showTableGrid: false,
     lineHeight: 1.5,
-  },
-  bold: {
-    presetId: 'bold',
-    hospitalBlockAlign: 'left',
-    headerTextAlign: 'left',
-    bodySectionsAlign: 'left',
-    hospitalShowLogo: true,
-    logoPlacement: 'inline-end',
-    logoMaxHeightPx: 52,
-    globalTextScale: 1.08,
-    baseFontSizePx: 13,
-    titleFontSizePx: 20,
-    headingFontSizePx: 11,
-    tableFontSizePx: 12,
-    bodyColor: '#0f172a',
-    titleColor: '#0f172a',
   },
 };
 
@@ -247,9 +266,9 @@ function pickLogoPlacement(v: unknown, fallback: MedicineSlipLogoPlacement): Med
 }
 
 function pickPresetId(v: unknown): string {
-  if (typeof v !== 'string' || !v.trim()) return 'custom';
+  if (typeof v !== 'string' || !v.trim()) return SLIP_CUSTOM_PRESET_ID;
   const id = v.trim().slice(0, 40);
-  return MEDICINE_SLIP_PRESET_OPTIONS.some((p) => p.id === id) ? id : 'custom';
+  return MEDICINE_SLIP_PRESET_OPTIONS.some((p) => p.id === id) ? id : SLIP_CUSTOM_PRESET_ID;
 }
 
 function pickFontFamily(v: unknown, fallback: string): string {
@@ -305,11 +324,11 @@ function normalizeColumns(raw: unknown): MedicineSlipColumnId[] {
   return out.length > 0 ? out : [...MEDICINE_SLIP_COLUMN_IDS];
 }
 
-export function defaultMedicineSlipTemplate(): MedicineSlipTemplate {
+function baseMedicineSlipTemplate(): MedicineSlipTemplate {
   const pad = 6;
   return {
     version: 1,
-    presetId: 'classic',
+    presetId: MEDICINE_SLIP_DEFAULT_PRESET_ID,
     sectionOrder: [...MEDICINE_SLIP_SECTION_IDS],
     hiddenSections: [],
     visibleMedicineColumns: [...MEDICINE_SLIP_COLUMN_IDS],
@@ -349,17 +368,21 @@ export function defaultMedicineSlipTemplate(): MedicineSlipTemplate {
   };
 }
 
+export function defaultMedicineSlipTemplate(): MedicineSlipTemplate {
+  return applyMedicineSlipPresetId(MEDICINE_SLIP_DEFAULT_PRESET_ID);
+}
+
 export function applyMedicineSlipPresetId(
   presetId: string,
   current?: Partial<Pick<MedicineSlipTemplate, 'sectionOrder' | 'hiddenSections' | 'visibleMedicineColumns'>>,
 ): MedicineSlipTemplate {
-  const d = defaultMedicineSlipTemplate();
+  const d = baseMedicineSlipTemplate();
   const patch = PRESET_PATCHES[presetId];
   const known = !!patch;
   return {
     ...d,
     ...(known ? patch : {}),
-    presetId: known ? presetId : 'classic',
+    presetId: known ? presetId : MEDICINE_SLIP_DEFAULT_PRESET_ID,
     sectionOrder: current?.sectionOrder ? [...current.sectionOrder] : d.sectionOrder,
     hiddenSections: current?.hiddenSections ? [...current.hiddenSections] : d.hiddenSections,
     visibleMedicineColumns: current?.visibleMedicineColumns
@@ -369,7 +392,7 @@ export function applyMedicineSlipPresetId(
 }
 
 export function parseMedicineSlipTemplateJson(json: string | null | undefined): MedicineSlipTemplate {
-  const base = defaultMedicineSlipTemplate();
+  const base = baseMedicineSlipTemplate();
   if (!json?.trim()) return base;
   try {
     const raw: unknown = JSON.parse(json);

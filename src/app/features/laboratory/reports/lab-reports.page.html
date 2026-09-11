@@ -1,0 +1,61 @@
+<app-surface-panel class="hms-crud-surface" title="Lab Reports" subtitle="Pending, completed, daily volume">
+  <div surfacePanelActions class="hms-crud-actions">
+    <button pButton type="button" [outlined]="tab !== 'pending'" label="Pending" (click)="loadPending()"></button>
+    <button pButton type="button" [outlined]="tab !== 'completed'" label="Completed" (click)="loadCompleted()"></button>
+    <button pButton type="button" [outlined]="tab !== 'volume'" label="Daily volume" (click)="loadVolume()"></button>
+    @if (tab === 'completed' || tab === 'volume') {
+      <input pInputText type="date" [(ngModel)]="from" />
+      <input pInputText type="date" [(ngModel)]="to" />
+      <button
+        pButton
+        type="button"
+        icon="pi pi-refresh"
+        [outlined]="true"
+        (click)="tab === 'completed' ? loadCompleted() : loadVolume()"
+      ></button>
+    }
+  </div>
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    @if (tab === 'pending') {
+      <p class="mb-3 text-sm">Total pending: <strong>{{ pending.totalPending }}</strong></p>
+      <p-table [value]="pendingRows" styleClass="p-datatable-sm hms-crud-table">
+        <ng-template pTemplate="header"><tr><th>Status</th><th>Count</th></tr></ng-template>
+        <ng-template pTemplate="body" let-r>
+          <tr><td>{{ r.status }}</td><td>{{ r.count }}</td></tr>
+        </ng-template>
+      </p-table>
+    }
+    @if (tab === 'completed') {
+      <p-table [value]="completed" styleClass="p-datatable-sm hms-crud-table">
+        <ng-template pTemplate="header">
+          <tr><th>Released</th><th>Order</th><th>Patient</th><th>Test</th><th>Branch</th></tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-r>
+          <tr>
+            <td>{{ r.releasedAt | date: 'short' }}</td>
+            <td>{{ r.orderNumber }}</td>
+            <td>{{ r.patientName }}<span class="text-muted-color"> {{ r.patientNumber }}</span></td>
+            <td>{{ r.testName }}</td>
+            <td>{{ r.branchName }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+    @if (tab === 'volume') {
+      <p-table [value]="volume" styleClass="p-datatable-sm hms-crud-table">
+        <ng-template pTemplate="header">
+          <tr><th>Date</th><th>Orders</th><th>Lines</th><th>Released</th></tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-r>
+          <tr>
+            <td>{{ r.date }}</td>
+            <td>{{ r.orderCount }}</td>
+            <td>{{ r.lineCount }}</td>
+            <td>{{ r.releasedCount }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+  </div>
+</app-surface-panel>

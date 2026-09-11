@@ -5,6 +5,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ChipModule } from 'primeng/chip';
 import { DialogModule } from 'primeng/dialog';
+import { DividerModule } from 'primeng/divider';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -26,9 +27,13 @@ import type {
   User,
   UserDetail,
 } from '../../../core/models/api-contracts';
+import { MenuPermissionService } from '../../../core/services/menu-permission.service';
+import { HmsCrudEmptyStateComponent } from '../../../shared/components/hms-crud-empty-state/hms-crud-empty-state.component';
 import { HmsTableLoadingBodyComponent } from '../../../shared/components/hms-table-loading-body/hms-table-loading-body.component';
 import { HmsBlockSkeletonComponent } from '../../../shared/components/hms-block-skeleton/hms-block-skeleton.component';
 import { SurfacePanelComponent } from '../../../shared/components/surface-panel/surface-panel.component';
+import { LANGUAGE_OPTIONS } from '../../../shared/utils/hospital-profile.utils';
+import { showCrudPaginator } from '../../../shared/utils/crud-page.state';
 
 @Component({
   selector: 'app-users-page',
@@ -36,6 +41,7 @@ import { SurfacePanelComponent } from '../../../shared/components/surface-panel/
     DatePipe,
     FormsModule,
     SurfacePanelComponent,
+    HmsCrudEmptyStateComponent,
     HmsTableLoadingBodyComponent,
     HmsBlockSkeletonComponent,
     TableModule,
@@ -50,6 +56,7 @@ import { SurfacePanelComponent } from '../../../shared/components/surface-panel/
     ToggleSwitchModule,
     PasswordModule,
     ChipModule,
+    DividerModule,
   ],
   templateUrl: './users.page.html',
 })
@@ -61,12 +68,18 @@ export class UsersPage {
   private readonly confirm = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
   private readonly cdr = inject(ChangeDetectorRef);
+  readonly menuPerms = inject(MenuPermissionService);
 
   rows: User[] = [];
   totalCount = 0;
   loading = false;
   errorMessage: string | null = null;
   readonly pageSize = 20;
+  tablePageSize = this.pageSize;
+
+  get showPaginator(): boolean {
+    return showCrudPaginator(this.totalCount, this.tablePageSize);
+  }
 
   roleOptions: { label: string; value: number }[] = [];
   departmentOptions: { label: string; value: number }[] = [];
@@ -91,10 +104,25 @@ export class UsersPage {
   formLastName = '';
   formPhone = '';
   formAddress = '';
+  formJobTitle = '';
+  formEmployeeNumber = '';
+  formLanguage: string | null = 'en';
+  formProfilePictureBase64: string | null = null;
+  formLastLoginAt: string | null = null;
+  formLastPasswordChangeAt: string | null = null;
   formIsActive = true;
   formRoleId: number | null = null;
   formCreateBranchIds: number[] = [];
   formCreateDefaultBranchId: number | null = null;
+  formBranchAccessMode = 'AllBranches';
+  dialogBranchAccessMode = 'AllBranches';
+
+  readonly languageOptions = LANGUAGE_OPTIONS;
+
+  readonly branchAccessModeOptions = [
+    { label: 'All branches — access every active branch', value: 'AllBranches' },
+    { label: 'Assigned only — restricted to listed branches', value: 'AssignedOnly' },
+  ];
 
   assignRoleId: number | null = null;
   selectedDeptIds: number[] = [];
@@ -102,28 +130,62 @@ export class UsersPage {
   defaultBranchId: number | null = null;
 
   constructor() {
-    this.rolesApi.getAll().subscribe({
+    this.rolesApi.getForAssignment().subscribe({
       next: (roles: Role[]) =>
         (this.roleOptions = roles.map((r) => ({ label: r.name, value: r.id }))),
-      error: () => {},
+      error: () => {
+        this.rolesApi.getAll().subscribe({
+          next: (roles: Role[]) =>
+            (this.roleOptions = roles.map((r) => ({ label: r.name, value: r.id }))),
+          error: () => {
+            this.messages.add({
+              severity: 'error',
+              summary: 'Roles',
+              detail: 'Unable to load roles for assignment.',
+            });
+          },
+        });
+      },
     });
     this.departmentsApi.getAll().subscribe({
       next: (list: Department[]) =>
         (this.departmentOptions = list.map((d) => ({ label: d.name, value: d.id }))),
-      error: () => {},
+      error: () => {
+        this.messages.add({
+          severity: 'error',
+          summary: 'Departments',
+          detail: 'Unable to load departments.',
+        });
+      },
     });
-    this.branchesApi.getAll('Active').subscribe({
+    this.branchesApi.getMyBranches().subscribe({
       next: (list) =>
         (this.branchOptions = list.map((b) => ({
           label: b.isMain ? `${b.name} (Main)` : b.name,
           value: b.id,
         }))),
-      error: () => {},
+      error: () => {
+        this.branchesApi.getAll('Active').subscribe({
+          next: (list) =>
+            (this.branchOptions = list.map((b) => ({
+              label: b.isMain ? `${b.name} (Main)` : b.name,
+              value: b.id,
+            }))),
+          error: () => {
+            this.messages.add({
+              severity: 'error',
+              summary: 'Branches',
+              detail: 'Unable to load branches.',
+            });
+          },
+        });
+      },
     });
   }
 
   onLazyLoad(event: TableLazyLoadEvent): void {
     const rows = event.rows ?? this.pageSize;
+    this.tablePageSize = rows;
     const first = event.first ?? 0;
     const page = Math.floor(first / rows) + 1;
     this.loading = true;
@@ -160,6 +222,15 @@ export class UsersPage {
   }
 
   openCreate(): void {
+    if (!this.menuPerms.can('admin.users', 'create')) {
+      this.messages.add({
+        severity: 'warn',
+        summary: 'Permission required',
+        detail:
+          'Your role does not allow creating users. Edit your role under Administration → Roles and enable Users → New.',
+      });
+      return;
+    }
     this.editingId = null;
     this.formUserName = '';
     this.formEmail = '';
@@ -168,11 +239,18 @@ export class UsersPage {
     this.formLastName = '';
     this.formPhone = '';
     this.formAddress = '';
+    this.formJobTitle = '';
+    this.formEmployeeNumber = '';
+    this.formLanguage = 'en';
+    this.formProfilePictureBase64 = null;
+    this.formLastLoginAt = null;
+    this.formLastPasswordChangeAt = null;
     this.formIsActive = true;
     this.formRoleId = this.roleOptions[0]?.value ?? null;
     const mainBranch = this.branchOptions.find((b) => b.label.includes('(Main)'));
     this.formCreateBranchIds = mainBranch ? [mainBranch.value] : this.branchOptions.slice(0, 1).map((b) => b.value);
     this.formCreateDefaultBranchId = this.formCreateBranchIds[0] ?? null;
+    this.formBranchAccessMode = 'AllBranches';
     this.dialogOpen = true;
   }
 
@@ -185,9 +263,37 @@ export class UsersPage {
     this.formLastName = row.lastName ?? '';
     this.formPhone = row.phone ?? '';
     this.formAddress = row.address ?? '';
+    this.formJobTitle = row.jobTitle ?? '';
+    this.formEmployeeNumber = row.employeeNumber ?? '';
+    this.formLanguage = row.language ?? 'en';
+    this.formProfilePictureBase64 = row.profilePictureBase64 ?? row.profilePictureUrl ?? null;
+    this.formLastLoginAt = row.lastLoginAt ?? null;
+    this.formLastPasswordChangeAt = row.lastPasswordChangeAt ?? null;
     this.formIsActive = row.isActive;
     this.formRoleId = row.roleId ?? null;
+    this.formBranchAccessMode = row.branchAccessMode ?? 'AllBranches';
     this.dialogOpen = true;
+  }
+
+  onProfilePictureSelected(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.messages.add({ severity: 'warn', summary: 'Picture', detail: 'Please select an image file.' });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.formProfilePictureBase64 = typeof reader.result === 'string' ? reader.result : null;
+      this.cdr.markForCheck();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearProfilePicture(): void {
+    this.formProfilePictureBase64 = '';
   }
 
   closeDialog(): void {
@@ -214,10 +320,15 @@ export class UsersPage {
           lastName: this.formLastName.trim() || null,
           phone: this.formPhone.trim() || null,
           address: this.formAddress.trim() || null,
+          jobTitle: this.formJobTitle.trim() || null,
+          employeeNumber: this.formEmployeeNumber.trim() || null,
+          language: this.formLanguage || null,
+          profilePictureBase64: this.formProfilePictureBase64 || null,
           roleId: this.formRoleId,
           isActive: this.formIsActive,
           branchIds: this.formCreateBranchIds.length ? this.formCreateBranchIds : undefined,
           defaultBranchId: this.formCreateDefaultBranchId,
+          branchAccessMode: this.formBranchAccessMode,
         })
         .pipe(finalize(() => (this.saving = false)))
         .subscribe({
@@ -226,12 +337,12 @@ export class UsersPage {
             this.closeDialog();
             this.reloadTable();
           },
-          error: (err: { error?: unknown }) => {
-            const msg =
-              typeof err?.error === 'string'
-                ? err.error
-                : (err?.error as { message?: string })?.message ?? 'Create failed.';
-            this.messages.add({ severity: 'error', summary: 'Error', detail: msg });
+          error: (err: { error?: unknown; status?: number }) => {
+            this.messages.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: this.extractApiError(err, 'Create failed.'),
+            });
           },
         });
     } else {
@@ -242,8 +353,13 @@ export class UsersPage {
         lastName: this.formLastName.trim() || null,
         phone: this.formPhone.trim() || null,
         address: this.formAddress.trim() || null,
+        jobTitle: this.formJobTitle.trim() || null,
+        employeeNumber: this.formEmployeeNumber.trim() || null,
+        language: this.formLanguage || null,
+        profilePictureBase64: this.formProfilePictureBase64,
         isActive: this.formIsActive,
         roleId: this.formRoleId,
+        branchAccessMode: this.formBranchAccessMode,
       };
       if (this.formPassword.trim()) {
         body.password = this.formPassword.trim();
@@ -258,11 +374,11 @@ export class UsersPage {
             this.reloadTable();
           },
           error: (err: { error?: unknown }) => {
-            const msg =
-              typeof err?.error === 'string'
-                ? err.error
-                : (err?.error as { message?: string })?.message ?? 'Update failed.';
-            this.messages.add({ severity: 'error', summary: 'Error', detail: msg });
+            this.messages.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: this.extractApiError(err, 'Update failed.'),
+            });
           },
         });
     }
@@ -379,6 +495,7 @@ export class UsersPage {
     this.adminUserId = row.id;
     this.selectedBranchIds = [];
     this.defaultBranchId = null;
+    this.dialogBranchAccessMode = row.branchAccessMode ?? 'AllBranches';
     this.branchDialogOpen = true;
     this.api.getBranches(row.id).subscribe({
       next: (branches) => {
@@ -402,26 +519,62 @@ export class UsersPage {
 
   saveBranches(): void {
     if (this.adminUserId == null) return;
+    if (this.dialogBranchAccessMode === 'AssignedOnly' && this.selectedBranchIds.length === 0) {
+      this.messages.add({
+        severity: 'warn',
+        summary: 'Validation',
+        detail: 'Assign at least one branch when using "Assigned only" mode, otherwise the user will have no access.',
+      });
+      return;
+    }
     this.saving = true;
     this.api
-      .setBranches(this.adminUserId, {
-        branchIds: this.selectedBranchIds,
-        defaultBranchId: this.defaultBranchId,
-      })
-      .pipe(finalize(() => (this.saving = false)))
+      .update(this.adminUserId, { branchAccessMode: this.dialogBranchAccessMode })
+      .pipe(
+        finalize(() => {}),
+      )
       .subscribe({
         next: () => {
-          this.messages.add({ severity: 'success', summary: 'Saved', detail: 'Branches updated.' });
-          this.branchDialogOpen = false;
+          this.api
+            .setBranches(this.adminUserId!, {
+              branchIds: this.selectedBranchIds,
+              defaultBranchId: this.defaultBranchId,
+            })
+            .pipe(finalize(() => (this.saving = false)))
+            .subscribe({
+              next: () => {
+                this.messages.add({ severity: 'success', summary: 'Saved', detail: 'Branch access updated.' });
+                this.branchDialogOpen = false;
+                this.reloadTable();
+              },
+              error: (err: { error?: unknown }) => {
+                this.messages.add({ severity: 'error', summary: 'Error', detail: this.extractApiError(err, 'Update failed.') });
+              },
+            });
         },
-        error: (err: { error?: { message?: string } }) => {
-          this.messages.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: err?.error?.message ?? 'Update failed.',
-          });
+        error: (err: { error?: unknown }) => {
+          this.saving = false;
+          this.messages.add({ severity: 'error', summary: 'Error', detail: this.extractApiError(err, 'Update failed.') });
         },
       });
+  }
+
+  private extractApiError(err: { error?: unknown; status?: number }, fallback: string): string {
+    const body = err?.error;
+    if (typeof body === 'string' && body.trim()) return body;
+    if (body && typeof body === 'object') {
+      const record = body as { message?: string; title?: string; errors?: Record<string, string[]> };
+      if (record.message) return record.message;
+      if (record.errors) {
+        const first = Object.values(record.errors).flat()[0];
+        if (first) return first;
+      }
+      if (record.title) return record.title;
+    }
+    if (err?.status === 403) {
+      return 'You do not have permission for this action. Check your role has Users → New enabled.';
+    }
+    return fallback;
   }
 
 }

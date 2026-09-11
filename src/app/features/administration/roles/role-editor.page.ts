@@ -78,7 +78,7 @@ export class RoleEditorPage implements OnInit {
   }
 
   get pageTitle(): string {
-    return this.isCreateMode ? 'New role' : 'Edit role';
+    return this.isCreateMode ? 'New Role' : 'Edit Role';
   }
 
   get leftColumnMenus(): AppMenuTree[] {
@@ -98,7 +98,7 @@ export class RoleEditorPage implements OnInit {
 
     if (this.editingId == null) {
       this.menusApi
-        .getTree()
+        .getLicensedTree()
         .pipe(finalize(() => (this.loading = false)))
         .subscribe({
           next: (tree) => (this.menuTree = tree),
@@ -110,7 +110,7 @@ export class RoleEditorPage implements OnInit {
     }
 
     forkJoin({
-      menus: this.menusApi.getTree(),
+      menus: this.menusApi.getLicensedTree(),
       role: this.rolesApi.getById(this.editingId),
     })
       .pipe(finalize(() => (this.loading = false)))

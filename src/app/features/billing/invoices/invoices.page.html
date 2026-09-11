@@ -1,0 +1,355 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Invoices"
+  subtitle="Visit and OPD billing — services, Test fees, payments, and receipts"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <div class="flex min-w-0 max-w-full flex-1 items-center gap-2 sm:max-w-md sm:flex-initial">
+      <input
+        pInputText
+        type="search"
+        class="hms-toolbar-search hms-toolbar-search--grow min-w-0"
+        [(ngModel)]="searchInput"
+        name="invSearch"
+        placeholder="Invoice / patient…"
+        aria-label="Search invoices"
+        (keyup.enter)="refresh()"
+      />
+      <button
+        pButton
+        type="button"
+        icon="pi pi-search"
+        severity="secondary"
+        [outlined]="true"
+        class="hms-toolbar-chip hms-toolbar-chip--icon"
+        (click)="refresh()"
+        aria-label="Search"
+      ></button>
+    </div>
+
+    <div class="bill-status-chips" role="group" aria-label="Status filter">
+      @for (opt of statusOptions; track opt.label) {
+        <button
+          pButton
+          type="button"
+          [label]="opt.label"
+          class="hms-toolbar-chip"
+          [class.hms-toolbar-chip--active]="statusFilter === opt.value"
+          (click)="setStatus(opt.value)"
+        ></button>
+      }
+    </div>
+
+    <button
+      pButton
+      type="button"
+      label="From Visit"
+      icon="pi pi-plus"
+      class="hms-toolbar-solid"
+      (click)="openFromVisit()"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    <p-table
+      [value]="rows"
+      [lazy]="true"
+      [paginator]="showPaginator"
+      [alwaysShowPaginator]="false"
+      [rows]="tablePageSize"
+      [totalRecords]="totalCount"
+      [loading]="loading"
+      [showLoader]="false"
+      (onLazyLoad)="onLazyLoad($event)"
+      styleClass="p-datatable-sm hms-crud-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Invoice</th>
+          <th>Date</th>
+          <th>Patient</th>
+          <th>Status</th>
+          <th class="text-right">Total</th>
+          <th class="text-right">Paid</th>
+          <th class="text-right">Balance</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td class="font-mono text-sm">{{ row.invoiceNo }}</td>
+          <td>{{ row.invoiceDate | date: 'short' }}</td>
+          <td>{{ row.patientName }}</td>
+          <td><p-tag [value]="statusLabel(row.status)" [severity]="statusSeverity(row.status)" /></td>
+          <td class="text-right">{{ row.total | currency: 'PKR':'symbol-narrow':'1.2-2' }}</td>
+          <td class="text-right">{{ row.paidAmount | currency: 'PKR':'symbol-narrow':'1.2-2' }}</td>
+          <td class="text-right">{{ row.balanceAmount | currency: 'PKR':'symbol-narrow':'1.2-2' }}</td>
+          <td class="text-right">
+            <button pButton type="button" label="Open" class="p-button-text" (click)="openDetail(row)"></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="loadingbody">
+        <app-hms-table-loading-body [cols]="8" />
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state
+              icon="pi pi-file"
+              title="No invoices yet"
+              description="Patient invoices from registration and billing will appear here."
+            />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog
+  [(visible)]="detailOpen"
+  [header]="detail?.invoiceNo || 'Invoice'"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 40rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+  (onHide)="detail = null"
+>
+  @if (detail) {
+    <div class="hms-dialog-body">
+      <div class="hms-dialog-scroll">
+        <div class="bill-inv-head">
+          <div>
+            <p class="bill-inv-head__patient">{{ detail.patientName }}</p>
+            <p class="bill-inv-head__meta">{{ detail.invoiceDate | date: 'medium' }}</p>
+          </div>
+          <p-tag [value]="statusLabel(detail.status)" [severity]="statusSeverity(detail.status)" />
+        </div>
+
+        <table class="bill-inv-lines">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (l of detail.lines; track l.id) {
+              <tr>
+                <td>
+                  <div class="bill-inv-lines__desc">{{ l.description }}</div>
+                  <div class="bill-inv-lines__sub">{{ l.sourceType }} · qty {{ l.qty }}</div>
+                </td>
+                <td>{{ l.lineTotal | currency: 'PKR':'symbol-narrow':'1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <div class="bill-inv-totals">
+          <span class="bill-inv-totals__label">Subtotal</span>
+          <span class="bill-inv-totals__value">{{ detail.subTotal | currency: 'PKR':'symbol-narrow':'1.2-2' }}</span>
+          <span class="bill-inv-totals__label">Discount</span>
+          <span class="bill-inv-totals__value">{{ detail.discountAmount | currency: 'PKR':'symbol-narrow':'1.2-2' }}</span>
+          <span class="bill-inv-totals__label bill-inv-totals__row--emphasis">Total</span>
+          <span class="bill-inv-totals__value bill-inv-totals__row--emphasis">{{
+            detail.total | currency: 'PKR':'symbol-narrow':'1.2-2'
+          }}</span>
+          <span class="bill-inv-totals__label">Paid</span>
+          <span class="bill-inv-totals__value">{{ detail.paidAmount | currency: 'PKR':'symbol-narrow':'1.2-2' }}</span>
+          <span class="bill-inv-totals__label bill-inv-totals__row--balance">Balance</span>
+          <span class="bill-inv-totals__value bill-inv-totals__row--balance">{{
+            detail.balanceAmount | currency: 'PKR':'symbol-narrow':'1.2-2'
+          }}</span>
+        </div>
+
+        @if (detail.payments.length) {
+          <div class="bill-inv-pays">
+            <h3 class="bill-inv-pays__title">Payments</h3>
+            @for (p of detail.payments; track p.id) {
+              <div class="bill-inv-pay">
+                <span class="bill-inv-pay__meta"
+                  >{{ p.paymentNo }} · {{ p.method }} · {{ p.paidAt | date: 'short' }}</span
+                >
+                <span class="bill-inv-pay__amt">{{ p.amount | currency: 'PKR':'symbol-narrow':'1.2-2' }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Print" icon="pi pi-print" [outlined]="true" (click)="printReceipt()"></button>
+      @if (detail.status !== 'Void' && detail.status !== 'Paid') {
+        <button pButton type="button" label="Add Line" [outlined]="true" (click)="openAddLine()"></button>
+        <button pButton type="button" label="Record Payment" class="hms-toolbar-solid" (click)="openPay()"></button>
+      }
+      @if (detail.status !== 'Void' && detail.payments.length === 0) {
+        <button pButton type="button" label="Void" severity="danger" [text]="true" (click)="voidInvoice()"></button>
+      }
+    </ng-template>
+  }
+</p-dialog>
+
+<p-dialog
+  [(visible)]="fromVisitOpen"
+  header="Create Invoice From Visit"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 24rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label hms-field-label--required" for="fv-id">Patient Visit Id</label>
+          <p-inputNumber
+            inputId="fv-id"
+            [(ngModel)]="fromVisitId"
+            [useGrouping]="false"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="fv-notes">Notes</label>
+          <input pInputText id="fv-notes" class="w-full" [(ngModel)]="fromVisitNotes" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancel" [text]="true" (click)="fromVisitOpen = false"></button>
+    <button
+      pButton
+      type="button"
+      label="Create"
+      class="hms-toolbar-solid"
+      [loading]="saving"
+      (click)="createFromVisit()"
+    ></button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="payOpen"
+  header="Record Payment"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 24rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="pay-method">Method</label>
+          <p-select
+            inputId="pay-method"
+            [options]="payMethods"
+            [(ngModel)]="payMethod"
+            optionLabel="label"
+            optionValue="value"
+            styleClass="w-full"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="pay-amt">Amount</label>
+          <p-inputNumber
+            inputId="pay-amt"
+            [(ngModel)]="payAmount"
+            mode="decimal"
+            [minFractionDigits]="2"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="pay-ref">Reference</label>
+          <input pInputText id="pay-ref" class="w-full" [(ngModel)]="payRef" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="pay-notes">Notes</label>
+          <input pInputText id="pay-notes" class="w-full" [(ngModel)]="payNotes" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancel" [text]="true" (click)="payOpen = false"></button>
+    <button
+      pButton
+      type="button"
+      label="Save Payment"
+      class="hms-toolbar-solid"
+      [loading]="saving"
+      (click)="recordPayment()"
+    ></button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="lineOpen"
+  header="Add Manual Line"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 24rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="line-desc">Description</label>
+          <input pInputText id="line-desc" class="w-full" [(ngModel)]="lineDesc" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="line-qty">Qty</label>
+          <p-inputNumber
+            inputId="line-qty"
+            [(ngModel)]="lineQty"
+            [min]="0.01"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="line-price">Unit Price</label>
+          <p-inputNumber
+            inputId="line-price"
+            [(ngModel)]="linePrice"
+            mode="decimal"
+            [minFractionDigits]="2"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="line-disc">Discount</label>
+          <p-inputNumber
+            inputId="line-disc"
+            [(ngModel)]="lineDiscount"
+            mode="decimal"
+            [minFractionDigits]="2"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancel" [text]="true" (click)="lineOpen = false"></button>
+    <button
+      pButton
+      type="button"
+      label="Add"
+      class="hms-toolbar-solid"
+      [loading]="saving"
+      (click)="addLine()"
+    ></button>
+  </ng-template>
+</p-dialog>

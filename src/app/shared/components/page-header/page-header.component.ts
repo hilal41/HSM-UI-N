@@ -5,9 +5,9 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="mb-6 border-b border-[var(--hms-color-border)] pb-4">
-      <h1 class="text-xl font-semibold text-slate-800">{{ title() }}</h1>
+      <h1 class="text-xl font-semibold text-[var(--hms-color-text)]">{{ title() }}</h1>
       @if (subtitle(); as sub) {
-        <p class="mt-1 text-sm text-slate-600">{{ sub }}</p>
+        <p class="mt-1 text-sm text-[var(--hms-color-text-muted)]">{{ sub }}</p>
       }
     </header>
   `,

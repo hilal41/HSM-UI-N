@@ -2,11 +2,12 @@
   display: block;
   height: 100%;
   min-height: 0;
-  /* Square top (shelf / gutter above); rounded bottom — same as session `.dcs-card`. */
+  /* Match session `.dcs-card` chrome */
   border-radius: 0 0 var(--hms-space) var(--hms-space);
-  border: 1px solid rgb(226 232 240 / 0.95);
-  background: #fff;
-  padding: 0.4rem 0.5rem;
+  border: var(--hms-card-border);
+  background: var(--hms-color-surface);
+  box-shadow: var(--hms-shadow-card);
+  padding: var(--hms-card-padding, 0.4rem 0.5rem);
 }
 
 .dcm-panel {
@@ -28,13 +29,13 @@
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: #475569;
+  color: var(--hms-color-text-muted);
 }
 
 .dcm-sub {
   font-size: 0.65rem;
   line-height: 1.35;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 .dcm-block {
@@ -63,12 +64,12 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 .dcm-muted {
   font-size: 0.65rem;
-  color: #94a3b8;
+  color: var(--hms-color-text-subtle);
 }
 
 .dcm-medicine-search-area {
@@ -87,7 +88,7 @@
   min-height: 2rem;
   border-radius: 0.35rem;
   border: 1px solid rgb(203 213 225 / 0.95);
-  background: #fff;
+  background: var(--hms-color-surface);
   overflow: hidden;
 }
 
@@ -100,12 +101,12 @@
   font-size: 0.78rem;
   font-family: inherit;
   line-height: 1.35;
-  color: #0f172a;
+  color: var(--hms-color-text);
   background: transparent;
 }
 
 .dcm-search-combo__input::placeholder {
-  color: #94a3b8;
+  color: var(--hms-color-text-subtle);
 }
 
 .dcm-results-trigger {
@@ -120,7 +121,7 @@
   border-right: 1px solid rgb(226 232 240 / 0.95);
   background: rgb(248 250 252 / 0.85);
   cursor: pointer;
-  color: #334155;
+  color: var(--hms-color-text);
 }
 
 .dcm-results-trigger:hover {
@@ -148,7 +149,7 @@
   background: rgb(248 250 252 / 0.85);
   cursor: pointer;
   font-size: 0.72rem;
-  color: #334155;
+  color: var(--hms-color-text);
 }
 
 .dcm-page-size-trigger:hover {
@@ -179,7 +180,7 @@
   padding: 0.35rem;
   border-radius: 0.35rem;
   border: 1px solid rgb(226 232 240 / 0.98);
-  background: #fff;
+  background: var(--hms-color-surface);
   box-shadow: 0 6px 18px rgb(15 23 42 / 0.1);
 }
 
@@ -193,7 +194,7 @@
   border-radius: 0.28rem;
   background: transparent;
   font-size: 0.76rem;
-  color: #0f172a;
+  color: var(--hms-color-text);
   cursor: pointer;
 }
 
@@ -213,7 +214,7 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
   margin-bottom: 0.28rem;
 }
 
@@ -287,7 +288,7 @@
 }
 
 .dcm-result-row-hint--done {
-  color: #64748b;
+  color: var(--hms-color-text-muted);
   font-weight: 500;
 }
 
@@ -302,21 +303,21 @@
 .dcm-result-name {
   font-size: 0.76rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--hms-color-text);
   line-height: 1.25;
   word-break: break-word;
 }
 
 .dcm-result-meta {
   font-size: 0.65rem;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 .dcm-empty {
   margin: 0;
   padding: 0.5rem 0.45rem;
   font-size: 0.72rem;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 .dcm-pager {
@@ -329,7 +330,7 @@
 
 .dcm-pager-meta {
   font-size: 0.65rem;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
   flex: 1 1 auto;
   text-align: center;
 }
@@ -344,7 +345,7 @@
   overflow: auto;
   border-radius: 0.35rem;
   border: 1px solid rgb(226 232 240 / 0.95);
-  background: #fff;
+  background: var(--hms-color-surface);
 }
 
 .dcm-staged-row {
@@ -363,7 +364,7 @@
 .dcm-staged-label {
   font-size: 0.72rem;
   font-weight: 500;
-  color: #0f172a;
+  color: var(--hms-color-text);
   min-width: 0;
   word-break: break-word;
 }

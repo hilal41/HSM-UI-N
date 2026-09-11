@@ -1,117 +1,278 @@
-<div class="flex min-h-screen flex-col bg-[var(--hms-color-canvas)] md:flex-row">
-  <!-- Photo: Unsplash (healthcare) — left 50% on desktop, top strip on mobile -->
-  <div class="relative h-40 shrink-0 overflow-hidden md:h-auto md:min-h-screen md:w-1/2">
+<div class="flex min-h-screen flex-col md:flex-row" style="background:var(--hms-color-canvas)">
+
+  <!-- ── Image panel — fills full height, no gaps ──────────── -->
+  <section
+    class="relative min-h-[42vh] shrink-0 overflow-hidden bg-[var(--hms-color-nav)] sm:min-h-[48vh] md:min-h-screen md:w-[55%]"
+  >
+    <!-- Blurred fill — object-cover, Ken Burns, fills every pixel behind the sharp image -->
     @for (slide of heroSlides; track slide.src; let i = $index) {
-      <img
-        [src]="slide.src"
-        width="1600"
-        height="1067"
-        [alt]="slide.alt"
-        class="absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-in-out"
+      <div
+        class="absolute inset-0 overflow-hidden transition-opacity duration-700"
         [class.opacity-100]="i === activeHeroIndex"
         [class.opacity-0]="i !== activeHeroIndex"
-        [attr.loading]="i === 0 ? 'eager' : 'lazy'"
-        decoding="async"
-        [attr.fetchpriority]="i === 0 ? 'high' : null"
-        [attr.aria-hidden]="i === activeHeroIndex ? null : true"
-      />
+        aria-hidden="true"
+      >
+        <picture class="block size-full">
+          <source media="(min-width: 768px)" [srcset]="slide.src" />
+          <img [src]="slide.mobileSrc" alt=""
+               class="size-full object-cover object-center blur-3xl brightness-[0.62] saturate-150"
+               [class.img-kb-a]="i % 2 === 0"
+               [class.img-kb-b]="i % 2 !== 0" />
+        </picture>
+      </div>
     }
+    @if (heroSlides.length === 0) {
+      <div
+        class="absolute inset-0 bg-gradient-to-br from-[var(--hms-color-nav)] to-[var(--hms-color-primary)]"
+        aria-hidden="true"
+      ></div>
+    }
+
+    <!-- Sharp image — object-contain so nothing is cropped;
+         blurred layer behind fills any gaps seamlessly -->
+    @for (slide of heroSlides; track slide.src; let i = $index) {
+      <picture
+        class="absolute inset-0 z-[1] flex items-center justify-center transition-opacity duration-700"
+        [class.opacity-100]="i === activeHeroIndex"
+        [class.opacity-0]="i !== activeHeroIndex"
+        [attr.aria-hidden]="i === activeHeroIndex ? null : true"
+      >
+        <source media="(min-width: 768px)" [srcset]="slide.src" />
+        <img
+          [src]="slide.mobileSrc"
+          [alt]="slide.alt"
+          class="size-full object-contain object-center"
+          [class.img-kb-a]="i % 2 === 0"
+          [class.img-kb-b]="i % 2 !== 0"
+          [attr.loading]="i === 0 ? 'eager' : 'lazy'"
+          decoding="async"
+          [attr.fetchpriority]="i === 0 ? 'high' : null"
+        />
+      </picture>
+    }
+
+    <!-- Light sweep — cinematic shimmer crossing the panel -->
     <div
-      class="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent md:bg-gradient-to-r md:from-transparent md:to-slate-900/20"
+      class="hero-sweep pointer-events-none absolute inset-y-0 left-0 z-[2]"
       aria-hidden="true"
     ></div>
-  </div>
 
-  <div
-    class="flex flex-1 items-center justify-center px-4 py-8 md:w-1/2 md:px-8 md:py-12"
+    <!-- Subtle right-side vignette -->
+    <div
+      class="pointer-events-none absolute inset-0 z-[3] bg-gradient-to-r from-transparent via-transparent to-slate-900/30 md:to-slate-900/50"
+      aria-hidden="true"
+    ></div>
+    <!-- Bottom vignette on mobile -->
+    <div
+      class="pointer-events-none absolute inset-x-0 bottom-0 z-[3] h-24 bg-gradient-to-t from-slate-900/40 to-transparent md:hidden"
+      aria-hidden="true"
+    ></div>
+
+    <!-- Animated badge — top-right -->
+    <div
+      class="login-badge absolute right-4 top-4 z-[4] max-w-[15rem] rounded-xl px-3.5 py-2.5 sm:right-5 sm:top-5 sm:max-w-[17rem]"
+      aria-live="polite"
+    >
+      <div class="mb-1 flex items-center gap-1.5">
+        <span class="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-blue-300" aria-hidden="true"></span>
+        <span class="text-[0.6rem] font-bold uppercase tracking-[0.18em] text-blue-100/90 sm:text-[0.65rem]">
+          Hospital Management
+        </span>
+      </div>
+      <div class="relative min-h-[1.6rem] overflow-hidden sm:min-h-[1.85rem]">
+        @for (line of heroTaglines; track line; let i = $index) {
+          @if (i === activeTaglineIndex) {
+            <p class="login-tagline-in text-sm font-semibold leading-snug text-white sm:text-[0.95rem]">
+              {{ line }}
+            </p>
+          }
+        }
+      </div>
+    </div>
+
+    <!-- Slide dot indicators -->
+    @if (heroSlides.length > 1) {
+      <div
+        class="absolute bottom-4 left-1/2 z-[4] flex -translate-x-1/2 items-center gap-1.5 sm:bottom-5"
+        aria-hidden="true"
+      >
+        @for (slide of heroSlides; track slide.src; let i = $index) {
+          <button
+            type="button"
+            class="slide-dot z-[4] h-1.5 rounded-full bg-white"
+            [style.width]="i === activeHeroIndex ? '1.25rem' : '0.375rem'"
+            [style.opacity]="i === activeHeroIndex ? '0.95' : '0.4'"
+            (click)="activeHeroIndex = i"
+            [attr.aria-label]="'Slide ' + (i + 1)"
+          ></button>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- ── Sign-in panel ── soft hospital blue family ── -->
+  <section
+    class="login-form-panel relative flex flex-1 items-center justify-center overflow-hidden px-5 py-10 md:w-[45%] md:px-8 lg:px-12"
   >
-    <p-card styleClass="w-full max-w-md border border-[var(--hms-color-border)] bg-[var(--hms-color-surface)] shadow-sm">
-      <ng-template #title>
-        <div class="text-center">
-          <span class="text-2xl font-semibold text-slate-800">HMS</span>
-          <span class="text-2xl font-semibold text-emerald-800"> Sign in</span>
-        </div>
-      </ng-template>
-      <ng-template #subtitle>
-        <p class="text-center text-sm text-slate-600">Use your platform account.</p>
-      </ng-template>
+    <!-- Left edge accent — thin blue line where panels meet -->
+    <div class="login-form-panel__edge pointer-events-none absolute inset-y-0 left-0 w-[3px]" aria-hidden="true"></div>
 
-      <div class="flex flex-col gap-4">
-        @if (errorMessage) {
-          <p-message severity="error" [text]="errorMessage" styleClass="w-full" />
-        }
+    <!-- Depth blobs — same hue as image panel, very soft -->
+    <div class="login-form-panel__blob login-form-panel__blob--a pointer-events-none absolute -right-16 -top-16 h-72 w-72 rounded-full opacity-60 blur-3xl" aria-hidden="true"></div>
+    <div class="login-form-panel__blob login-form-panel__blob--b pointer-events-none absolute -bottom-20 -left-10 h-64 w-64 rounded-full opacity-40 blur-3xl" aria-hidden="true"></div>
 
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-slate-600" for="login-user">Username or email</label>
-          <input
-            pInputText
-            id="login-user"
-            class="w-full"
-            name="userNameOrEmail"
-            [(ngModel)]="userNameOrEmail"
-            autocomplete="username"
-            [disabled]="loading"
-          />
-        </div>
+    <div class="relative w-full max-w-[400px]">
 
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-slate-600" for="login-pass">Password</label>
-          <p-password
-            inputId="login-pass"
-            [(ngModel)]="password"
-            name="password"
-            [feedback]="false"
-            [toggleMask]="true"
-            styleClass="w-full"
-            inputStyleClass="w-full"
-            [disabled]="loading"
-            autocomplete="current-password"
-          />
-        </div>
-
-        <button
-          pButton
-          type="button"
-          label="Sign in"
-          icon="pi pi-sign-in"
-          class="w-full"
-          severity="success"
-          [loading]="loading"
-          [disabled]="loading || branchPickerOpen"
-          (click)="submit()"
-        ></button>
-
-        @if (branchPickerOpen) {
-          <div class="mt-2 flex flex-col gap-3 rounded-lg border border-emerald-200 bg-emerald-50/60 p-3">
-            <p class="text-sm font-medium text-slate-700">Select your branch</p>
-            <p-select
-              [options]="branchOptions"
-              optionLabel="label"
-              optionValue="value"
-              [(ngModel)]="selectedBranchId"
-              placeholder="Choose branch"
-              styleClass="w-full"
-              appendTo="body"
-            />
-            <button
-              pButton
-              type="button"
-              label="Continue"
-              icon="pi pi-arrow-right"
-              class="w-full"
-              severity="success"
-              [loading]="loading"
-              (click)="confirmBranch()"
-            ></button>
+      <!-- Logo + title -->
+      <div class="mb-7">
+        <div class="mb-5 flex items-center gap-3">
+          <div class="login-brand-mark flex h-12 w-12 items-center justify-center rounded-xl text-base font-bold text-white shadow-lg">
+            H
           </div>
-        }
+          <div>
+            <p class="text-[0.65rem] font-bold uppercase tracking-widest text-[var(--hms-color-primary)]">
+              {{ displayAppName }}
+            </p>
+            <p class="text-xs font-medium text-[var(--hms-color-text-muted)]">
+              Hospital Management System
+            </p>
+          </div>
+        </div>
+        <h1 class="text-[1.75rem] font-bold tracking-tight text-[var(--hms-color-text)]">
+          Welcome back
+        </h1>
+        <p class="mt-1 text-sm text-[var(--hms-color-text-muted)]">
+          Sign in to your HMS account to continue.
+        </p>
+      </div>
 
-        <div class="text-center text-sm">
-          <a routerLink="/auth/forgot-password" class="text-emerald-900 underline decoration-emerald-800/40">
-            Forgot password?
-          </a>
+      @if (maintenanceBanner) {
+        <p-message
+          severity="warn"
+          [text]="maintenanceBanner"
+          styleClass="mb-4 w-full"
+        />
+      }
+
+      <!-- Form card — white surface with blue-tinted shadow -->
+      <div class="login-form-card rounded-2xl border p-6 sm:p-7">
+        <div class="flex flex-col gap-4">
+
+          @if (errorMessage) {
+            <p-message severity="error" [text]="errorMessage" styleClass="w-full" />
+          }
+
+          <div class="flex flex-col gap-1.5">
+            <label
+              class="text-[0.68rem] font-semibold uppercase tracking-wider text-[var(--hms-color-text-muted)]"
+              for="login-user"
+            >
+              Username or email
+            </label>
+            <input
+              pInputText
+              id="login-user"
+              class="w-full"
+              name="userNameOrEmail"
+              [(ngModel)]="userNameOrEmail"
+              autocomplete="username"
+              [disabled]="loading"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <label
+                class="text-[0.68rem] font-semibold uppercase tracking-wider text-[var(--hms-color-text-muted)]"
+                for="login-pass"
+              >
+                Password
+              </label>
+              <a
+                routerLink="/auth/forgot-password"
+                class="text-[0.72rem] font-medium text-[var(--hms-color-primary)] transition-colors hover:text-[var(--hms-color-primary-hover)]"
+              >
+                Forgot password?
+              </a>
+            </div>
+            <p-password
+              inputId="login-pass"
+              [(ngModel)]="password"
+              name="password"
+              [feedback]="false"
+              [toggleMask]="true"
+              styleClass="w-full"
+              inputStyleClass="w-full"
+              [disabled]="loading"
+              autocomplete="current-password"
+            />
+          </div>
+
+          <button
+            pButton
+            type="button"
+            label="Sign in"
+            icon="pi pi-sign-in"
+            class="w-full !mt-1"
+            severity="success"
+            [loading]="loading"
+            [disabled]="loading || branchPickerOpen"
+            (click)="submit()"
+          ></button>
+
+          @if (branchPickerOpen) {
+            <div
+              class="mt-1 flex flex-col gap-3 rounded-xl border border-blue-100 bg-[#f0f7ff] p-4"
+            >
+              <p class="text-sm font-medium text-[var(--hms-color-text)]">Select your branch</p>
+              <p-select
+                [options]="branchOptions"
+                optionLabel="label"
+                optionValue="value"
+                [(ngModel)]="selectedBranchId"
+                placeholder="Choose branch"
+                styleClass="w-full"
+                appendTo="body"
+              />
+              <button
+                pButton
+                type="button"
+                label="Continue"
+                icon="pi pi-arrow-right"
+                class="w-full"
+                severity="success"
+                [loading]="loading"
+                (click)="confirmBranch()"
+              ></button>
+            </div>
+          }
+
         </div>
       </div>
-    </p-card>
-  </div>
+
+      <!-- Feature row -->
+      <div class="mt-5 flex items-center justify-center gap-4">
+        <div class="flex items-center gap-1.5 text-[0.72rem] text-[var(--hms-color-text-subtle)]">
+          <i class="pi pi-shield text-[0.7rem] text-[var(--hms-color-primary)]"></i>
+          <span>Role-based access</span>
+        </div>
+        <span class="h-3 w-px bg-blue-200"></span>
+        <div class="flex items-center gap-1.5 text-[0.72rem] text-[var(--hms-color-text-subtle)]">
+          <i class="pi pi-building text-[0.7rem] text-[var(--hms-color-primary)]"></i>
+          <span>Multi-branch</span>
+        </div>
+        <span class="h-3 w-px bg-blue-200"></span>
+        <div class="flex items-center gap-1.5 text-[0.72rem] text-[var(--hms-color-text-subtle)]">
+          <i class="pi pi-lock text-[0.7rem] text-[var(--hms-color-primary)]"></i>
+          <span>Secure &amp; audited</span>
+        </div>
+      </div>
+
+      <p class="mt-4 text-center text-[0.68rem] text-[var(--hms-color-text-subtle)]">
+        Authorized personnel only · Activity may be monitored
+      </p>
+
+    </div>
+  </section>
+
 </div>

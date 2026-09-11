@@ -40,17 +40,17 @@
   font-weight: 600;
   line-height: 1.15;
   margin-bottom: 0;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 :host ::ng-deep .role-editor-toolbar .p-inputtext {
   min-height: 1.55rem;
   border-radius: 0.65rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--hms-color-border-input);
   padding: 0.18rem 0.55rem;
   font-size: 0.72rem;
-  color: #0f172a;
-  background: #fff;
+  color: var(--hms-color-text);
+  background: var(--hms-color-surface);
 }
 
 :host ::ng-deep app-surface-panel.role-editor-surface #hms-surface-panel-title {
@@ -82,7 +82,7 @@
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.25;
-  color: #0f172a;
+  color: var(--hms-color-text);
   white-space: nowrap;
 }
 
@@ -90,7 +90,7 @@
   margin: 0;
   font-size: 0.75rem;
   line-height: 1.25;
-  color: #475569;
+  color: var(--hms-color-text-muted);
   white-space: nowrap;
 }
 
@@ -145,7 +145,7 @@
 .role-editor-card {
   border: 1px solid rgb(226 232 240 / 0.95);
   border-radius: 0.65rem;
-  background: #fff;
+  background: var(--hms-color-surface);
   padding: var(--role-editor-gap);
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
   box-sizing: border-box;
@@ -175,7 +175,7 @@
   flex: 1 1 auto;
   font-size: 0.74rem;
   font-weight: 700;
-  color: #334155;
+  color: var(--hms-color-text);
 }
 
 .role-editor-card__columns {
@@ -191,7 +191,7 @@
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
   text-align: center;
 }
 
@@ -226,7 +226,7 @@
 .role-editor-card__child i {
   flex: 0 0 auto;
   width: 1rem;
-  color: #475569;
+  color: var(--hms-color-text-muted);
   text-align: center;
 }
 
@@ -242,7 +242,7 @@
   flex: 1 1 auto;
   font-size: 0.7rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 .role-editor-card__child span {

@@ -1,0 +1,171 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Platform users"
+  subtitle="Developer accounts for the platform console"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <button
+      pButton
+      type="button"
+      label="New user"
+      icon="pi pi-plus"
+      severity="secondary"
+      class="hms-toolbar-solid"
+      (click)="openCreate()"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    @if (errorMessage) {
+      <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+    }
+    <p-table
+      [showLoader]="false"
+      [value]="rows"
+      [lazy]="true"
+      [paginator]="showPaginator"
+      [alwaysShowPaginator]="false"
+      [rows]="tablePageSize"
+      [totalRecords]="totalCount"
+      [loading]="loading"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      (onLazyLoad)="onLazyLoad($event)"
+      [tableStyle]="{ 'min-width': '100%' }"
+      styleClass="p-datatable-sm hms-crud-table"
+    >
+      <ng-template #header>
+        <tr>
+          <th>Name / Username</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-row>
+        <tr>
+          <td>
+            <div class="font-medium text-slate-800">
+              {{ (row.firstName || row.lastName) ? ((row.firstName ?? '') + ' ' + (row.lastName ?? '')) : '—' }}
+            </div>
+            <div class="font-mono text-[0.7rem] text-slate-400">{{ row.userName }}</div>
+          </td>
+          <td class="text-sm">{{ row.email }}</td>
+          <td>
+            <p-tag [value]="row.isActive ? 'Active' : 'Inactive'" [severity]="row.isActive ? 'success' : 'secondary'" />
+          </td>
+          <td class="text-end">
+            <div class="flex flex-wrap justify-end gap-1">
+              <button
+                pButton
+                type="button"
+                icon="pi pi-pencil"
+                [text]="true"
+                severity="secondary"
+                (click)="openEdit(row)"
+                title="Edit"
+                aria-label="Edit"
+              ></button>
+              @if (row.isActive) {
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-user-minus"
+                  [text]="true"
+                  severity="danger"
+                  (click)="confirmDeactivate(row)"
+                  title="Deactivate"
+                  aria-label="Deactivate"
+                ></button>
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="4" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state
+              icon="pi pi-users"
+              title="No platform users yet"
+              description="Add platform operators who manage hospitals and global settings."
+              [actionable]="true"
+              actionLabel="Click to add a platform user"
+              (action)="openCreate()"
+            />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="loadingbody" let-columns>
+        <app-hms-table-loading-body [cols]="columns?.length || 4" />
+      </ng-template>
+    </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog
+  [header]="editingId == null ? 'New platform user' : 'Edit platform user'"
+  [(visible)]="dialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 32rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+  (onHide)="closeDialog()"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="flex flex-col gap-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div class="flex flex-col gap-1">
+            <label class="hms-field-label" for="pu-fn">First name</label>
+            <input pInputText id="pu-fn" class="w-full" [(ngModel)]="formFirstName" name="puFn" />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="hms-field-label" for="pu-ln">Last name</label>
+            <input pInputText id="pu-ln" class="w-full" [(ngModel)]="formLastName" name="puLn" />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="hms-field-label" [class.hms-field-label--required]="editingId == null" for="pu-un">Username</label>
+            <input
+              pInputText
+              id="pu-un"
+              class="w-full"
+              [(ngModel)]="formUserName"
+              name="puUn"
+              [disabled]="editingId != null"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="hms-field-label hms-field-label--required" for="pu-em">Email</label>
+            <input pInputText id="pu-em" type="email" class="w-full" [(ngModel)]="formEmail" name="puEm" />
+          </div>
+          <div class="flex flex-col gap-1 sm:col-span-2">
+            <label class="hms-field-label" for="pu-ph">Phone</label>
+            <input pInputText id="pu-ph" class="w-full" [(ngModel)]="formPhone" name="puPh" />
+          </div>
+          <div class="flex flex-col gap-1 sm:col-span-2">
+            <label class="hms-field-label" [class.hms-field-label--required]="editingId == null" for="pu-pw">Password</label>
+            <p-password
+              inputId="pu-pw"
+              [(ngModel)]="formPassword"
+              name="puPw"
+              [feedback]="editingId == null"
+              [toggleMask]="true"
+              styleClass="w-full"
+              inputStyleClass="w-full"
+              [placeholder]="editingId == null ? 'Required' : 'Leave blank to keep current password'"
+            />
+          </div>
+          <div class="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 sm:col-span-2">
+            <p-toggleswitch inputId="pu-ac" [(ngModel)]="formIsActive" name="puAc" />
+            <label for="pu-ac" class="cursor-pointer text-sm font-medium text-slate-700">Active account</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="closeDialog()"></button>
+      <button pButton type="button" label="Save" icon="pi pi-check" severity="success" [loading]="saving" (click)="saveUser()"></button>
+    </div>
+  </div>
+</p-dialog>

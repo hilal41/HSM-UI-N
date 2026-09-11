@@ -2,25 +2,23 @@ import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { PasswordModule } from 'primeng/password';
 import { SelectModule } from 'primeng/select';
 import { finalize } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import { publicAssetUrl } from '../../../shared/utils/public-asset-url';
+import { ApplicationConfigurationApiService } from '../../../core/api/application-configuration-api.service';
 import { AuthApiService } from '../../../core/api/auth-api.service';
 import { AuthSessionService } from '../../../core/services/auth-session.service';
-import type { BranchSummary, LoginResponse } from '../../../core/models/api-contracts';
-
-const heroImageUrl = (path: string) =>
-  `${path}${path.includes('?') ? '&' : '?'}auto=format&fit=crop&w=1600&q=80`;
+import type { BranchSummary, LoginResponse, PublicApplicationSettings } from '../../../core/models/api-contracts';
 
 @Component({
   selector: 'app-login-page',
   imports: [
     FormsModule,
     RouterLink,
-    CardModule,
     InputTextModule,
     PasswordModule,
     ButtonModule,
@@ -28,37 +26,28 @@ const heroImageUrl = (path: string) =>
     SelectModule,
   ],
   templateUrl: './login.page.html',
+  styleUrl: './login.page.scss',
 })
 export class LoginPage implements OnInit, OnDestroy {
   private readonly authApi = inject(AuthApiService);
+  private readonly configApi = inject(ApplicationConfigurationApiService);
   private readonly session = inject(AuthSessionService);
   private readonly router = inject(Router);
 
-  readonly heroSlides: readonly { src: string; alt: string }[] = [
-    {
-      src: heroImageUrl('https://plus.unsplash.com/premium_photo-1682130277144-423d6b582e56?ixlib=rb-4.1.0'),
-      alt: 'Patient and nurse discussing care in a hospital waiting area',
-    },
-    {
-      src: heroImageUrl('https://images.unsplash.com/photo-1512102438733-bfa4ed29aef7'),
-      alt: 'Surgical team during a procedure in an operating room',
-    },
-    {
-      src: heroImageUrl('https://plus.unsplash.com/premium_photo-1682141167789-d6b26632bb13?ixlib=rb-4.1.0'),
-      alt: 'Clinician reviewing medical documents at a desk',
-    },
-    {
-      src: heroImageUrl('https://plus.unsplash.com/premium_photo-1682141257744-dea7d9e14fd3?ixlib=rb-4.1.0'),
-      alt: 'Senior doctor working at a computer in a modern clinic',
-    },
-    {
-      src: heroImageUrl('https://images.unsplash.com/photo-1504439468489-c8920d796a29'),
-      alt: 'Medical staff in surgical attire in an operating room',
-    },
-  ];
-
+  heroSlides: { src: string; mobileSrc: string; alt: string }[] = [];
   activeHeroIndex = 0;
   private heroIntervalId: ReturnType<typeof setInterval> | undefined;
+
+  readonly heroTaglines = [
+    'Diagnostics. Decisions. Care.',
+    'Efficiency drives growth.',
+    'Secure access for your care team.',
+    'One platform for every branch.',
+  ];
+  activeTaglineIndex = 0;
+  private taglineIntervalId: ReturnType<typeof setInterval> | undefined;
+
+  publicSettings: PublicApplicationSettings | null = null;
 
   userNameOrEmail = '';
   password = '';
@@ -70,20 +59,43 @@ export class LoginPage implements OnInit, OnDestroy {
   branchOptions: { label: string; value: number }[] = [];
   selectedBranchId: number | null = null;
 
+  get displayAppName(): string {
+    return this.publicSettings?.appName?.trim() || 'HMS Platform';
+  }
+
+  get maintenanceBanner(): string | null {
+    if (!this.publicSettings?.maintenanceMode) return null;
+    const msg = this.publicSettings.maintenanceMessage?.trim();
+    return msg || 'The system is currently under maintenance. Sign-in may be limited.';
+  }
+
   ngOnInit(): void {
-    for (const slide of this.heroSlides) {
-      const img = new Image();
-      img.src = slide.src;
-    }
-    this.heroIntervalId = setInterval(() => {
-      this.activeHeroIndex = (this.activeHeroIndex + 1) % this.heroSlides.length;
-    }, 3000);
+    this.startTaglineRotation();
+    this.configApi.getPublicSettings().subscribe({
+      next: (settings) => (this.publicSettings = settings),
+      error: () => {
+        this.publicSettings = null;
+      },
+    });
+    this.configApi.getPublicLoginHeroImages().subscribe({
+      next: (images) => {
+        this.heroSlides = images.map((image) => ({
+          src: publicAssetUrl(environment.apiBaseUrl, image.imageUrl),
+          mobileSrc: publicAssetUrl(environment.apiBaseUrl, image.mobileImageUrl ?? image.imageUrl),
+          alt: image.altText?.trim() || 'Healthcare image',
+        }));
+        this.preloadHeroImages();
+        this.startHeroCarousel();
+      },
+      error: () => {
+        this.heroSlides = [];
+      },
+    });
   }
 
   ngOnDestroy(): void {
-    if (this.heroIntervalId !== undefined) {
-      clearInterval(this.heroIntervalId);
-    }
+    this.stopHeroCarousel();
+    this.stopTaglineRotation();
   }
 
   submit(): void {
@@ -120,12 +132,16 @@ export class LoginPage implements OnInit, OnDestroy {
           this.branchPickerOpen = false;
           this.pendingLogin = null;
           this.session.setSession(res);
-          void this.router.navigateByUrl('/app/dashboard');
+          this.navigateAfterLogin();
         },
         error: () => {
           this.errorMessage = 'Could not activate the selected branch.';
         },
       });
+  }
+
+  private navigateAfterLogin(): void {
+    void this.router.navigateByUrl(this.session.defaultAppRoute());
   }
 
   private handleLoginSuccess(res: LoginResponse): void {
@@ -143,6 +159,44 @@ export class LoginPage implements OnInit, OnDestroy {
       return;
     }
     this.session.setSession(res);
-    void this.router.navigateByUrl('/app/dashboard');
+    this.navigateAfterLogin();
+  }
+
+  private preloadHeroImages(): void {
+    for (const slide of this.heroSlides) {
+      const desktop = new Image();
+      desktop.src = slide.src;
+      const mobile = new Image();
+      mobile.src = slide.mobileSrc;
+    }
+  }
+
+  private startHeroCarousel(): void {
+    this.stopHeroCarousel();
+    if (this.heroSlides.length <= 1) return;
+    this.heroIntervalId = setInterval(() => {
+      this.activeHeroIndex = (this.activeHeroIndex + 1) % this.heroSlides.length;
+    }, 3000);
+  }
+
+  private stopHeroCarousel(): void {
+    if (this.heroIntervalId !== undefined) {
+      clearInterval(this.heroIntervalId);
+      this.heroIntervalId = undefined;
+    }
+  }
+
+  private startTaglineRotation(): void {
+    this.stopTaglineRotation();
+    this.taglineIntervalId = setInterval(() => {
+      this.activeTaglineIndex = (this.activeTaglineIndex + 1) % this.heroTaglines.length;
+    }, 4000);
+  }
+
+  private stopTaglineRotation(): void {
+    if (this.taglineIntervalId !== undefined) {
+      clearInterval(this.taglineIntervalId);
+      this.taglineIntervalId = undefined;
+    }
   }
 }

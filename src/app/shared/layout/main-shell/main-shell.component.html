@@ -1,54 +1,75 @@
 <p-toast position="top-right" class="no-print" />
 <p-confirmdialog class="no-print" />
 
-<div class="app-shell-root flex min-h-screen flex-col bg-[var(--hms-color-canvas)]">
+<div
+  class="app-shell-root flex min-h-screen flex-col bg-[var(--hms-color-canvas)]"
+  [class.hms-platform-theme]="isPlatformUser()"
+>
   <header
     class="app-shell-header no-print sticky top-0 z-20 w-full border-b border-blue-950/30 bg-[var(--hms-color-nav)] shadow-sm"
+    [class.app-shell-header--platform]="isPlatformUser()"
   >
     <div class="app-shell-header__bar w-full">
-      <p-menubar
-        [model]="menuModel()"
-        styleClass="app-shell-menubar !rounded-none !border-0 !bg-transparent !px-0 !py-0"
-      >
-        <ng-template pTemplate="start">
-          <a
-            routerLink="/app/dashboard"
-            class="app-shell-brand mr-2 flex shrink-0 flex-col border-r border-white/20 pr-2 sm:mr-3 sm:pr-3"
-          >
-            <span class="text-sm font-semibold tracking-tight text-white sm:text-base">
-              <span class="text-emerald-300">HMS</span> Console
-            </span>
-            <span class="hidden text-[0.65rem] leading-tight text-blue-100 sm:inline">Hospital management</span>
-          </a>
-        </ng-template>
-
-        <ng-template pTemplate="end">
-          <div class="app-shell-end flex items-center gap-1.5 sm:gap-2">
-            <app-branch-switcher />
-            @if (user(); as u) {
-              <span
-                class="hidden max-w-[10rem] truncate text-[0.72rem] text-blue-100 lg:inline xl:max-w-[14rem]"
-              >
-                {{ u.userName }}
-              </span>
+      <div class="app-shell-menubar-row">
+        <a
+          [routerLink]="homeRoute()"
+          class="app-shell-brand mr-2 flex shrink-0 flex-col border-r border-white/20 pr-2 sm:mr-3 sm:pr-3"
+        >
+          <span class="text-sm font-semibold tracking-tight text-white sm:text-base">
+            @if (isPlatformUser()) {
+              <span class="app-shell-brand__mark">Dev</span>
+              {{ brandTitle() }}
+            } @else {
+              <span class="text-sky-200">HMS</span> Console
             }
+          </span>
+          <span class="hidden text-[0.65rem] leading-tight text-white/70 sm:inline">{{
+            brandSubtitle()
+          }}</span>
+        </a>
+
+        <div class="app-shell-nav-scroller">
+          @if (canScrollLeft()) {
             <button
-              pButton
               type="button"
-              label="Sign out"
-              icon="pi pi-sign-out"
-              severity="secondary"
-              [outlined]="true"
-              class="shell-sign-out !text-[0.7rem] sm:!text-xs"
-              (click)="signOut()"
-            ></button>
+              class="app-shell-nav-arrow"
+              aria-label="Show previous menus"
+              title="Previous"
+              (click)="scrollNav(-1)"
+            >
+              <i class="pi pi-angle-left app-shell-nav-arrow__icon" aria-hidden="true"></i>
+            </button>
+          }
+
+          <div class="app-shell-nav-scroller__main" #navHost>
+            <p-menubar
+              [model]="menuModel()"
+              breakpoint="0px"
+              styleClass="app-shell-menubar app-shell-menubar--nav-only !rounded-none !border-0 !bg-transparent !px-0 !py-0"
+            />
           </div>
-        </ng-template>
-      </p-menubar>
+
+          @if (canScrollRight()) {
+            <button
+              type="button"
+              class="app-shell-nav-arrow"
+              aria-label="Show next menus"
+              title="Next"
+              (click)="scrollNav(1)"
+            >
+              <i class="pi pi-angle-right app-shell-nav-arrow__icon" aria-hidden="true"></i>
+            </button>
+          }
+        </div>
+
+        <div class="app-shell-end">
+          <app-account-menu />
+        </div>
+      </div>
     </div>
   </header>
 
-  <main class="hms-main-pad flex min-h-0 flex-1 flex-col overflow-auto">
+  <main class="hms-main-pad flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
     <router-outlet />
   </main>
 </div>

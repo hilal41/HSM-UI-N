@@ -1,0 +1,247 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Application Configuration"
+  subtitle="Branding, maintenance mode, and login page hero images"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <input
+      #imageUpload
+      type="file"
+      accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+      class="sr-only"
+      tabindex="-1"
+      (change)="onFileSelected($event)"
+    />
+    <button
+      pButton
+      type="button"
+      label="Upload image"
+      icon="pi pi-upload"
+      severity="secondary"
+      class="hms-toolbar-solid"
+      [loading]="uploading"
+      [disabled]="uploading"
+      (click)="openUploadPicker()"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    <section class="mb-8 rounded-lg border border-[var(--hms-color-border)] bg-[var(--hms-color-surface)] p-4">
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 class="text-sm font-semibold text-slate-800">Branding &amp; maintenance</h3>
+          <p class="text-xs text-slate-500">Shown on the login page and platform console.</p>
+        </div>
+        <button
+          pButton
+          type="button"
+          label="Save settings"
+          icon="pi pi-check"
+          severity="success"
+          [loading]="settingsSaving"
+          [disabled]="settingsLoading || settingsSaving"
+          (click)="saveSettings()"
+        ></button>
+      </div>
+
+      @if (settingsError) {
+        <p-message severity="error" [text]="settingsError" styleClass="mb-4 w-full" />
+      }
+
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label hms-field-label--required" for="cfg-app-name">App name</label>
+          <input
+            pInputText
+            id="cfg-app-name"
+            class="w-full"
+            [(ngModel)]="formAppName"
+            name="cfgAppName"
+            [disabled]="settingsLoading"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="cfg-support-email">Support email</label>
+          <input
+            pInputText
+            id="cfg-support-email"
+            type="email"
+            class="w-full"
+            [(ngModel)]="formSupportEmail"
+            name="cfgSupportEmail"
+            [disabled]="settingsLoading"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="cfg-support-phone">Support phone</label>
+          <input
+            pInputText
+            id="cfg-support-phone"
+            class="w-full"
+            [(ngModel)]="formSupportPhone"
+            name="cfgSupportPhone"
+            [disabled]="settingsLoading"
+          />
+        </div>
+        <div class="flex items-center gap-3 self-end rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+          <p-toggleswitch
+            inputId="cfg-maint"
+            [(ngModel)]="formMaintenanceMode"
+            name="cfgMaint"
+            [disabled]="settingsLoading"
+          />
+          <label for="cfg-maint" class="cursor-pointer text-sm font-medium text-slate-700">Maintenance mode</label>
+        </div>
+        <div class="flex items-center gap-3 self-end rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+          <p-toggleswitch
+            inputId="cfg-audit"
+            [(ngModel)]="formAuditLogsEnabled"
+            name="cfgAudit"
+            [disabled]="settingsLoading"
+          />
+          <label for="cfg-audit" class="cursor-pointer text-sm font-medium text-slate-700">Audit logging</label>
+        </div>
+        <div class="flex flex-col gap-1 sm:col-span-2">
+          <label class="hms-field-label" for="cfg-maint-msg">Maintenance message</label>
+          <textarea
+            pTextarea
+            id="cfg-maint-msg"
+            class="w-full"
+            rows="2"
+            [(ngModel)]="formMaintenanceMessage"
+            name="cfgMaintMsg"
+            [disabled]="settingsLoading"
+            placeholder="Shown on the login page when maintenance mode is on"
+          ></textarea>
+        </div>
+      </div>
+    </section>
+
+    @if (errorMessage) {
+      <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+    }
+
+    <h3 class="mb-3 text-sm font-semibold text-slate-800">Login hero images</h3>
+
+    <div class="mb-6 max-w-xl rounded-lg border border-[var(--hms-color-border)] bg-[var(--hms-color-surface)] p-4">
+      <p class="mb-3 text-sm text-slate-600">
+        Upload JPG or PNG files (max 5 MB). Images are automatically scaled to fit the login
+        panel (full picture, no crop) for desktop and mobile. Active images rotate every few seconds.
+      </p>
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-end">
+        <div class="flex flex-1 flex-col gap-1">
+          <label class="text-xs font-medium text-slate-600" for="upload-alt">Alt text (optional)</label>
+          <input
+            pInputText
+            id="upload-alt"
+            class="w-full"
+            [(ngModel)]="uploadAltText"
+            name="uploadAltText"
+            placeholder="Describe the image for accessibility"
+            [disabled]="uploading"
+          />
+        </div>
+        <button
+          pButton
+          type="button"
+          label="Choose file"
+          icon="pi pi-image"
+          severity="success"
+          [loading]="uploading"
+          [disabled]="uploading"
+          (click)="openUploadPicker()"
+        ></button>
+      </div>
+    </div>
+
+    <p-table
+      [showLoader]="false"
+      [value]="rows"
+      [loading]="loading"
+      styleClass="p-datatable-sm hms-crud-table"
+      [paginator]="showPaginator"
+      [alwaysShowPaginator]="false"
+      [rows]="10"
+    >
+      <ng-template #header>
+        <tr>
+          <th class="w-28">Preview</th>
+          <th>Alt text</th>
+          <th>Status</th>
+          <th class="min-w-[8rem] text-end">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-row>
+        <tr>
+          <td>
+            <img
+              [src]="imageSrc(row)"
+              [alt]="row.altText || 'Login hero image'"
+              class="h-16 w-24 rounded object-cover"
+              loading="lazy"
+            />
+          </td>
+          <td>
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <input
+                pInputText
+                class="w-full min-w-[12rem]"
+                [(ngModel)]="row.altText"
+                [name]="'alt-' + row.id"
+                placeholder="Accessibility description"
+              />
+              <button
+                pButton
+                type="button"
+                label="Save"
+                icon="pi pi-check"
+                severity="secondary"
+                [outlined]="true"
+                class="shrink-0"
+                (click)="saveAltText(row)"
+              ></button>
+            </div>
+          </td>
+          <td>
+            <div class="flex flex-col gap-2">
+              <p-tag
+                [value]="row.isActive ? 'Active' : 'Hidden'"
+                [severity]="row.isActive ? 'success' : 'secondary'"
+              />
+              <p-toggleswitch
+                [(ngModel)]="row.isActive"
+                [name]="'active-' + row.id"
+                (ngModelChange)="toggleActive(row, $event)"
+              />
+            </div>
+          </td>
+          <td class="text-end">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              severity="danger"
+              [text]="true"
+              (click)="confirmDelete(row)"
+              aria-label="Delete"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="4" class="hms-table-empty-cell text-center text-sm text-slate-500">
+            <div class="flex flex-col items-center justify-center gap-2 py-4">
+              <i class="pi pi-images text-4xl text-slate-300" aria-hidden="true"></i>
+              <span>No login images yet. Upload JPG or PNG files above.</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="loadingbody" let-columns>
+        <app-hms-table-loading-body [cols]="columns?.length || 4" />
+      </ng-template>
+    </p-table>
+  </div>
+</app-surface-panel>

@@ -1,0 +1,100 @@
+/* ── Tagline slide-up ───────────────────────────────────────── */
+@keyframes tagline-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.login-tagline-in {
+  animation: tagline-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ── Ken Burns — two directions, applied alternately per slide ─ */
+@keyframes kb-a {
+  0%   { transform: scale(1.0)  translate(0,      0);      }
+  100% { transform: scale(1.10) translate(-1.5%, -0.8%);   }
+}
+@keyframes kb-b {
+  0%   { transform: scale(1.0)  translate(0,     0);       }
+  100% { transform: scale(1.10) translate(1.5%,  0.8%);    }
+}
+
+.img-kb-a {
+  animation: kb-a 8s ease-in-out infinite alternate;
+  transform-origin: center center;
+}
+.img-kb-b {
+  animation: kb-b 8s ease-in-out infinite alternate;
+  transform-origin: center center;
+}
+
+/* ── Light sweep — shiny gradient that crosses the panel ───── */
+@keyframes sweep {
+  0%         { transform: translateX(-140%) skewX(-18deg); opacity: 0;    }
+  6%         { opacity: 1; }
+  44%        { opacity: 1; }
+  50%        { transform: translateX(240%) skewX(-18deg);  opacity: 0;    }
+  100%       { transform: translateX(240%) skewX(-18deg);  opacity: 0;    }
+}
+
+.hero-sweep {
+  width: 35%;
+  background: linear-gradient(
+    105deg,
+    transparent    20%,
+    rgba(255,255,255,0.22) 50%,
+    transparent    80%
+  );
+  animation: sweep 5s ease-in-out infinite;
+}
+
+/* ── Badge glass (uses navy from app nav color) ─────────────── */
+.login-badge {
+  background: color-mix(in srgb, var(--hms-color-nav) 82%, transparent);
+  border: 1px solid rgb(255 255 255 / 0.2);
+  box-shadow: 0 4px 20px rgb(0 0 0 / 0.25), inset 0 1px 0 rgb(255 255 255 / 0.12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.login-form-panel {
+  background: linear-gradient(
+    150deg,
+    var(--hms-color-primary-light) 0%,
+    var(--hms-color-primary-light) 35%,
+    var(--hms-color-canvas) 100%
+  );
+}
+
+.login-form-panel__edge {
+  background: linear-gradient(
+    to bottom,
+    var(--hms-color-nav),
+    var(--hms-color-primary-bright) 50%,
+    transparent
+  );
+}
+
+.login-form-panel__blob--a {
+  background: radial-gradient(circle, #bfdbfe, transparent 70%);
+}
+
+.login-form-panel__blob--b {
+  background: radial-gradient(circle, #93c5fd, transparent 70%);
+}
+
+.login-brand-mark {
+  background: linear-gradient(135deg, var(--hms-color-nav) 0%, var(--hms-color-primary) 100%);
+}
+
+.login-form-card {
+  background: var(--hms-color-surface);
+  border-color: var(--hms-color-primary-border);
+  box-shadow:
+    0 4px 32px rgb(37 99 235 / 0.1),
+    0 1px 4px rgb(0 0 0 / 0.06);
+}
+
+/* ── Dot indicators ─────────────────────────────────────────── */
+.slide-dot {
+  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s;
+}

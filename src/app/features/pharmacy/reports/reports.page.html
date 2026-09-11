@@ -1,0 +1,54 @@
+<app-surface-panel class="hms-crud-surface" title="Pharmacy Reports" subtitle="Expiry, low stock, sales, movements">
+  <div surfacePanelActions class="hms-crud-actions">
+    <button pButton type="button" [outlined]="tab !== 'expiry'" label="Expiring" (click)="loadExpiry()"></button>
+    <button pButton type="button" [outlined]="tab !== 'low'" label="Low stock" (click)="loadLow()"></button>
+    <button pButton type="button" [outlined]="tab !== 'sales'" label="Sales" (click)="loadSales()"></button>
+    <button pButton type="button" [outlined]="tab !== 'movements'" label="Movements" (click)="loadMovements()"></button>
+    @if (tab === 'sales' || tab === 'movements') {
+      <input pInputText type="date" [(ngModel)]="from" />
+      <input pInputText type="date" [(ngModel)]="to" />
+      <button pButton type="button" icon="pi pi-refresh" [outlined]="true" (click)="tab === 'sales' ? loadSales() : loadMovements()"></button>
+    }
+  </div>
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    @if (tab === 'expiry') {
+      <p-table [value]="expiring" styleClass="p-datatable-sm hms-crud-table">
+        <ng-template pTemplate="header"><tr><th>Medicine</th><th>Batch</th><th>Expiry</th><th>Qty</th></tr></ng-template>
+        <ng-template pTemplate="body" let-r>
+          <tr><td>{{ r.medicineName }}</td><td>{{ r.batchNumber }}</td><td>{{ r.expiryDate }}</td><td>{{ r.qtyOnHand }}</td></tr>
+        </ng-template>
+      </p-table>
+    }
+    @if (tab === 'low') {
+      <p-table [value]="lowStock" styleClass="p-datatable-sm hms-crud-table">
+        <ng-template pTemplate="header"><tr><th>Code</th><th>Medicine</th><th>On hand</th><th>Reorder</th></tr></ng-template>
+        <ng-template pTemplate="body" let-r>
+          <tr><td>{{ r.medicineCode }}</td><td>{{ r.medicineName }}</td><td>{{ r.qtyOnHand }}</td><td>{{ r.reorderLevel }}</td></tr>
+        </ng-template>
+      </p-table>
+    }
+    @if (tab === 'sales') {
+      <p-table [value]="sales" styleClass="p-datatable-sm hms-crud-table">
+        <ng-template pTemplate="header"><tr><th>Date</th><th>Count</th><th>Total</th></tr></ng-template>
+        <ng-template pTemplate="body" let-r>
+          <tr><td>{{ r.date }}</td><td>{{ r.saleCount }}</td><td>{{ r.total }}</td></tr>
+        </ng-template>
+      </p-table>
+    }
+    @if (tab === 'movements') {
+      <p-table [value]="movements" styleClass="p-datatable-sm hms-crud-table">
+        <ng-template pTemplate="header"><tr><th>When</th><th>Medicine</th><th>Batch</th><th>Type</th><th>Qty</th></tr></ng-template>
+        <ng-template pTemplate="body" let-r>
+          <tr>
+            <td>{{ r.createdAt | date: 'short' }}</td>
+            <td>{{ r.medicineName }}</td>
+            <td>{{ r.batchNumber }}</td>
+            <td>{{ r.movementType }}</td>
+            <td>{{ r.qty }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+  </div>
+</app-surface-panel>

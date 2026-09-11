@@ -1,10 +1,12 @@
-$qp-pill-border: #0f172a;
+@import './registration-btn-size';
+
+$qp-pill-border: var(--hms-color-text);
 $qp-pill-text: var(--hms-color-text);
-$qp-pill-hover-bg: #f1f5f9;
-$qp-pill-hover-border: #020617;
-$qp-pill-hover-text: #020617;
+$qp-pill-hover-bg: var(--hms-color-canvas);
+$qp-pill-hover-border: var(--hms-color-text);
+$qp-pill-hover-text: var(--hms-color-text);
 $qp-border-soft: rgba(15, 81, 50, 0.1);
-$qp-required: #b91c1c;
+$qp-required: var(--hms-color-danger);
 
 :host {
   display: flex;
@@ -28,160 +30,70 @@ $qp-required: #b91c1c;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 0.75rem 1.1rem 0.5rem;
+  padding: 0.875rem 1.25rem 0.75rem;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Desktop: 4 columns total -> 3 form columns + 1 picture column */
-.qp-form-wide {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.2rem 0.55rem;
-  align-content: start;
+/* One grid — same gap on all sides between fields (no section cards / titles) */
+.qp-form-grid {
+  gap: var(--hms-card-gap);
+  grid-auto-rows: minmax(0, auto);
 }
 
-.qp-field--fn,
-.qp-field--ln,
-.qp-field--mob,
-.qp-field--reg,
-.qp-field--gender,
-.qp-field--blood,
-.qp-field--city,
-.qp-field--state {
-  grid-column: span 1;
+.qp-form-grid .hms-form-field {
+  gap: 0.2rem;
 }
 
-.qp-field--dob {
-  grid-column: span 1;
+.qp-form-grid .hms-form-field--span-2 {
+  grid-column: span 2;
 }
 
-.qp-field--pic {
-  grid-column: 4;
-  grid-row: 1 / span 3;
-  align-self: start;
+/* Picture spans rows 1–2 in column 3; fills height of name + DOB/gender rows */
+.qp-pic-field {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  align-self: stretch;
+  min-height: 0;
+  justify-content: flex-start;
 }
 
-.qp-field--age-ymd {
-  grid-column: span 1;
-}
-
-.qp-field--zip,
-.qp-field--em-name,
-.qp-field--em-phone,
-.qp-field--em-rel,
-.qp-field--addr,
-.qp-field--email {
-  grid-column: span 1;
-}
-
-.qp-field--ins-p,
-.qp-field--ins-n {
-  grid-column: span 1;
-}
-
-@media (max-width: 900px) {
-  .qp-form-wide {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-
-  .qp-field--fn,
-  .qp-field--ln,
-  .qp-field--mob,
-  .qp-field--reg,
-  .qp-field--gender,
-  .qp-field--blood,
-  .qp-field--city,
-  .qp-field--state {
-    grid-column: span 3;
-  }
-
-  .qp-field--dob,
-  .qp-field--pic,
-  .qp-field--age-ymd {
-    grid-column: span 6;
-  }
-
-  .qp-field--pic {
-    grid-row: auto;
-  }
-
-  .qp-field--zip,
-  .qp-field--em-name,
-  .qp-field--em-phone,
-  .qp-field--em-rel,
-  .qp-field--addr,
-  .qp-field--email {
-    grid-column: span 3;
-  }
-
-  .qp-field--ins-p,
-  .qp-field--ins-n {
-    grid-column: span 3;
-  }
-}
-
-@media (max-width: 520px) {
-  .qp-form-wide {
-    grid-template-columns: 1fr;
-  }
-
-  .qp-field--fn,
-  .qp-field--ln,
-  .qp-field--mob,
-  .qp-field--reg,
-  .qp-field--dob,
-  .qp-field--pic,
-  .qp-field--age-ymd,
-  .qp-field--gender,
-  .qp-field--blood,
-  .qp-field--city,
-  .qp-field--state,
-  .qp-field--zip,
-  .qp-field--em-name,
-  .qp-field--em-phone,
-  .qp-field--em-rel,
-  .qp-field--addr,
-  .qp-field--email,
-  .qp-field--ins-p,
-  .qp-field--ins-n {
-    grid-column: 1 / -1;
-  }
-
-  .qp-field--pic {
-    grid-row: auto;
-  }
-}
-
-.qp-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  min-width: 0;
+.qp-pic-field .hms-field-label {
+  width: 100%;
+  text-align: right;
 }
 
 .qp-pic-box {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-start;
   gap: 0.25rem;
+  width: 100%;
+  min-height: 0;
 }
 
 .qp-pic-preview {
+  flex: 1 1 auto;
   width: 100%;
-  max-width: 152px;
-  aspect-ratio: 1 / 1;
-  border: 1px dashed #94a3b8;
+  max-width: 100%;
+  min-height: 4.5rem;
+  max-height: 100%;
+  aspect-ratio: auto;
+  border: 1px dashed var(--hms-color-text-subtle);
   border-radius: 0.5rem;
-  background: #f8fafc;
+  background: var(--hms-color-primary-light);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   overflow: hidden;
+  margin-left: auto;
 }
 
 .qp-pic-preview__icon {
-  font-size: 3rem;
-  color: #64748b;
+  font-size: 2rem;
+  color: var(--hms-color-text-muted);
 }
 
 .qp-pic-preview__img {
@@ -196,9 +108,17 @@ $qp-required: #b91c1c;
   gap: 0.2rem;
 }
 
+:host ::ng-deep button.pr-pill-white.p-button {
+  @include pr-uniform-button-size;
+  font-size: 0.75rem !important;
+  padding-inline: 1rem !important;
+}
+
 :host ::ng-deep .qp-pic-action-icon.p-button {
-  width: 2.2rem !important;
-  height: 2.2rem !important;
+  width: $pr-btn-h !important;
+  height: $pr-btn-h !important;
+  min-height: $pr-btn-h !important;
+  max-height: $pr-btn-h !important;
   padding: 0 !important;
   justify-content: center !important;
   border-radius: 0.4rem !important;
@@ -217,7 +137,7 @@ $qp-required: #b91c1c;
 
 .qp-cam-card {
   width: min(92vw, 26rem);
-  background: #fff;
+  background: var(--hms-color-surface);
   border-radius: 0.75rem;
   overflow: hidden;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
@@ -234,8 +154,8 @@ $qp-required: #b91c1c;
 .qp-cam-error {
   padding: 0.45rem 0.7rem;
   font-size: 0.75rem;
-  color: #b91c1c;
-  background: #fef2f2;
+  color: var(--hms-color-danger);
+  background: var(--hms-color-danger-light);
   border-top: 1px solid #fecaca;
 }
 
@@ -247,15 +167,8 @@ $qp-required: #b91c1c;
   border-top: 1px solid rgba(148, 163, 184, 0.35);
 }
 
-.qp-label {
-  font-size: 0.58rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #64748b;
-}
-
-.qp-label--required::after {
+.qp-label--required::after,
+:host ::ng-deep .hms-field-label--required::after {
   content: ' *';
   color: $qp-required;
   font-weight: 700;
@@ -266,7 +179,7 @@ $qp-required: #b91c1c;
 :host ::ng-deep input.qp-input.p-inputtext {
   width: 100%;
   box-sizing: border-box;
-  background: #ffffff !important;
+  background: var(--hms-color-surface) !important;
   border: 1px solid rgb(203 213 225 / 0.95) !important;
   border-radius: 0.35rem !important;
   padding: 0.18rem 0.32rem !important;
@@ -275,7 +188,7 @@ $qp-required: #b91c1c;
   min-height: 1.5rem !important;
   max-height: 2.25rem !important;
   font-weight: 400;
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
   box-shadow: none !important;
   transition:
     border-color 0.15s ease,
@@ -285,17 +198,17 @@ $qp-required: #b91c1c;
 
 :host ::ng-deep .qp-input.p-inputtext:enabled:hover,
 :host ::ng-deep input.qp-input.p-inputtext:enabled:hover {
-  background: #ffffff !important;
+  background: var(--hms-color-surface) !important;
   border-color: var(--hms-color-primary-hover) !important;
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
 }
 
 :host ::ng-deep .qp-input.p-inputtext:enabled:focus,
 :host ::ng-deep input.qp-input.p-inputtext:enabled:focus {
   outline: none;
-  background: #ffffff !important;
+  background: var(--hms-color-surface) !important;
   border-color: var(--hms-color-primary-hover) !important;
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
   box-shadow: none !important;
 }
 
@@ -305,7 +218,7 @@ $qp-required: #b91c1c;
 }
 
 :host ::ng-deep input.qp-input.p-inputtext::placeholder {
-  color: #94a3b8;
+  color: var(--hms-color-text-subtle);
   font-weight: 400;
 }
 
@@ -320,7 +233,7 @@ $qp-required: #b91c1c;
   box-sizing: border-box;
   display: flex;
   align-items: stretch;
-  background: #ffffff !important;
+  background: var(--hms-color-surface) !important;
   border: 1px solid rgb(203 213 225 / 0.95) !important;
   border-radius: 0.35rem !important;
   box-shadow: none !important;
@@ -343,7 +256,7 @@ $qp-required: #b91c1c;
   font-size: 0.68rem !important;
   line-height: 1.25 !important;
   font-weight: 400;
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
   min-height: 1.5rem;
   box-sizing: border-box;
 }
@@ -362,7 +275,7 @@ $qp-required: #b91c1c;
   border: none !important;
   background: transparent !important;
   padding: 0 !important;
-  color: #64748b !important;
+  color: var(--hms-color-text-muted) !important;
 }
 
 :host ::ng-deep .qp-datepicker .p-datepicker-input-icon {
@@ -370,12 +283,12 @@ $qp-required: #b91c1c;
 }
 
 :host ::ng-deep .qp-datepicker:not(.p-disabled):hover {
-  background: #ffffff !important;
+  background: var(--hms-color-surface) !important;
   border-color: var(--hms-color-primary-hover) !important;
 }
 
 :host ::ng-deep .qp-datepicker:not(.p-disabled):hover .p-datepicker-input.p-inputtext {
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
 }
 
 :host ::ng-deep .qp-datepicker .p-datepicker-input.p-inputtext:enabled:focus {
@@ -395,12 +308,12 @@ $qp-required: #b91c1c;
   flex-wrap: wrap;
   justify-content: flex-end;
   align-items: center;
-  gap: 0.5rem 0.75rem;
+  gap: var(--hms-card-gap);
   flex-shrink: 0;
-  padding: 0.85rem 1.25rem 1rem;
+  padding: 0.75rem 1.25rem 0.875rem;
   margin-top: 0;
   border-top: 1px solid $qp-border-soft;
-  background: #ffffff;
+  background: var(--hms-color-surface);
   box-shadow: 0 -6px 16px rgba(15, 23, 42, 0.06);
 }
 
@@ -409,7 +322,7 @@ $qp-required: #b91c1c;
 }
 
 :host ::ng-deep .qp-select.p-select {
-  background: #ffffff !important;
+  background: var(--hms-color-surface) !important;
   border: 1px solid rgb(203 213 225 / 0.95) !important;
   border-radius: 0.35rem !important;
   min-height: 1.5rem;
@@ -422,13 +335,13 @@ $qp-required: #b91c1c;
 }
 
 :host ::ng-deep .qp-select.p-select:not(.p-disabled):hover {
-  background: #ffffff !important;
+  background: var(--hms-color-surface) !important;
   border-color: var(--hms-color-primary-hover) !important;
 }
 
 :host ::ng-deep .qp-select.p-select.p-focus {
   outline: none;
-  background: #ffffff !important;
+  background: var(--hms-color-surface) !important;
   border-color: var(--hms-color-primary-hover) !important;
   box-shadow: none !important;
 }
@@ -440,18 +353,18 @@ $qp-required: #b91c1c;
 }
 
 :host ::ng-deep .qp-select .p-select-label {
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
   font-weight: 400;
   font-size: 0.68rem !important;
   line-height: 1.25 !important;
 }
 
 :host ::ng-deep .qp-select.p-select:not(.p-disabled):hover .p-select-label {
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
 }
 
 :host ::ng-deep .qp-select .p-select-dropdown {
-  color: #64748b !important;
+  color: var(--hms-color-text-muted) !important;
   width: 1.5rem;
 }
 

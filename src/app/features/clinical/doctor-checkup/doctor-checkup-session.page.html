@@ -1,7 +1,7 @@
 <app-surface-panel
   class="hms-crud-surface dcs-session-surface"
-  title="Doctor checkup"
-  subtitle="Checkup and medicines"
+  title="Doctor Checkup"
+  subtitle="Checkup, medicines, and lab tests"
 >
   @if (visit && patient) {
     <div surfacePanelTitleExtras class="dcs-header-session-wrap">
@@ -57,6 +57,36 @@
             (click)="saveAndPrintMedicineSlip()"
           ></button>
         </div>
+        @if (isOpdVisit) {
+          <div class="dcs-visit-field dcs-visit-field--header dcs-visit-field--refer">
+            <span class="dcs-visit-field__lbl" aria-hidden="true">&nbsp;</span>
+            @if (hasPendingReferral) {
+              <button
+                pButton
+                type="button"
+                label="Referred to IPD"
+                icon="pi pi-check"
+                severity="success"
+                [outlined]="true"
+                class="dcs-header-refer-btn"
+                [disabled]="true"
+              ></button>
+            } @else {
+              <button
+                pButton
+                type="button"
+                label="Refer to IPD"
+                icon="pi pi-sign-in"
+                severity="warn"
+                [outlined]="true"
+                class="dcs-header-refer-btn"
+                [loading]="referring"
+                [disabled]="saving || referring || !canReferToIpd"
+                (click)="openReferDialog()"
+              ></button>
+            }
+          </div>
+        }
         <div class="dcs-visit-field dcs-visit-field--header dcs-visit-field--template">
           <span id="dcs-lbl-tpl" class="dcs-visit-field__lbl">Template</span>
           <p-select
@@ -140,14 +170,99 @@
           </section>
         </div>
 
-        <aside class="dcs-aside-medicines" aria-label="Medicine search and assignment">
-          <app-doctor-checkup-medicine-panel />
+        <aside class="dcs-aside-catalog" aria-label="Medicine and lab test assignment">
+          @if (showLabPanel()) {
+            <div class="dcs-aside-toggle" role="tablist" aria-label="Catalog type">
+              <button
+                type="button"
+                role="tab"
+                class="dcs-aside-toggle__btn"
+                [class.dcs-aside-toggle__btn--active]="asideMode === 'medicines'"
+                [attr.aria-selected]="asideMode === 'medicines'"
+                (click)="setAsideMode('medicines')"
+              >
+                Medicines
+                <span class="dcs-aside-toggle__count">{{ medicineStagedCount() }}</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                class="dcs-aside-toggle__btn"
+                [class.dcs-aside-toggle__btn--active]="asideMode === 'tests'"
+                [attr.aria-selected]="asideMode === 'tests'"
+                (click)="setAsideMode('tests')"
+              >
+                Assign tests
+                <span class="dcs-aside-toggle__count">{{ labStagedCount() }}</span>
+              </button>
+            </div>
+          }
+          <div class="dcs-aside-panel-host">
+            <app-doctor-checkup-medicine-panel
+              class="dcs-aside-panel"
+              [class.dcs-aside-panel--hidden]="showLabPanel() && asideMode !== 'medicines'"
+            />
+            @if (showLabPanel()) {
+              <app-doctor-checkup-lab-panel
+                class="dcs-aside-panel"
+                [class.dcs-aside-panel--hidden]="asideMode !== 'tests'"
+              />
+            }
+          </div>
         </aside>
       </div>
 
     }
   </div>
 </app-surface-panel>
+
+<p-dialog
+  header="Refer to IPD"
+  [(visible)]="referOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 28rem)' }"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="hms-crud-dialog dcs-refer-dialog"
+>
+  <div class="hms-dialog-body dcs-refer-dialog__body">
+    <p class="dcs-refer-dialog__hint">
+      Send this OPD patient to the IPD admission desk. Ward and bed will be assigned at the desk.
+    </p>
+    <div class="dcs-refer-dialog__field">
+      <label class="hms-field-label" for="dcs-refer-reason">Reason / provisional diagnosis</label>
+      <textarea
+        pTextarea
+        id="dcs-refer-reason"
+        rows="4"
+        class="w-full dcs-refer-dialog__ta"
+        [(ngModel)]="referReason"
+        placeholder="Clinical reason for admission…"
+      ></textarea>
+    </div>
+  </div>
+  <ng-template #footer>
+    <div class="dcs-refer-dialog__footer">
+      <button
+        pButton
+        type="button"
+        label="Cancel"
+        severity="secondary"
+        [text]="true"
+        (click)="referOpen = false"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Refer to IPD"
+        icon="pi pi-sign-in"
+        severity="warn"
+        [loading]="referring"
+        (click)="confirmReferToIpd()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>
 
 <app-medicine-slip
   class="dcs-medicine-slip-print"

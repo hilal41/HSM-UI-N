@@ -12,16 +12,18 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
 import { MessageModule } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
 import { TextareaModule } from 'primeng/textarea';
 import { forkJoin, of } from 'rxjs';
 import { catchError, finalize, map } from 'rxjs/operators';
+import { PatientVisitsApiService } from '../../../core/api/patient-visits-api.service';
 import { CheckupsApiService } from '../../../core/api/checkups-api.service';
 import { CheckupTemplatesApiService } from '../../../core/api/checkup-templates-api.service';
 import { MeApiService } from '../../../core/api/me-api.service';
-import { PatientVisitsApiService } from '../../../core/api/patient-visits-api.service';
 import { PatientsApiService } from '../../../core/api/patients-api.service';
+import { VisitLabOrdersApiService } from '../../../core/api/visit-lab-orders-api.service';
 import type {
   CheckupSaveResponse,
   CheckupTemplate,
@@ -30,6 +32,7 @@ import type {
   PatientVisitRegisterLogItemResponse,
   PatientVisitResponse,
 } from '../../../core/models/api-contracts';
+import { ModuleAccessService } from '../../../core/services/module-access.service';
 import { HmsBlockSkeletonComponent } from '../../../shared/components/hms-block-skeleton/hms-block-skeleton.component';
 import { SurfacePanelComponent } from '../../../shared/components/surface-panel/surface-panel.component';
 import {
@@ -44,6 +47,7 @@ import {
   type CheckupFieldValue,
 } from './checkup-responses.model';
 import { DoctorCheckupFormComponent } from './doctor-checkup-form.component';
+import { DoctorCheckupLabPanelComponent } from './doctor-checkup-lab-panel.component';
 import { DoctorCheckupMedicinePanelComponent } from './doctor-checkup-medicine-panel.component';
 import { MedicineSlipComponent } from './medicine-slip.component';
 import {
@@ -65,10 +69,12 @@ interface VisitOption {
     HmsBlockSkeletonComponent,
     MessageModule,
     ButtonModule,
+    DialogModule,
     SelectModule,
     TextareaModule,
     DoctorCheckupFormComponent,
     DoctorCheckupMedicinePanelComponent,
+    DoctorCheckupLabPanelComponent,
     MedicineSlipComponent,
   ],
   templateUrl: './doctor-checkup-session.page.html',
@@ -82,10 +88,13 @@ export class DoctorCheckupSessionPage implements OnInit {
   private readonly templatesApi = inject(CheckupTemplatesApiService);
   private readonly checkupsApi = inject(CheckupsApiService);
   private readonly meApi = inject(MeApiService);
+  private readonly visitLabOrdersApi = inject(VisitLabOrdersApiService);
+  private readonly moduleAccess = inject(ModuleAccessService);
   private readonly messages = inject(MessageService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   private readonly medicinePanel = viewChild(DoctorCheckupMedicinePanelComponent);
+  private readonly labPanel = viewChild(DoctorCheckupLabPanelComponent);
 
   loading = true;
   checkupLoading = false;
@@ -108,7 +117,29 @@ export class DoctorCheckupSessionPage implements OnInit {
   formDoc: CheckupFormDoc = emptyCheckupFormDoc();
   fieldValues: Record<string, CheckupFieldValue> = {};
 
+  referOpen = false;
+  referReason = '';
+  referring = false;
+
+  /** Right catalog: one panel visible at a time (both stay mounted when Laboratory is on). */
+  asideMode: 'medicines' | 'tests' = 'medicines';
+
+  get isOpdVisit(): boolean {
+    return this.visit?.admissionId == null;
+  }
+
+  get hasPendingReferral(): boolean {
+    return (
+      !!this.visit?.admissionReferralRequestedAt && !this.visit?.admissionReferralCompletedAt
+    );
+  }
+
+  get canReferToIpd(): boolean {
+    return this.isOpdVisit && !this.hasPendingReferral;
+  }
+
   ngOnInit(): void {
+    this.moduleAccess.load();
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((pm) => {
       const raw = pm.get('visitId');
       if (raw == null || !/^\d+$/.test(raw)) {
@@ -136,6 +167,9 @@ export class DoctorCheckupSessionPage implements OnInit {
 
     const panel = this.medicinePanel();
     const medicineLines = panel?.getStagedMedicineLines() ?? [];
+    const labPanel = this.labPanel();
+    const testLines = labPanel?.getStagedTestLines() ?? [];
+    const saveLab = this.moduleAccess.hasModule('Laboratory');
 
     this.saving = true;
     this.checkupsApi
@@ -148,8 +182,10 @@ export class DoctorCheckupSessionPage implements OnInit {
       })
       .pipe(
         finalize(() => {
-          this.saving = false;
-          this.cdr.markForCheck();
+          if (!saveLab) {
+            this.saving = false;
+            this.cdr.markForCheck();
+          }
         }),
       )
       .subscribe({
@@ -163,23 +199,70 @@ export class DoctorCheckupSessionPage implements OnInit {
           }
           panel?.applyServerLines(res.medicines);
           this.persistLastTemplateForVisit(vid, tplId);
-          this.messages.add({
-            severity: 'success',
-            summary: 'Saved',
-            detail: andPrint ? 'Checkup saved. Opening medicine slip print…' : 'Checkup and medicines were saved.',
-          });
-          if (andPrint) {
-            this.printMedicineSlip();
+          const finishSave = () => {
+            this.saving = false;
+            this.messages.add({
+              severity: 'success',
+              summary: 'Saved',
+              detail: andPrint
+                ? 'Checkup saved. Opening medicine slip print…'
+                : 'Checkup, medicines, and lab tests were saved.',
+            });
+            if (andPrint) {
+              this.printMedicineSlip();
+            }
+            this.cdr.markForCheck();
+          };
+          if (saveLab) {
+            this.visitLabOrdersApi
+              .save(vid, {
+                testLines,
+                clinicalNotes: this.medicineNotes.trim() || null,
+                orderedByDoctorId: this.resolveOrderingDoctorId(),
+              })
+              .pipe(finalize(() => finishSave()))
+              .subscribe({
+                next: (labRes) => labPanel?.applyServerLines(labRes.lines),
+                error: () => {
+                  this.messages.add({
+                    severity: 'warn',
+                    summary: 'Lab order',
+                    detail: 'Checkup saved but lab tests could not be saved.',
+                  });
+                },
+              });
+          } else {
+            finishSave();
           }
         },
         error: (err: HttpErrorResponse) => {
+          this.saving = false;
           const detail =
             typeof (err.error as { message?: string } | null)?.message === 'string'
               ? (err.error as { message: string }).message
               : 'Could not save checkup. Try again.';
           this.messages.add({ severity: 'error', summary: 'Save failed', detail });
+          this.cdr.markForCheck();
         },
       });
+  }
+
+  readonly showLabPanel = () => this.moduleAccess.hasModule('Laboratory');
+
+  medicineStagedCount(): number {
+    return this.medicinePanel()?.stagedCount ?? 0;
+  }
+
+  labStagedCount(): number {
+    return this.labPanel()?.stagedCount ?? 0;
+  }
+
+  setAsideMode(mode: 'medicines' | 'tests'): void {
+    if (mode === 'tests' && !this.showLabPanel()) {
+      return;
+    }
+    this.asideMode = mode;
+    this.cdr.markForCheck();
   }
 
   get hasFormFields(): boolean {
@@ -188,6 +271,50 @@ export class DoctorCheckupSessionPage implements OnInit {
 
   saveAndPrintMedicineSlip(): void {
     this.saveAll(true);
+  }
+
+  openReferDialog(): void {
+    this.referReason = this.medicineNotes.trim() || this.visit?.admissionReferralReason || '';
+    this.referOpen = true;
+  }
+
+  confirmReferToIpd(): void {
+    const vid = this.visit?.id;
+    if (vid == null) return;
+    this.referring = true;
+    this.visitsApi
+      .referForAdmission(vid, { reason: this.referReason.trim() || null })
+      .pipe(
+        finalize(() => {
+          this.referring = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.referOpen = false;
+          if (this.visit) {
+            this.visit = {
+              ...this.visit,
+              admissionReferralRequestedAt: new Date().toISOString(),
+              admissionReferralReason: this.referReason.trim() || null,
+              admissionReferralCompletedAt: null,
+            };
+          }
+          this.messages.add({
+            severity: 'success',
+            summary: 'Referred to IPD',
+            detail: 'Patient referred to the IPD admission desk.',
+          });
+        },
+        error: (err: { error?: { message?: string } }) => {
+          this.messages.add({
+            severity: 'error',
+            summary: 'Referral failed',
+            detail: err?.error?.message ?? 'Could not refer patient for admission.',
+          });
+        },
+      });
   }
 
   private bootstrap(visitId: number): void {
@@ -200,6 +327,7 @@ export class DoctorCheckupSessionPage implements OnInit {
     this.nextCheckupAt = '';
     this.selectedTemplateId = null;
     this.checkupId = 0;
+    this.asideMode = 'medicines';
     this.formDoc = emptyCheckupFormDoc();
     this.fieldValues = {};
 
@@ -244,6 +372,7 @@ export class DoctorCheckupSessionPage implements OnInit {
             this.applyBootstrapData(visit, patient, templates, log.items);
             this.loading = false;
             this.loadCheckupForTemplate();
+            this.loadLabOrderForVisit(visitId);
             this.cdr.markForCheck();
           },
           error: () => {
@@ -324,6 +453,14 @@ export class DoctorCheckupSessionPage implements OnInit {
         this.medicinePanel()?.applyServerLines(res.medicines);
         this.cdr.markForCheck();
       });
+  }
+
+  private loadLabOrderForVisit(visitId: number): void {
+    if (!this.moduleAccess.hasModule('Laboratory')) return;
+    this.visitLabOrdersApi.getForVisit(visitId).subscribe({
+      next: (res) => this.labPanel()?.applyServerLines(res.lines),
+      error: () => this.labPanel()?.resetForNewOrder(),
+    });
   }
 
   private applyTemplateFormDoc(): void {
@@ -447,5 +584,11 @@ export class DoctorCheckupSessionPage implements OnInit {
         });
       }),
     );
+  }
+
+  private resolveOrderingDoctorId(): number | null {
+    const details = this.visit?.details ?? [];
+    const withDoctor = details.find((d) => d.doctorId != null && d.doctorId > 0);
+    return withDoctor?.doctorId ?? null;
   }
 }

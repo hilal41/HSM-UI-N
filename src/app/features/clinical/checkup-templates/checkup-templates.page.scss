@@ -29,7 +29,7 @@
   flex-shrink: 0;
   border-radius: 0.5rem;
   border: 1px solid rgb(226 232 240 / 0.95);
-  background: #fff;
+  background: var(--hms-color-surface);
   padding: var(--cts-stack-space);
   box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
 }
@@ -40,14 +40,14 @@
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.25;
-  color: #0f172a;
+  color: var(--hms-color-text);
 }
 
 .cts-page-subtitle {
   margin: 0.35rem 0 0;
   font-size: 0.75rem;
   line-height: 1.45;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
   max-width: 52rem;
 }
 
@@ -94,7 +94,7 @@
 .cts-panel {
   border-radius: 0.5rem;
   border: 1px solid rgb(226 232 240 / 0.95);
-  background: #fff;
+  background: var(--hms-color-surface);
   padding: 0.55rem 0.65rem 0.65rem;
   box-shadow: none;
 }
@@ -119,14 +119,14 @@
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: #475569;
+  color: var(--hms-color-text-muted);
 }
 
 .cts-head__hint {
   margin: 0.2rem 0 0;
   font-size: 0.65rem;
   line-height: 1.35;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 :host ::ng-deep .cts-tag-pill.p-tag {
@@ -182,12 +182,12 @@
 .cts-lib-row__name {
   font-size: 0.78rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--hms-color-text);
 }
 
 .cts-lib-row__meta {
   font-size: 0.62rem;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 .cts-lib-row__actions {
@@ -219,14 +219,14 @@
 :host ::ng-deep .cts-solid-neutral-btn.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link) {
   background: var(--hms-color-primary-bright) !important;
   border-color: var(--hms-color-primary-bright) !important;
-  color: #ffffff !important;
+  color: var(--hms-color-surface) !important;
   box-shadow: 0 1px 2px rgb(16 185 129 / 14%);
 }
 
 :host ::ng-deep .cts-solid-neutral-btn.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link):enabled:hover {
   background: var(--hms-color-primary) !important;
   border-color: var(--hms-color-primary) !important;
-  color: #ffffff !important;
+  color: var(--hms-color-surface) !important;
   box-shadow: 0 2px 6px rgb(16 185 129 / 20%);
 }
 
@@ -240,7 +240,7 @@
   margin: 0;
   padding: 0.45rem 0.15rem;
   font-size: 0.72rem;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 /* ─── Toolbar & search ────────────────────────────────────────────────── */
@@ -291,7 +291,7 @@
   align-items: stretch;
   border-radius: 0.4rem;
   border: 1px solid rgb(226 232 240 / 0.95);
-  background: #fff;
+  background: var(--hms-color-surface);
 }
 
 .cts-search:focus-within {
@@ -305,7 +305,7 @@
   justify-content: center;
   padding-left: 0.5rem;
   padding-right: 0.1rem;
-  color: #94a3b8;
+  color: var(--hms-color-text-subtle);
 }
 
 :host ::ng-deep .cts-search__input.p-inputtext,
@@ -353,10 +353,10 @@
   border-bottom: 1px solid rgb(226 232 240 / 0.9);
   background: rgb(248 250 252 / 0.95);
   font-size: 0.58rem;
-  font-weight: 700;
+  font-weight: var(--hms-table-head-weight);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--hms-table-head-color);
 }
 
 @media (min-width: 640px) {
@@ -392,20 +392,20 @@
   min-width: 0;
   overflow: hidden;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--hms-color-text);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .cts-table__meta {
   font-size: 0.68rem;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
   white-space: nowrap;
 }
 
 .cts-table__date {
   font-size: 0.65rem;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
   white-space: nowrap;
 }
 
@@ -473,14 +473,14 @@
 .cts-empty-main__title {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--hms-color-text);
 }
 
 .cts-empty-main__text {
   max-width: 28rem;
   font-size: 0.72rem;
   line-height: 1.4;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 .cts-paginator {
@@ -495,7 +495,7 @@
 .cts-skeleton-panel {
   height: 9rem;
   border-radius: 0.5rem;
-  background: linear-gradient(90deg, #e2e8f0 0%, #f8fafc 45%, #e2e8f0 90%);
+  background: linear-gradient(90deg, var(--hms-color-border) 0%, var(--hms-color-primary-light) 45%, var(--hms-color-border) 90%);
   background-size: 200% 100%;
   animation: cts-shimmer 1.1s ease-in-out infinite;
 }

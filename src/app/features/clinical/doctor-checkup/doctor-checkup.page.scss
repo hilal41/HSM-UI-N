@@ -23,8 +23,8 @@
   width: 8.7rem;
   min-height: 1.55rem;
   border-radius: 999px !important;
-  border: 1px solid #cbd5e1 !important;
-  background: linear-gradient(180deg, #fff, #f8fafc) !important;
+  border: 1px solid var(--hms-color-border-input) !important;
+  background: linear-gradient(180deg, var(--hms-color-surface), var(--hms-color-primary-light)) !important;
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.05);
 }
 
@@ -32,13 +32,13 @@
   padding: 0.18rem 0.35rem 0.18rem 0.58rem !important;
   font-size: 0.67rem !important;
   font-weight: 650;
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
   line-height: 1.25 !important;
 }
 
 :host ::ng-deep .dc-status-select .p-select-dropdown {
   width: 1.45rem;
-  color: #475569;
+  color: var(--hms-color-text-muted);
 }
 
 :host ::ng-deep .dc-status-select .p-select-dropdown-icon {
@@ -49,11 +49,11 @@
 :host ::ng-deep .dc-date .p-datepicker-input {
   min-height: 1.55rem !important;
   border-radius: 999px !important;
-  border: 1px solid #cbd5e1 !important;
+  border: 1px solid var(--hms-color-border-input) !important;
   padding-block: 0.1rem !important;
   padding-inline: 0.45rem 1.6rem !important;
   font-size: 0.64rem !important;
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
 }
 
 :host ::ng-deep .dc-date .p-datepicker-dropdown {

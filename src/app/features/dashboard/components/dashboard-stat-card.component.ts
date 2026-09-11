@@ -17,6 +17,7 @@ import type { DashboardStatCard } from '../dashboard-data.service';
   selector: 'app-dashboard-stat-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [DecimalPipe, NgTemplateOutlet, RouterLink, SkeletonModule],
+  styleUrl: './dashboard-stat-card.component.scss',
   styles: [
     `
       :host {
@@ -24,12 +25,53 @@ import type { DashboardStatCard } from '../dashboard-data.service';
         height: 100%;
         min-width: 0;
       }
+
+      .dash-stat-card--tone-blue {
+        --stat-tone: var(--hms-color-primary);
+        --stat-tone-bright: var(--hms-color-primary-bright);
+        --stat-tone-soft: var(--hms-color-primary-light);
+        --stat-tone-border: var(--hms-color-primary-border);
+      }
+
+      .dash-stat-card--tone-green {
+        --stat-tone: var(--hms-color-success);
+        --stat-tone-bright: var(--hms-color-success-bright);
+        --stat-tone-soft: var(--hms-color-success-light);
+        --stat-tone-border: var(--hms-color-success-border);
+      }
+
+      .dash-stat-card--tone-amber {
+        --stat-tone: var(--hms-color-warn);
+        --stat-tone-bright: #f59e0b;
+        --stat-tone-soft: var(--hms-color-warn-light);
+        --stat-tone-border: var(--hms-color-warn-border);
+      }
+
+      .dash-stat-card--tone-blue .dash-stat-card__icon,
+      .dash-stat-card--tone-green .dash-stat-card__icon,
+      .dash-stat-card--tone-amber .dash-stat-card__icon {
+        color: var(--stat-tone);
+        background: var(--stat-tone-soft);
+        border-color: var(--stat-tone-border);
+      }
+
+      .dash-stat-card--tone-blue.dash-stat-card--interactive:hover,
+      .dash-stat-card--tone-green.dash-stat-card--interactive:hover,
+      .dash-stat-card--tone-amber.dash-stat-card--interactive:hover,
+      .dash-stat-card--tone-blue.dash-stat-card--interactive:focus-visible,
+      .dash-stat-card--tone-green.dash-stat-card--interactive:focus-visible,
+      .dash-stat-card--tone-amber.dash-stat-card--interactive:focus-visible {
+        box-shadow: 0 4px 14px color-mix(in srgb, var(--stat-tone) 18%, transparent);
+      }
     `,
   ],
   template: `
     @if (loading()) {
-      <div class="dash-stat-card dash-stat-card--skeleton" [style.animation-delay]="delay()">
-        <p-skeleton width="2.75rem" height="2.75rem" borderRadius="14px" />
+      <div
+        class="dash-stat-card dash-stat-card--skeleton dash-stat-card--tone-blue"
+        [style.animation-delay]="delay()"
+      >
+        <p-skeleton width="2.5rem" height="2.5rem" borderRadius="12px" />
         <div class="dash-stat-card__body">
           <p-skeleton width="55%" height="0.65rem" borderRadius="6px" />
           <p-skeleton width="40%" height="1.6rem" borderRadius="6px" />
@@ -45,20 +87,22 @@ import type { DashboardStatCard } from '../dashboard-data.service';
       @if (item.route) {
         <a
           [routerLink]="item.route"
-          class="dash-stat-card dash-stat-card--interactive"
+          [class]="'dash-stat-card dash-stat-card--interactive ' + toneClass(item.tone)"
           [style.animation-delay]="delay()"
         >
           <ng-container [ngTemplateOutlet]="cardInner" [ngTemplateOutletContext]="{ item }" />
         </a>
       } @else {
-        <article class="dash-stat-card" [style.animation-delay]="delay()">
+        <article
+          [class]="'dash-stat-card ' + toneClass(item.tone)"
+          [style.animation-delay]="delay()"
+        >
           <ng-container [ngTemplateOutlet]="cardInner" [ngTemplateOutletContext]="{ item }" />
         </article>
       }
     }
 
     <ng-template #cardInner let-item="item">
-      <div class="dash-stat-card__accent" aria-hidden="true"></div>
       <div class="dash-stat-card__icon" aria-hidden="true">
         <i [class]="item.icon"></i>
       </div>
@@ -163,5 +207,9 @@ export class DashboardStatCardComponent implements OnInit {
     };
 
     this.frameId = requestAnimationFrame(step);
+  }
+
+  toneClass(tone?: DashboardStatCard['tone']): string {
+    return `dash-stat-card--tone-${tone ?? 'blue'}`;
   }
 }

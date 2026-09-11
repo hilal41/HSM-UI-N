@@ -2,46 +2,270 @@
   display: block;
 }
 
-.service-editor-body {
-  padding: var(--hms-main-pad);
+:host ::ng-deep app-surface-panel.hms-crud-surface.svc-editor-surface .hms-crud-panel-body.svc-editor-body {
+  margin: 0;
+}
+
+.svc-editor-body {
+  --svc-gap: var(--hms-card-gap);
+  padding: var(--hms-card-gap);
   background: var(--hms-color-canvas);
 }
 
-.service-editor-form {
-  max-width: 40rem;
-  margin: 0 auto;
-  border: 1px solid rgb(226 232 240 / 0.95);
-  border-radius: 0.65rem;
-  background: #fff;
-  padding: var(--hms-main-pad);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
-}
-
-.service-editor-form__grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--hms-main-pad);
-}
-
-.service-editor-form__field {
+.svc-editor-layout {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--svc-gap);
+  width: 100%;
   min-width: 0;
 }
 
-.service-editor-form__field--wide {
-  grid-column: 1 / -1;
+/* Card shell — aliases global .hms-form-card tokens */
+.svc-editor-card {
+  border: var(--hms-card-border);
+  border-radius: var(--hms-radius-card);
+  background: var(--hms-color-surface);
+  padding: var(--hms-card-padding);
+  box-shadow: var(--hms-shadow-card);
+  box-sizing: border-box;
+  min-width: 0;
 }
 
-.service-editor-form__check {
-  flex-direction: row;
+.svc-editor-card--identity {
+  padding: calc(var(--hms-card-padding) * 0.95) var(--hms-card-padding);
+}
+
+.svc-editor-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--hms-card-gap);
+  margin-bottom: 0.65rem;
+}
+
+.svc-editor-card__head--lab {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.svc-editor-card__head-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.svc-editor-card__head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+}
+
+.svc-editor-card__title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--hms-color-text);
+}
+
+.svc-editor-card__title .pi {
+  font-size: 0.8rem;
+  color: var(--hms-color-text-muted);
+}
+
+.svc-editor-card__sub {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--hms-color-text-muted);
+}
+
+/* ── Identity row ──────────────────────────────────────────────────────── */
+.svc-editor-identity-grid {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, 8rem) minmax(0, 1fr) minmax(10rem, 14rem);
+  gap: var(--hms-card-gap);
+  align-items: end;
+}
+
+.svc-editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  min-width: 0;
+}
+
+.svc-editor-field--title {
+  min-width: 0;
+}
+
+.svc-editor-field--sample {
+  max-width: 14rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Two equal cards ───────────────────────────────────────────────────── */
+.svc-editor-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: var(--svc-gap);
+}
+
+.svc-editor-card--fill {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.svc-editor-card__stack {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--hms-card-gap);
+}
+
+.svc-editor-card__row-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--hms-card-gap);
+}
+
+.svc-editor-check {
+  display: flex;
   align-items: center;
   gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.35rem;
 }
 
-@media (max-width: 640px) {
-  .service-editor-form__grid {
+.svc-editor-check__label {
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--hms-color-text-muted);
+  cursor: pointer;
+}
+
+.svc-editor-hint {
+  margin-top: auto !important;
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.35rem;
+  border: 1px solid rgb(241 245 249 / 0.95);
+  background: rgb(248 250 252 / 0.9);
+  font-size: 0.68rem;
+  line-height: 1.4;
+  color: var(--hms-color-text-muted);
+}
+
+.svc-editor-pill {
+  border-radius: 999px;
+  background: var(--hms-color-primary-light);
+  padding: 0.18rem 0.55rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--hms-color-primary-hover);
+  white-space: nowrap;
+}
+
+/* ── Inputs (match doctors / catalog dialogs) ──────────────────────────── */
+:host ::ng-deep .svc-editor-input.p-inputtext {
+  width: 100%;
+  min-height: 2rem;
+  border-radius: 0.35rem;
+  border: 1px solid rgb(203 213 225 / 0.95);
+  padding: 0.35rem 0.5rem;
+  font-size: 0.78rem;
+  color: var(--hms-color-text);
+  background: var(--hms-color-surface);
+}
+
+:host ::ng-deep .svc-editor-input--table.p-inputtext {
+  min-height: 1.75rem;
+  padding: 0.28rem 0.4rem;
+  font-size: 0.72rem;
+}
+
+:host ::ng-deep .svc-editor-card .p-select {
+  width: 100%;
+}
+
+:host ::ng-deep .svc-editor-card .p-select .p-select-label {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+:host ::ng-deep .svc-editor-card .p-inputnumber {
+  width: 100%;
+}
+
+:host ::ng-deep .svc-editor-card .p-inputnumber .p-inputtext {
+  width: 100%;
+  min-height: 2rem;
+  border-radius: 0.35rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.78rem;
+}
+
+:host ::ng-deep .svc-editor-card--identity .p-tag {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  font-size: 0.62rem;
+  padding: 0.15rem 0.45rem;
+}
+
+:host ::ng-deep .svc-editor-params-table .p-datatable-thead > tr > th {
+  font-size: 0.62rem;
+  font-weight: var(--hms-table-head-weight);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--hms-table-head-color);
+  padding-block: 0.45rem;
+}
+
+:host ::ng-deep .svc-editor-params-table .p-datatable-tbody > tr > td {
+  padding-block: 0.35rem;
+  vertical-align: middle;
+}
+
+@media (max-width: 960px) {
+  .svc-editor-identity-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .svc-editor-identity-grid .svc-editor-field:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .svc-editor-cards {
     grid-template-columns: 1fr;
+  }
+
+  .svc-editor-field--sample {
+    max-width: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .svc-editor-identity-grid,
+  .svc-editor-card__row-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .svc-editor-card__head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .svc-editor-card__head-actions {
+    justify-content: flex-start;
   }
 }

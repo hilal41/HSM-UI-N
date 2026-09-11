@@ -1,0 +1,62 @@
+@if (loading()) {
+  <app-hms-block-skeleton [lines]="10" ariaLabel="Loading menus" />
+} @else if (loadError()) {
+  <p class="menu-picker__error">{{ loadError() }}</p>
+} @else {
+  <div class="menu-picker" [class.menu-picker--page]="layout() === 'page'" role="group" aria-label="Allowed menus">
+    @for (group of menuTree(); track group.id) {
+      @if (routableChildren(group).length > 0) {
+        <section
+          class="menu-picker__card"
+          [class.menu-picker__card--active]="selectedCountInGroup(group) > 0"
+          [class.menu-picker__card--full]="selectedCountInGroup(group) === routableChildren(group).length"
+        >
+          <header class="menu-picker__card-head">
+            <label class="menu-picker__group-label">
+              <p-checkbox
+                [binary]="true"
+                [inputId]="'hospital-menu-group-' + group.id"
+                [ngModel]="isGroupFullySelected(group)"
+                (ngModelChange)="setGroupSelected(group, $event)"
+              />
+              <span class="menu-picker__group-icon" aria-hidden="true">
+                <i [class]="group.icon || 'pi pi-folder'"></i>
+              </span>
+              <span class="menu-picker__group-text">
+                <span class="menu-picker__group-name">{{ group.label }}</span>
+                <span class="menu-picker__group-meta">{{ routableChildren(group).length }} pages</span>
+              </span>
+            </label>
+            <span
+              class="menu-picker__count"
+              [class.menu-picker__count--active]="selectedCountInGroup(group) > 0"
+            >
+              {{ selectedCountInGroup(group) }}/{{ routableChildren(group).length }}
+            </span>
+          </header>
+          <div class="menu-picker__children">
+            @for (child of routableChildren(group); track child.id) {
+              <label
+                class="menu-picker__tile"
+                [class.menu-picker__tile--selected]="isSelected(child.id)"
+                [class.menu-picker__tile--locked]="isLocked(child.id)"
+              >
+                <p-checkbox
+                  [binary]="true"
+                  [inputId]="'hospital-menu-' + child.id"
+                  [ngModel]="isSelected(child.id)"
+                  [disabled]="isLocked(child.id)"
+                  (ngModelChange)="toggleChild(child.id, $event)"
+                />
+                <span class="menu-picker__tile-icon" aria-hidden="true">
+                  <i [class]="child.icon || 'pi pi-circle'"></i>
+                </span>
+                <span class="menu-picker__tile-label">{{ child.label }}</span>
+              </label>
+            }
+          </div>
+        </section>
+      }
+    }
+  </div>
+}

@@ -1,0 +1,224 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+:host ::ng-deep app-surface-panel.hsc-surface .hms-crud-panel-body.hsc-body {
+  padding: var(--hms-card-gap);
+  background:
+    radial-gradient(circle at 100% 0%, rgb(37 99 235 / 0.05), transparent 38%),
+    var(--hms-color-canvas);
+}
+
+.hsc-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: var(--hms-card-gap);
+  width: 100%;
+  max-width: none;
+}
+
+.hsc-readonly-note {
+  margin-bottom: 0;
+}
+
+/* ─── Card ──────────────────────────────────────────────────────────────────── */
+
+.hsc-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hms-card-gap);
+  padding: var(--hms-card-padding);
+  border-radius: calc(var(--hms-space) + 2px);
+  border: var(--hms-card-border);
+  background: var(--hms-color-surface);
+  box-shadow: var(--hms-shadow-card);
+  animation: hsc-rise 0.4s ease both;
+}
+
+.hsc-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.hsc-card__head-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.hsc-card__icon {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 10px;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  color: var(--hms-color-primary);
+  background: var(--hms-color-primary-light);
+  border: 1px solid var(--hms-color-primary-border);
+}
+
+.hsc-card__title {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--hms-color-text);
+  line-height: 1.25;
+}
+
+.hsc-card__subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--hms-color-text-muted);
+}
+
+.hsc-count-badge {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--hms-color-nav);
+  background: rgb(59 130 246 / 0.08);
+  border: 1px solid rgb(59 130 246 / 0.25);
+  white-space: nowrap;
+}
+
+/* ─── Settings grid ─────────────────────────────────────────────────────────── */
+
+.hsc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 0.85rem 1.25rem;
+  width: 100%;
+}
+
+.hsc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+/* ─── Toggle tiles ──────────────────────────────────────────────────────────── */
+
+.hsc-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--hms-color-border);
+  background: var(--hms-color-primary-light);
+  cursor: pointer;
+  transition:
+    border-color 0.14s ease,
+    background 0.14s ease,
+    box-shadow 0.14s ease;
+
+  &:hover {
+    border-color: var(--hms-color-primary-border);
+    background: var(--hms-color-surface);
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+}
+
+.hsc-toggle--on {
+  border-color: var(--hms-color-primary-border);
+  background: var(--hms-color-primary-soft, var(--hms-color-success-light));
+  box-shadow: 0 0 0 1px rgb(16 185 129 / 0.08);
+}
+
+.hsc-hint {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--hms-color-text-muted, var(--hms-color-text-muted));
+}
+
+/* ─── MRN preview ───────────────────────────────────────────────────────────── */
+
+.hsc-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.hsc-preview__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--hms-color-text-subtle, var(--hms-color-text-subtle));
+
+  .pi {
+    font-size: 0.7rem;
+    color: var(--hms-color-primary-bright);
+  }
+}
+
+.hsc-mrn-preview {
+  display: flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0 0.85rem;
+  width: fit-content;
+  border-radius: 0.75rem;
+  border: 1px dashed rgb(37 99 235 / 0.35);
+  background: var(--hms-color-primary-light);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--hms-color-nav);
+}
+
+/* ─── Input / select overrides ──────────────────────────────────────────────── */
+
+:host ::ng-deep .hsc-body .p-inputtext,
+:host ::ng-deep .hsc-body .p-select {
+  min-height: 2.35rem;
+  border-radius: 0.7rem;
+  border: 1px solid var(--hms-color-border-input);
+  font-size: 0.82rem;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+:host ::ng-deep .hsc-body .p-inputtext:focus {
+  border-color: var(--hms-color-primary-border);
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+}
+
+/* ─── Animation ─────────────────────────────────────────────────────────────── */
+
+@keyframes hsc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

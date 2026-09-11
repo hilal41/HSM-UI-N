@@ -1,0 +1,111 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Lab Categories"
+  subtitle="Organize tests into groups (Hematology, Chemistry, etc.)"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <button
+      pButton
+      type="button"
+      icon="pi pi-refresh"
+      severity="secondary"
+      [outlined]="true"
+      class="hms-toolbar-chip"
+      (click)="load()"
+      aria-label="Refresh"
+    ></button>
+    <button
+      pButton
+      type="button"
+      label="New category"
+      icon="pi pi-plus"
+      severity="secondary"
+      class="hms-toolbar-solid"
+      (click)="openCreate()"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    <p-table
+      [showLoader]="false"
+      [value]="rows"
+      [loading]="loading"
+      [tableStyle]="{ 'min-width': '100%' }"
+      styleClass="p-datatable-sm hms-crud-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Sort</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td class="font-mono text-sm">{{ row.code }}</td>
+          <td>{{ row.name }}</td>
+          <td>{{ row.sortOrder }}</td>
+          <td>
+            <p-tag
+              [value]="row.isActive ? 'Active' : 'Inactive'"
+              [severity]="row.isActive ? 'success' : 'secondary'"
+            />
+          </td>
+          <td class="text-right">
+            <button pButton type="button" icon="pi pi-pencil" class="p-button-text" (click)="openEdit(row)"></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              class="p-button-text p-button-danger"
+              (click)="confirmDelete(row)"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="loadingbody">
+        <app-hms-table-loading-body [cols]="5" />
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state
+              icon="pi pi-tags"
+              title="No lab categories yet"
+              description="Organize lab tests into groups like Hematology and Chemistry."
+              [actionable]="true"
+              actionLabel="Click to add a category"
+              (action)="openCreate()"
+            />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog
+  [(visible)]="dialogOpen"
+  [header]="editing ? 'Edit category' : 'New category'"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+>
+  <div class="flex flex-col gap-3">
+    <input pInputText [(ngModel)]="formCode" placeholder="Code" />
+    <input pInputText [(ngModel)]="formName" placeholder="Name" />
+    <p-inputNumber [(ngModel)]="formSortOrder" placeholder="Sort order" styleClass="w-full" />
+    <div class="flex items-center gap-2">
+      <p-toggleswitch [(ngModel)]="formIsActive" />
+      <span class="text-sm">Active</span>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancel" class="p-button-text" (click)="dialogOpen = false"></button>
+    <button pButton type="button" label="Save" [loading]="saving" (click)="save()"></button>
+  </ng-template>
+</p-dialog>
+
+<p-confirmDialog />

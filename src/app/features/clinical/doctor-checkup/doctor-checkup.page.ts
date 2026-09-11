@@ -10,8 +10,10 @@ import { TableModule } from 'primeng/table';
 import { finalize } from 'rxjs';
 import { PatientVisitsApiService } from '../../../core/api/patient-visits-api.service';
 import type { PatientVisitRegisterLogItemResponse } from '../../../core/models/api-contracts';
+import { HmsCrudEmptyStateComponent } from '../../../shared/components/hms-crud-empty-state/hms-crud-empty-state.component';
 import { HmsTableLoadingBodyComponent } from '../../../shared/components/hms-table-loading-body/hms-table-loading-body.component';
 import { SurfacePanelComponent } from '../../../shared/components/surface-panel/surface-panel.component';
+import { showCrudPaginator } from '../../../shared/utils/crud-page.state';
 
 type CheckupStatusFilter = 'unchecked' | 'checked' | 'both';
 
@@ -25,6 +27,7 @@ interface CheckupStatusOption {
   imports: [
     FormsModule,
     SurfacePanelComponent,
+    HmsCrudEmptyStateComponent,
     HmsTableLoadingBodyComponent,
     TableModule,
     MessageModule,
@@ -57,6 +60,18 @@ export class DoctorCheckupPage {
   toDate: Date = this.calendarToday();
   allOpdRows: PatientVisitRegisterLogItemResponse[] = [];
   rows: PatientVisitRegisterLogItemResponse[] = [];
+
+  get showPaginator(): boolean {
+    return showCrudPaginator(this.rows.length, 20);
+  }
+
+  get hasActiveFilter(): boolean {
+    return (
+      this.searchTerm.trim().length > 0 ||
+      this.activeDateFilter !== 'today' ||
+      this.checkupStatusFilter !== 'both'
+    );
+  }
 
   constructor() {
     this.loadOpdPatients(this.fromDate, this.toDate);

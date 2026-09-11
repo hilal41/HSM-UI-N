@@ -7,6 +7,7 @@ import type {
   FinancialSummaryResponse,
   PatientVisitRegisterLogPage,
   PatientVisitResponse,
+  ServiceSalesSummaryResponse,
 } from '../models/api-contracts';
 
 @Injectable({ providedIn: 'root' })
@@ -20,6 +21,13 @@ export class PatientVisitsApiService {
 
   getById(id: number): Observable<PatientVisitResponse> {
     return this.http.get<PatientVisitResponse>(`${this.base}/clinical/patient-visits/${id}`);
+  }
+
+  referForAdmission(visitId: number, body: { reason?: string | null }): Observable<void> {
+    return this.http.post<void>(
+      `${this.base}/clinical/patient-visits/${visitId}/refer-for-admission`,
+      body,
+    );
   }
 
   /** Visit history for the hospital: defaults to UTC today; optional date range and patient filter. */
@@ -72,6 +80,27 @@ export class PatientVisitsApiService {
     }
     return this.http.get<FinancialSummaryResponse>(
       `${this.base}/clinical/patient-visits/financial-summary`,
+      { params: hp },
+    );
+  }
+
+  getServiceSalesSummary(params: {
+    fromDate?: string;
+    toDate?: string;
+    branchId?: number;
+  } = {}): Observable<ServiceSalesSummaryResponse> {
+    let hp = new HttpParams();
+    if (params.fromDate) {
+      hp = hp.set('fromDate', params.fromDate);
+    }
+    if (params.toDate) {
+      hp = hp.set('toDate', params.toDate);
+    }
+    if (params.branchId != null && params.branchId > 0) {
+      hp = hp.set('branchId', String(params.branchId));
+    }
+    return this.http.get<ServiceSalesSummaryResponse>(
+      `${this.base}/clinical/patient-visits/service-sales-summary`,
       { params: hp },
     );
   }

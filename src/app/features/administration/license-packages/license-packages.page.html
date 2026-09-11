@@ -1,0 +1,212 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="License packages"
+  subtitle="Reusable menu license sets to apply to hospitals"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <button
+      pButton
+      type="button"
+      label="New package"
+      icon="pi pi-plus"
+      severity="secondary"
+      class="hms-toolbar-solid"
+      (click)="openCreate()"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    @if (errorMessage) {
+      <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+    }
+
+    <p-table
+      [showLoader]="false"
+      [value]="rows"
+      [loading]="loading"
+      styleClass="p-datatable-sm hms-crud-table"
+      [paginator]="showPaginator"
+      [alwaysShowPaginator]="false"
+      [rows]="10"
+    >
+      <ng-template #header>
+        <tr>
+          <th>Package</th>
+          <th>Menus</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-row>
+        <tr>
+          <td>
+            <div class="font-medium text-slate-800">{{ row.name }}</div>
+            <div class="font-mono text-[0.7rem] text-slate-400">{{ row.code }}</div>
+            @if (row.description) {
+              <div class="mt-0.5 text-xs text-slate-500">{{ row.description }}</div>
+            }
+          </td>
+          <td class="text-sm text-slate-600">{{ row.menuIds?.length ?? row.menus?.length ?? 0 }}</td>
+          <td>
+            <p-tag [value]="row.isActive ? 'Active' : 'Inactive'" [severity]="row.isActive ? 'success' : 'secondary'" />
+          </td>
+          <td class="text-end">
+            <div class="flex flex-wrap justify-end gap-1">
+              <button
+                pButton
+                type="button"
+                icon="pi pi-pencil"
+                [text]="true"
+                severity="secondary"
+                (click)="openEdit(row)"
+                title="Edit"
+                aria-label="Edit"
+              ></button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-send"
+                [text]="true"
+                severity="info"
+                (click)="openApply(row)"
+                title="Apply to hospital"
+                aria-label="Apply to hospital"
+              ></button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                (click)="confirmDelete(row)"
+                title="Delete"
+                aria-label="Delete"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="4" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state
+              icon="pi pi-box"
+              title="No license packages yet"
+              description="Create packages that define which menus each hospital tier can access."
+              [actionable]="true"
+              actionLabel="Click to add a license package"
+              (action)="openCreate()"
+            />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="loadingbody" let-columns>
+        <app-hms-table-loading-body [cols]="columns?.length || 4" />
+      </ng-template>
+    </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog
+  [header]="editingId == null ? 'New package' : 'Edit package'"
+  [(visible)]="dialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 36rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+  (onHide)="closeDialog()"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="flex flex-col gap-3">
+        @if (editingId == null) {
+          <div class="flex flex-col gap-1">
+            <label class="hms-field-label hms-field-label--required" for="lp-code">Code</label>
+            <input pInputText id="lp-code" class="w-full uppercase" [(ngModel)]="formCode" name="lpCode" />
+          </div>
+        }
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label hms-field-label--required" for="lp-name">Name</label>
+          <input pInputText id="lp-name" class="w-full" [(ngModel)]="formName" name="lpName" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="lp-desc">Description</label>
+          <textarea pTextarea id="lp-desc" class="w-full" rows="2" [(ngModel)]="formDescription" name="lpDesc"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="flex flex-col gap-1">
+            <label class="hms-field-label" for="lp-sort">Sort order</label>
+            <p-inputnumber inputId="lp-sort" [(ngModel)]="formSortOrder" name="lpSort" styleClass="w-full" />
+          </div>
+          <div class="flex items-center gap-3 self-end rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+            <p-toggleswitch inputId="lp-active" [(ngModel)]="formIsActive" name="lpActive" />
+            <label for="lp-active" class="cursor-pointer text-sm font-medium text-slate-700">Active</label>
+          </div>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label hms-field-label--required" for="lp-menus">Menus</label>
+          <p-multiselect
+            inputId="lp-menus"
+            [(ngModel)]="formMenuIds"
+            name="lpMenus"
+            [options]="menuOptions"
+            optionLabel="label"
+            optionValue="value"
+            display="chip"
+            [filter]="true"
+            placeholder="Select routable menus"
+            styleClass="w-full"
+            appendTo="body"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="closeDialog()"></button>
+      <button pButton type="button" label="Save" icon="pi pi-check" severity="success" [loading]="saving" (click)="savePackage()"></button>
+    </div>
+  </div>
+</p-dialog>
+
+<p-dialog
+  header="Apply package to hospital"
+  [(visible)]="applyDialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 28rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label hms-field-label--required" for="lp-hospital">Hospital</label>
+          <p-select
+            inputId="lp-hospital"
+            [(ngModel)]="applyHospitalId"
+            name="lpHospital"
+            [options]="hospitalOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select hospital"
+            styleClass="w-full"
+            appendTo="body"
+            [filter]="true"
+          />
+        </div>
+        <div class="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+          <p-toggleswitch inputId="lp-replace" [(ngModel)]="applyReplaceExisting" name="lpReplace" />
+          <div>
+            <label for="lp-replace" class="cursor-pointer text-sm font-medium text-slate-700">Replace existing menus</label>
+            <p class="text-[0.7rem] text-slate-400">When off, package menus are merged with the hospital’s current set.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="applyDialogOpen = false"></button>
+      <button pButton type="button" label="Apply" icon="pi pi-send" severity="success" [loading]="saving" (click)="applyToHospital()"></button>
+    </div>
+  </div>
+</p-dialog>

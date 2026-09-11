@@ -1,224 +1,456 @@
 <app-surface-panel
   class="hms-crud-surface"
-  title="Hospitals"
-  subtitle="Tenants, codes, and enabled modules"
+  title="Hospitals &amp; Branches"
+  subtitle="Manage tenants and their locations in one place — expand a hospital to work with its branches"
 >
   <div surfacePanelActions class="hms-crud-actions">
-    <button
-      pButton
-      type="button"
-      label="New hospital"
-      icon="pi pi-plus"
-      severity="secondary"
-      class="hms-toolbar-solid"
-      (click)="openCreate()"
-    ></button>
+    @if (canWriteHospital()) {
+      <button
+        pButton
+        type="button"
+        label="New hospital"
+        icon="pi pi-plus"
+        severity="secondary"
+        class="hms-toolbar-solid"
+        (click)="openCreate()"
+      ></button>
+    }
   </div>
 
   <div class="hms-crud-body-spacer" aria-hidden="true"></div>
   <div class="hms-crud-panel-body">
-  @if (errorMessage) {
-    <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
-  }
-  <p-table
-    [showLoader]="false"
-    [value]="rows"
-    [loading]="loading"
-    [tableStyle]="{ 'min-width': '100%' }"
-    styleClass="p-datatable-sm hms-crud-table"
-    [paginator]="true"
-    [rows]="10"
-    [rowsPerPageOptions]="[10, 25, 50]"
-  >
-    <ng-template #header>
-      <tr>
-        <th>Code</th>
-        <th>Name</th>
-        <th>Status</th>
-        <th>Modules</th>
-        <th class="min-w-[10rem] text-end">Actions</th>
-      </tr>
-    </ng-template>
-    <ng-template #body let-row>
-      <tr>
-        <td class="font-mono text-xs">{{ row.code }}</td>
-        <td>{{ row.name }}</td>
-        <td>
-          <p-tag
-            [value]="row.status"
-            [severity]="row.status === 'Active' ? 'success' : 'secondary'"
-          />
-        </td>
-        <td class="text-sm text-slate-600">{{ row.enabledModules?.length ?? 0 }}</td>
-        <td class="text-end">
-          <button
-            pButton
-            type="button"
-            icon="pi pi-pencil"
-            [text]="true"
-            severity="secondary"
-            class="mr-1"
-            (click)="openEdit(row)"
-            aria-label="Edit"
-          ></button>
-          <button
-            pButton
-            type="button"
-            icon="pi pi-th-large"
-            [text]="true"
-            severity="success"
-            (click)="openModulesDialog(row)"
-            aria-label="Modules"
-          ></button>
-        </td>
-      </tr>
-    </ng-template>
-    <ng-template #emptymessage>
-      <tr>
-        <td colspan="5" class="hms-table-empty-cell text-center text-sm text-slate-500">
-          <div class="flex flex-col items-center justify-center gap-2 py-4">
-            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
-            <span>No hospitals found.</span>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="loadingbody" let-columns>
-      <app-hms-table-loading-body [cols]="columns?.length || 5" />
-    </ng-template>
-  </p-table>
+    @if (errorMessage) {
+      <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+    }
+
+    <div class="hbs-toolbar">
+      <span class="p-input-icon-left hbs-search">
+        <i class="pi pi-search" aria-hidden="true"></i>
+        <input
+          pInputText
+          class="w-full"
+          [(ngModel)]="search"
+          (ngModelChange)="applyFilters()"
+          placeholder="Search hospital name or code…"
+          aria-label="Search hospitals"
+        />
+      </span>
+      <p-select
+        [options]="statusFilterOptions"
+        optionLabel="label"
+        optionValue="value"
+        [(ngModel)]="statusFilter"
+        (ngModelChange)="applyFilters()"
+        placeholder="Status"
+        styleClass="hbs-status-filter"
+        appendTo="body"
+      />
+      <span class="hbs-toolbar__meta">
+        {{ filteredRows.length }} hospital{{ filteredRows.length === 1 ? '' : 's' }}
+      </span>
+    </div>
+
+    <p-table
+      [showLoader]="false"
+      [value]="filteredRows"
+      [loading]="loading"
+      dataKey="id"
+      [expandedRowKeys]="expandedRows"
+      (onRowExpand)="onHospitalExpand($event)"
+      [tableStyle]="{ 'min-width': '100%' }"
+      styleClass="p-datatable-sm hms-crud-table hbs-hospital-table"
+      [paginator]="showPaginator"
+      [alwaysShowPaginator]="false"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 25, 50]"
+    >
+      <ng-template #header>
+        <tr>
+          <th class="hbs-expand-col"></th>
+          <th>Hospital</th>
+          <th>Status</th>
+          <th>Branches</th>
+          <th>Menus</th>
+          <th class="text-end" style="min-width: 9rem">Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-row let-expanded="expanded">
+        <tr [class.hbs-row--expanded]="expanded">
+          <td class="hbs-expand-col">
+            <button
+              pButton
+              type="button"
+              [pRowToggler]="row"
+              [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+              [text]="true"
+              severity="secondary"
+              size="small"
+              [rounded]="true"
+              [attr.aria-label]="expanded ? 'Collapse branches' : 'Expand branches'"
+            ></button>
+          </td>
+          <td>
+            <div class="hbs-hospital-cell">
+              <span class="hbs-hospital-cell__icon" aria-hidden="true">
+                <i class="pi pi-building"></i>
+              </span>
+              <div class="hbs-hospital-cell__text">
+                <span class="hbs-hospital-cell__name">{{ row.name }}</span>
+                <span class="hbs-hospital-cell__code">{{ row.code }} · #{{ row.id }}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <p-tag [value]="row.status" [severity]="hospitalStatusSeverity(row.status)" />
+          </td>
+          <td>
+            <span class="hbs-branch-count">
+              <i class="pi pi-sitemap" aria-hidden="true"></i>
+              {{ branchCount(row.id) }}
+            </span>
+          </td>
+          <td class="text-sm text-slate-500">{{ licensedMenuCount(row) }}</td>
+          <td class="text-end hbs-actions">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-pencil"
+              [text]="true"
+              severity="secondary"
+              pTooltip="Edit hospital"
+              tooltipPosition="top"
+              (click)="openEdit(row)"
+              aria-label="Edit hospital"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-list-check"
+              [text]="true"
+              severity="success"
+              pTooltip="Allowed menus"
+              tooltipPosition="top"
+              (click)="openMenus(row)"
+              aria-label="Allowed menus"
+            ></button>
+            @if (canWriteBranches()) {
+              <button
+                pButton
+                type="button"
+                icon="pi pi-plus"
+                [text]="true"
+                severity="info"
+                pTooltip="Add branch"
+                tooltipPosition="top"
+                (click)="openCreateBranch(row); $event.stopPropagation()"
+                aria-label="Add branch"
+              ></button>
+            }
+            @if (isPlatformUser()) {
+              <button
+                pButton
+                type="button"
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                pTooltip="Delete hospital"
+                tooltipPosition="top"
+                (click)="confirmDeleteHospital(row)"
+                aria-label="Delete hospital"
+              ></button>
+            }
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #expansion let-row>
+        <tr>
+          <td colspan="6" class="hbs-expansion-cell">
+            <div class="hbs-branch-panel">
+              <div class="hbs-branch-panel__head">
+                <div class="hbs-branch-panel__title-block">
+                  <span class="hbs-branch-panel__eyebrow">Branches</span>
+                  <span class="hbs-branch-panel__title">
+                    <i class="pi pi-sitemap" aria-hidden="true"></i>
+                    {{ row.name }}
+                  </span>
+                </div>
+                @if (canWriteBranches()) {
+                  <button
+                    pButton
+                    type="button"
+                    label="New branch"
+                    icon="pi pi-plus"
+                    severity="secondary"
+                    size="small"
+                    class="hbs-new-branch-btn"
+                    (click)="openCreateBranch(row)"
+                  ></button>
+                }
+              </div>
+
+              @if (isLoadingBranches(row.id)) {
+                <div class="hbs-branch-panel__loading">
+                  <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+                  <span>Loading branches…</span>
+                </div>
+              } @else {
+                <div class="hbs-branch-cards">
+                  @for (branch of branchesOf(row.id); track branch.id) {
+                    <article class="hbs-branch-card" [class.hbs-branch-card--main]="branch.isMain">
+                      <div class="hbs-branch-card__main">
+                        <div class="hbs-branch-card__identity">
+                          <span class="hbs-branch-card__code">{{ branch.code }}</span>
+                          <h4 class="hbs-branch-card__name">{{ branch.name }}</h4>
+                          @if (branch.closureReason) {
+                            <p class="hbs-branch-card__warn" [title]="branch.closureReason">
+                              <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+                              {{ branch.closureReason }}
+                            </p>
+                          }
+                        </div>
+                        <div class="hbs-branch-card__meta">
+                          <p-tag
+                            [value]="branch.status"
+                            [severity]="branchStatusSeverity(branch.status)"
+                          />
+                          @if (branch.isMain) {
+                            <p-tag value="Main" severity="info" />
+                          }
+                        </div>
+                      </div>
+                      <div class="hbs-branch-card__details">
+                        <span><i class="pi pi-clock" aria-hidden="true"></i> {{ branch.timeZoneId }}</span>
+                        <span><i class="pi pi-wallet" aria-hidden="true"></i> {{ branch.currencyCode }}</span>
+                        @if (branch.phone) {
+                          <span><i class="pi pi-phone" aria-hidden="true"></i> {{ branch.phone }}</span>
+                        }
+                      </div>
+                      @if (canWriteBranches()) {
+                        <div class="hbs-branch-card__actions">
+                          <button
+                            pButton
+                            type="button"
+                            label="Edit"
+                            icon="pi pi-pencil"
+                            [text]="true"
+                            size="small"
+                            severity="secondary"
+                            (click)="openEditBranch(branch, row.name)"
+                          ></button>
+                          @if (!branch.isMain) {
+                            <button
+                              pButton
+                              type="button"
+                              label="Delete"
+                              icon="pi pi-trash"
+                              [text]="true"
+                              size="small"
+                              severity="danger"
+                              (click)="confirmDeleteBranch(branch)"
+                            ></button>
+                          }
+                        </div>
+                      }
+                    </article>
+                  } @empty {
+                    <div class="hbs-empty-branches">
+                      <i class="pi pi-sitemap" aria-hidden="true"></i>
+                      <div>
+                        <p class="hbs-empty-branches__title">No branches yet</p>
+                        <p class="hbs-empty-branches__hint">Add a location under this hospital to start routing staff and visits.</p>
+                      </div>
+                      @if (canWriteBranches()) {
+                        <button
+                          pButton
+                          type="button"
+                          label="Add first branch"
+                          icon="pi pi-plus"
+                          size="small"
+                          (click)="openCreateBranch(row)"
+                        ></button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="6" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state
+              icon="pi pi-building"
+              [title]="hasActiveFilter ? 'No matching hospitals' : 'No hospitals yet'"
+              [description]="hasActiveFilter ? 'Try a different search or clear filters.' : 'Register hospitals and manage their branches and licensed menus.'"
+              [actionable]="!hasActiveFilter && canWriteHospital()"
+              actionLabel="Click to add a hospital"
+              (action)="openCreate()"
+            />
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="loadingbody">
+        <app-hms-table-loading-body [cols]="6" />
+      </ng-template>
+    </p-table>
   </div>
 </app-surface-panel>
 
 <p-dialog
-  [header]="editingHospital == null ? 'New hospital' : 'Edit hospital'"
   [(visible)]="dialogOpen"
   [modal]="true"
-  [style]="{ width: 'min(95vw, 32rem)' }"
-  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  [header]="editing ? 'Edit branch' : 'New branch'"
   styleClass="hms-crud-dialog"
-  (onHide)="closeDialog()"
+  [style]="{ width: '34rem' }"
+  [draggable]="false"
 >
-  <div class="hms-dialog-body">
-    <div class="hms-dialog-scroll">
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+  @if (dialogHospitalName) {
+    <p class="hbs-dialog-hospital">
+      <i class="pi pi-building" aria-hidden="true"></i>
+      {{ dialogHospitalName }}
+    </p>
+  }
+
+  <div class="hms-dialog-scroll flex flex-col gap-3">
+    @if (!editing) {
       <div class="flex flex-col gap-1">
-        <label class="hms-field-label hms-field-label--required" for="h-name">Name</label>
-        <input pInputText id="h-name" class="w-full" [(ngModel)]="formName" name="hName" />
+        <label class="hms-field-label hms-field-label--required" for="br-code">Code</label>
+        <input pInputText id="br-code" class="w-full" [(ngModel)]="formCode" placeholder="e.g. OPD, LAB, MAIN" />
+      </div>
+    }
+
+    <div class="flex flex-col gap-1">
+      <label class="hms-field-label hms-field-label--required" for="br-name">Name</label>
+      <input pInputText id="br-name" class="w-full" [(ngModel)]="formName" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="hms-field-label" for="br-address">Address</label>
+      <input pInputText id="br-address" class="w-full" [(ngModel)]="formAddress" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="br-phone">Phone</label>
+        <input pInputText id="br-phone" class="w-full" [(ngModel)]="formPhone" />
       </div>
       <div class="flex flex-col gap-1">
-        <label class="hms-field-label hms-field-label--required" for="h-code">Code</label>
-        <input
-          pInputText
-          id="h-code"
-          class="w-full"
-          [(ngModel)]="formCode"
-          name="hCode"
-          [disabled]="editingHospital != null"
+        <label class="hms-field-label" for="br-email">Email</label>
+        <input pInputText id="br-email" class="w-full" [(ngModel)]="formEmail" />
+      </div>
+    </div>
+
+    <p-divider styleClass="my-1" />
+
+    <div class="grid grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required" for="br-tz">Time zone</label>
+        <p-select
+          inputId="br-tz"
+          [options]="commonTimeZones"
+          optionLabel="label"
+          optionValue="value"
+          [(ngModel)]="formTimeZoneId"
+          styleClass="w-full"
+          appendTo="body"
+          [filter]="true"
+          filterPlaceholder="Search time zones"
         />
       </div>
-      <div class="flex flex-col gap-1 sm:col-span-2">
-        <label class="hms-field-label" for="h-addr">Address</label>
-        <input pInputText id="h-addr" class="w-full" [(ngModel)]="formAddress" name="hAddr" />
-      </div>
       <div class="flex flex-col gap-1">
-        <label class="hms-field-label" for="h-ph">Phone</label>
-        <input pInputText id="h-ph" class="w-full" [(ngModel)]="formPhone" name="hPh" />
+        <label class="hms-field-label hms-field-label--required" for="br-currency">Currency</label>
+        <p-select
+          inputId="br-currency"
+          [options]="commonCurrencies"
+          optionLabel="label"
+          optionValue="value"
+          [(ngModel)]="formCurrencyCode"
+          styleClass="w-full"
+          appendTo="body"
+        />
       </div>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="hms-field-label" for="br-country">
+        Country code
+        <span class="ml-1 text-[0.65rem] text-slate-400">(ISO 3166 — e.g. PK, AE, US)</span>
+      </label>
+      <input
+        pInputText
+        id="br-country"
+        class="w-full uppercase"
+        [(ngModel)]="formCountryCode"
+        maxlength="2"
+        placeholder="PK"
+      />
+    </div>
+
+    @if (editing) {
+      <p-divider styleClass="my-1" />
       <div class="flex flex-col gap-1">
-        <label class="hms-field-label" for="h-em">Email</label>
-        <input pInputText id="h-em" type="email" class="w-full" [(ngModel)]="formEmail" name="hEm" />
+        <label class="hms-field-label hms-field-label--required" for="br-status">Status</label>
+        <p-select
+          inputId="br-status"
+          [options]="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          [(ngModel)]="formStatus"
+          styleClass="w-full"
+          appendTo="body"
+        />
       </div>
-      @if (editingHospital == null) {
-        <div class="flex flex-col gap-1 sm:col-span-2">
-          <label class="hms-field-label">Initial modules</label>
-          <p-multiselect
-            [(ngModel)]="formModuleIds"
-            name="hMods"
-            [options]="moduleOptions"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Select modules"
-            display="chip"
-            styleClass="w-full"
-            appendTo="body"
-          />
+
+      @if (isTemporarilyClosed) {
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label hms-field-label--required" for="br-closure-reason">Closure reason</label>
+          <textarea
+            pTextarea
+            id="br-closure-reason"
+            class="w-full"
+            rows="2"
+            [(ngModel)]="formClosureReason"
+            placeholder="e.g. Renovation works until end of month"
+          ></textarea>
         </div>
-      } @else {
-        <div class="flex flex-col gap-1 sm:col-span-2">
-          <label class="hms-field-label" for="h-st">Status</label>
-          <p-select
-            inputId="h-st"
-            [(ngModel)]="formStatus"
-            name="hSt"
-            [options]="statusOptions"
-            optionLabel="label"
-            optionValue="value"
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="br-reopen">Expected reopen date</label>
+          <p-datepicker
+            inputId="br-reopen"
+            [(ngModel)]="formReopenDate"
+            [showIcon]="true"
+            dateFormat="dd/mm/yy"
+            [minDate]="$any(null)"
             styleClass="w-full"
             appendTo="body"
           />
         </div>
       }
-      </div>
-    </div>
-    <div class="hms-dialog-footer">
-      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="closeDialog()"></button>
-      <button
-        pButton
-        type="button"
-        label="Save"
-        icon="pi pi-check"
-        severity="success"
-        [loading]="saving"
-        (click)="saveHospital()"
-      ></button>
-    </div>
-  </div>
-</p-dialog>
-
-<p-dialog
-  header="Hospital modules"
-  [(visible)]="modulesDialogOpen"
-  [modal]="true"
-  [style]="{ width: 'min(95vw, 32rem)' }"
-  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
-  styleClass="hms-crud-dialog"
-  (onHide)="closeModulesDialog()"
->
-  <div class="hms-dialog-body">
-    <div class="hms-dialog-scroll">
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-    @if (modulesTarget) {
-      <p class="text-sm text-slate-600 sm:col-span-2">{{ modulesTarget.name }}</p>
     }
-    <div class="flex flex-col gap-1 sm:col-span-2">
-      <label class="hms-field-label" for="h-mod-pick">Modules</label>
-      <p-multiselect
-        inputId="h-mod-pick"
-        [(ngModel)]="selectedModuleIds"
-        name="hModPick"
-        [options]="moduleOptions"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Modules"
-        display="chip"
-        styleClass="w-full"
-        appendTo="body"
-      />
-    </div>
-      </div>
-    </div>
-    <div class="hms-dialog-footer">
-    <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="closeModulesDialog()"></button>
+  </div>
+
+  <ng-template #footer>
     <button
       pButton
       type="button"
-      label="Save modules"
-      icon="pi pi-check"
-      severity="success"
-      [loading]="saving"
-      (click)="saveModules()"
+      label="Cancel"
+      severity="secondary"
+      [outlined]="true"
+      (click)="dialogOpen = false"
     ></button>
-    </div>
-  </div>
+    <button
+      pButton
+      type="button"
+      label="Save"
+      icon="pi pi-check"
+      [loading]="saving"
+      (click)="saveBranch()"
+    ></button>
+  </ng-template>
 </p-dialog>

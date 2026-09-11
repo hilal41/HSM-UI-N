@@ -1,50 +1,161 @@
 @import "tailwindcss";
 @import "primeicons/primeicons.css";
 
-/* HMS density — one scale app-wide (inputs, labels, buttons, dialogs, tables) */
+/* HMS design tokens — single source of truth for spacing, type, color, radius, shadow */
 :root {
-  /* HMS 5-color palette */
+  /* HMS hospital palette — soft light chrome, green for success/status only */
   --hms-color-surface: #ffffff;
-  --hms-color-canvas: #e6e9f3;
-  --hms-color-primary: #059669;
-  --hms-color-primary-bright: #10b981;
-  --hms-color-primary-hover: #047857;
-  --hms-color-primary-light: #ecfdf5;
-  --hms-color-primary-soft: rgb(5 150 105 / 0.1);
-  --hms-color-primary-border: rgb(5 150 105 / 0.22);
-  --hms-color-nav: #2563eb;
+  --hms-color-canvas: #eff6ff;
+  --hms-color-primary: #2563eb;
+  --hms-color-primary-bright: #3b82f6;
+  --hms-color-primary-hover: #1d4ed8;
+  --hms-color-primary-light: #eff6ff;
+  --hms-color-primary-soft: rgb(37 99 235 / 0.1);
+  --hms-color-primary-border: rgb(37 99 235 / 0.22);
+  --hms-color-nav: #1e3a8a;
+  --hms-color-success: #059669;
+  --hms-color-success-bright: #10b981;
+  --hms-color-success-hover: #047857;
+  --hms-color-success-light: #ecfdf5;
+  --hms-color-success-soft: rgb(5 150 105 / 0.1);
+  --hms-color-success-border: rgb(5 150 105 / 0.22);
+  --hms-color-warn-light: #fffbeb;
+  --hms-color-warn: #b45309;
+  --hms-color-warn-border: rgb(180 83 9 / 0.22);
+  --hms-color-danger-light: #fef2f2;
+  --hms-color-danger: #b91c1c;
+  --hms-color-danger-border: rgb(185 28 28 / 0.22);
   --hms-color-text: #0f172a;
   --hms-color-text-muted: #64748b;
   --hms-color-text-subtle: #94a3b8;
-  --hms-color-border: #e6e9f3;
+  --hms-color-border: #e2e8f0;
+  --hms-color-border-soft: #eef2f6;
   --hms-color-border-input: #cbd5e1;
   --hms-color-border-strong: #0f172a;
+  --hms-table-stripe: #fafbfc;
+  --hms-table-head-color: var(--hms-color-text);
+  --hms-table-head-weight: 700;
 
-  /* One rhythm: main inset, gutters, card padding — uniform 0.5rem everywhere */
-  --hms-space: 0.5rem;
-  --hms-main-pad: var(--hms-space);
-  --hms-page-gutter: var(--hms-space);
-  --hms-card-padding: var(--hms-space);
-  /* Sticky bar height + shell top gutter (see `.app-shell-root` padding-top) */
-  --hms-shell-header-offset: calc(3.25rem + var(--hms-space));
-  --hms-font-ui: 0.8125rem;
-  --hms-font-ui-sm: 0.75rem;
-  --hms-font-title: 0.95rem;
-  --hms-font-label: 0.58rem;
-  /* Tight text fields (dialogs + pages) — matches doctor checkup form controls. */
+  /* Module accents — icons, stat tiles, nav hints only */
+  --hms-accent-clinical: #2563eb;
+  --hms-accent-lab: #7c3aed;
+  --hms-accent-pharmacy: #059669;
+  --hms-accent-billing: #d97706;
+  --hms-accent-admin: #64748b;
+
+  /* Spacing — one gap between cards app-wide; dense tables/forms unchanged */
+  --hms-space-xs: 0.375rem;
+  --hms-space-sm: 0.5rem;
+  --hms-space: 0.75rem;
+  --hms-space-md: 1rem;
+  --hms-space-lg: 1.5rem;
+  --hms-card-gap: 0.5rem;
+  --hms-card-padding: 0.625rem;
+  --hms-main-pad: var(--hms-card-gap);
+  --hms-page-gutter: var(--hms-card-gap);
+
+  /* Shape + depth */
+  --hms-radius-card: 0.75rem;
+  --hms-card-border: 0 solid transparent;
+  --hms-shadow-card: 0 1px 2px rgb(15 23 42 / 0.06), 0 4px 14px rgb(37 99 235 / 0.08);
+
+  /* Top nav bar */
+  --hms-shell-header-bar-py: 0.65rem;
+  --hms-shell-header-item-py: 0.42rem;
+  --hms-shell-header-offset: calc(3.5rem + var(--hms-space));
+
+  /* Typography */
+  --hms-font-display: 1.375rem;
+  --hms-font-section: 1.0625rem;
+  --hms-font-ui: 0.875rem;
+  --hms-font-ui-sm: 0.8125rem;
+  --hms-font-title: 1rem;
+  --hms-font-label: 0.6875rem;
+
+  /* Tight text fields (dialogs + pages) — dense work surfaces */
   --hms-input-py: 0.18rem;
   --hms-input-px: 0.32rem;
-  --hms-input-font: 0.68rem;
+  --hms-input-font: 0.75rem;
   --hms-input-line: 1.25;
   --hms-control-height: 1.5rem;
   --hms-btn-py: 0.3rem;
   --hms-btn-px: 0.65rem;
-  --hms-btn-font: 0.75rem;
+  --hms-btn-font: 0.8125rem;
   --hms-dialog-header-pad: 0.55rem 0.75rem 0.45rem;
   --hms-dialog-scroll-pad: 0.55rem 0.75rem 0.45rem;
   --hms-dialog-footer-pad: 0.5rem 0.75rem 0.55rem;
   --hms-table-cell-py: 0.3rem;
   --hms-table-cell-px: 0.45rem;
+}
+
+/*
+ * Developer / platform console theme — teal + ink (distinct from hospital blue).
+ * Applied on the shell when AuthSessionService.isPlatformUser is true.
+ */
+.hms-platform-theme {
+  --hms-color-surface: #ffffff;
+  --hms-color-canvas: #e7f0ee;
+  --hms-color-primary: #0f766e;
+  --hms-color-primary-bright: #14b8a6;
+  --hms-color-primary-hover: #0d9488;
+  --hms-color-primary-light: #f0fdfa;
+  --hms-color-primary-soft: rgb(15 118 110 / 0.12);
+  --hms-color-primary-border: rgb(15 118 110 / 0.28);
+  --hms-color-nav: #134e4a;
+  --hms-color-success: #059669;
+  --hms-color-success-bright: #10b981;
+  --hms-color-success-hover: #047857;
+  --hms-color-success-light: #ecfdf5;
+  --hms-color-success-soft: rgb(5 150 105 / 0.1);
+  --hms-color-success-border: rgb(5 150 105 / 0.22);
+  /* warn/danger washes inherit hospital :root — status semantics stay shared */
+  --hms-color-text: #0f172a;
+  --hms-color-text-muted: #5b6b6a;
+  --hms-color-text-subtle: #8a9a98;
+  --hms-color-border: #d5e2df;
+  --hms-color-border-input: #b7cbc7;
+  --hms-color-border-strong: #134e4a;
+  --hms-platform-accent: #f59e0b;
+  --hms-platform-ink: #042f2e;
+  --hms-platform-glow: rgb(20 184 166 / 0.18);
+}
+
+.hms-platform-theme .app-shell-header {
+  border-color: rgb(4 47 46 / 0.45) !important;
+  background:
+    linear-gradient(135deg, #0f3d3a 0%, #134e4a 48%, #0f766e 100%) !important;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.06) inset,
+    0 8px 24px rgb(15 23 42 / 0.12);
+}
+
+.hms-platform-theme .hms-toolbar-solid.p-button,
+.hms-platform-theme .p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-secondary):not(.p-button-success):not(.p-button-danger):not(.p-button-warn):not(.p-button-info):not(.p-button-help):not(.p-button-contrast) {
+  background: var(--hms-color-primary) !important;
+  border-color: var(--hms-color-primary) !important;
+}
+
+.hms-platform-theme .hms-toolbar-solid.p-button:not(:disabled):hover,
+.hms-platform-theme .p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-secondary):not(.p-button-success):not(.p-button-danger):not(.p-button-warn):not(.p-button-info):not(.p-button-help):not(.p-button-contrast):not(:disabled):hover {
+  background: var(--hms-color-primary-hover) !important;
+  border-color: var(--hms-color-primary-hover) !important;
+}
+
+.hms-platform-theme .hms-surface-panel-inner {
+  border: var(--hms-card-border);
+  box-shadow: var(--hms-shadow-card);
+}
+
+.hms-platform-theme app-surface-panel.hms-crud-surface .hms-crud-panel-body .p-datatable.hms-crud-table .p-datatable-thead > tr > th {
+  background: #f0fdfa !important;
+  color: var(--hms-table-head-color) !important;
+  font-weight: var(--hms-table-head-weight);
+}
+
+.hms-platform-theme .hms-toolbar-chip--active.p-button {
+  background: var(--hms-color-primary-soft) !important;
+  border-color: var(--hms-color-primary-border) !important;
+  color: var(--hms-color-primary) !important;
 }
 
 @media print {
@@ -60,10 +171,13 @@
 @layer base {
   html {
     @apply min-h-full;
+    overflow-x: hidden;
   }
 
   body {
-    @apply m-0 min-h-full bg-[var(--hms-color-canvas)] font-sans text-slate-700 antialiased;
+    @apply m-0 min-h-full bg-[var(--hms-color-canvas)] font-sans antialiased;
+    overflow-x: hidden;
+    color: var(--hms-color-text-muted);
     font-size: var(--hms-font-ui);
     line-height: 1.45;
   }
@@ -83,9 +197,25 @@
   padding: var(--hms-card-padding);
   box-sizing: border-box;
   background: var(--hms-color-surface);
-  border: 1px solid var(--hms-color-border);
-  border-radius: var(--hms-space) var(--hms-space) 0 0;
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  border: var(--hms-card-border);
+  border-radius: var(--hms-radius-card) var(--hms-radius-card) 0 0;
+  box-shadow: var(--hms-shadow-card);
+}
+
+.hms-surface-panel-inner h1 {
+  margin: 0;
+  font-size: var(--hms-font-display);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--hms-color-text);
+}
+
+.hms-surface-panel-inner h1 + p {
+  margin: 0.25rem 0 0;
+  font-size: var(--hms-font-ui-sm);
+  line-height: 1.45;
+  color: var(--hms-color-text-muted);
 }
 
 /*
@@ -122,7 +252,7 @@ main.hms-main-pad > router-outlet + * {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: 100%;
   min-width: 0;
 }
 
@@ -155,8 +285,9 @@ app-surface-panel.hms-crud-surface .hms-surface-panel-inner > div:first-child > 
 }
 
 app-surface-panel.hms-crud-surface .hms-surface-panel-inner > div:first-child h1 {
-  font-size: 1rem !important;
+  font-size: var(--hms-font-section) !important;
   line-height: 1.25 !important;
+  color: var(--hms-color-text) !important;
 }
 
 app-surface-panel.hms-crud-surface .hms-surface-panel-inner > div:first-child h1 + p {
@@ -169,13 +300,19 @@ app-surface-panel.hms-crud-surface .hms-surface-panel-inner {
 
 .hms-crud-body-spacer {
   flex-shrink: 0;
-  height: var(--hms-main-pad);
+  height: var(--hms-card-gap);
   margin-left: 0;
   margin-right: 0;
   background: var(--hms-color-canvas);
 }
 
 .hms-crud-panel-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  max-width: 100%;
   margin-top: 0;
 }
 
@@ -232,14 +369,14 @@ app-surface-panel.hms-crud-surface button.hms-toolbar-chip.p-button .p-button-ic
 }
 
 app-surface-panel.hms-crud-surface button.hms-toolbar-chip.p-button:not(:disabled):hover {
-  background: #f1f5f9 !important;
-  border-color: #020617 !important;
-  color: #020617 !important;
+  background: var(--hms-color-primary-light) !important;
+  border-color: var(--hms-color-primary-border) !important;
+  color: var(--hms-color-primary-hover) !important;
 }
 
 app-surface-panel.hms-crud-surface button.hms-toolbar-chip.p-button:not(:disabled):hover .p-button-label,
 app-surface-panel.hms-crud-surface button.hms-toolbar-chip.p-button:not(:disabled):hover .p-button-icon {
-  color: #020617 !important;
+  color: var(--hms-color-primary-hover) !important;
 }
 
 app-surface-panel.hms-crud-surface button.hms-toolbar-chip--active.p-button {
@@ -260,14 +397,56 @@ app-surface-panel.hms-crud-surface button.hms-toolbar-chip--icon.p-button {
 
 app-surface-panel.hms-crud-surface .hms-crud-panel-body .p-datatable.hms-crud-table .p-datatable-thead > tr > th {
   font-size: 0.7rem;
-  color: #475569;
+  color: var(--hms-table-head-color);
+  font-weight: var(--hms-table-head-weight);
   text-transform: none;
   padding: var(--hms-table-cell-py) var(--hms-table-cell-px);
+  background: var(--hms-color-primary-light) !important;
 }
 
 app-surface-panel.hms-crud-surface .hms-crud-panel-body .p-datatable.hms-crud-table .p-datatable-tbody > tr > td {
   font-size: 0.8rem;
   padding: var(--hms-table-cell-py) var(--hms-table-cell-px);
+}
+
+app-surface-panel.hms-crud-surface .hms-crud-panel-body .p-datatable.hms-crud-table .p-datatable-tbody > tr:nth-child(even) > td {
+  background: var(--hms-table-stripe) !important;
+}
+
+app-surface-panel.hms-crud-surface .hms-crud-panel-body .p-datatable.hms-crud-table .p-datatable-tbody > tr:hover > td {
+  background: var(--hms-color-primary-soft) !important;
+}
+
+app-surface-panel.hms-crud-surface .hms-crud-panel-body .p-datatable.hms-crud-table .p-datatable-thead > tr > th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* CRUD tables without hms-crud-table class still get core styling */
+app-surface-panel.hms-crud-surface .hms-crud-panel-body .p-datatable .p-datatable-thead > tr > th {
+  font-size: 0.7rem;
+  color: var(--hms-table-head-color);
+  font-weight: var(--hms-table-head-weight);
+  text-transform: none;
+  padding: var(--hms-table-cell-py) var(--hms-table-cell-px);
+  background: var(--hms-color-primary-light) !important;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+app-surface-panel.hms-crud-surface .hms-crud-panel-body .p-datatable .p-datatable-tbody > tr > td {
+  font-size: 0.8rem;
+  padding: var(--hms-table-cell-py) var(--hms-table-cell-px);
+}
+
+app-surface-panel.hms-crud-surface .hms-crud-panel-body .p-datatable .p-datatable-tbody > tr:nth-child(even) > td {
+  background: var(--hms-table-stripe) !important;
+}
+
+app-surface-panel.hms-crud-surface .hms-crud-panel-body .p-datatable .p-datatable-tbody > tr:hover > td {
+  background: var(--hms-color-primary-soft) !important;
 }
 
 /* List actions stay quiet until a row is active. Applies across HMS CRUD tables. */
@@ -304,6 +483,8 @@ app-surface-panel .hms-surface-panel-body p-table {
   flex-direction: column !important;
   flex: 1 1 auto !important;
   min-height: 0 !important;
+  min-width: 0 !important;
+  max-width: 100%;
   width: 100%;
 }
 
@@ -312,18 +493,286 @@ app-surface-panel .hms-surface-panel-body p-table .p-datatable {
   flex-direction: column !important;
   flex: 1 1 auto !important;
   min-height: 0 !important;
+  min-width: 0 !important;
+  max-width: 100%;
 }
 
+app-surface-panel .hms-surface-panel-body p-table .p-datatable-table-container,
 app-surface-panel .hms-surface-panel-body p-table .p-datatable-wrapper {
   flex: 1 1 auto !important;
   min-height: 0 !important;
-  overflow: auto !important;
+  min-width: 0 !important;
+  max-width: 100%;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
 }
 
-/* Empty row: tall cell so message (or icon markup) sits in a full-height band */
-app-surface-panel .hms-surface-panel-body .p-datatable-tbody > tr:only-child > td[colspan] {
+/* CRUD empty: table body fills the scroll region; message centered in panel */
+app-surface-panel .hms-surface-panel-body p-table .p-datatable-table-container:has(td.hms-table-empty-cell--crud),
+app-surface-panel .hms-surface-panel-body p-table .p-datatable-wrapper:has(td.hms-table-empty-cell--crud) {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+app-surface-panel .hms-surface-panel-body p-table .p-datatable-table-container:has(td.hms-table-empty-cell--crud) .p-datatable-table,
+app-surface-panel .hms-surface-panel-body p-table .p-datatable-wrapper:has(td.hms-table-empty-cell--crud) .p-datatable-table {
+  flex: 1 1 auto;
+  height: 100%;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+app-surface-panel .hms-surface-panel-body p-table .p-datatable-table-container:has(td.hms-table-empty-cell--crud) .p-datatable-tbody,
+app-surface-panel .hms-surface-panel-body p-table .p-datatable-wrapper:has(td.hms-table-empty-cell--crud) .p-datatable-tbody {
+  height: 100%;
+}
+
+app-surface-panel .hms-surface-panel-body .p-datatable-tbody > tr:only-child:has(> td.hms-table-empty-cell--crud) {
+  height: 100%;
+}
+
+/* Empty row: tall cell for non-CRUD empties only; CRUD uses compact padding */
+app-surface-panel .hms-surface-panel-body .p-datatable-tbody > tr:only-child > td[colspan]:not(.hms-table-empty-cell--crud) {
   min-height: min(48vh, 22rem);
   vertical-align: middle;
+}
+
+.hms-table-empty-cell {
+  text-align: center;
+  color: var(--hms-color-text-muted);
+  vertical-align: middle;
+}
+
+.hms-table-empty-cell--crud {
+  height: 100%;
+  padding: var(--hms-card-gap);
+  text-align: center;
+  vertical-align: middle;
+}
+
+app-hms-crud-empty-state {
+  display: inline-block;
+  max-width: 100%;
+}
+
+.hms-crud-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  text-align: center;
+}
+
+.hms-crud-empty__icon {
+  display: grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 999px;
+  font-size: 1.65rem;
+  color: var(--hms-color-primary);
+  background: var(--hms-color-primary-light);
+  border: 1px solid var(--hms-color-primary-border);
+  flex-shrink: 0;
+}
+
+.hms-crud-empty__icon--action {
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  line-height: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.hms-crud-empty__icon--action:hover,
+.hms-crud-empty__icon--action:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgb(37 99 235 / 0.18);
+  background: var(--hms-color-surface);
+  outline: none;
+}
+
+.hms-crud-empty__title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--hms-color-text);
+}
+
+.hms-crud-empty__desc {
+  margin: 0;
+  max-width: 26rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--hms-color-text-muted);
+}
+
+.hms-crud-empty__hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--hms-color-text-subtle);
+}
+
+/* CRUD empty row: no zebra/hover band — only the icon button is interactive */
+app-surface-panel.hms-crud-surface .hms-crud-panel-body .p-datatable.hms-crud-table .p-datatable-tbody > tr:only-child:hover > td.hms-table-empty-cell--crud,
+app-surface-panel.hms-crud-surface .hms-crud-panel-body .p-datatable .p-datatable-tbody > tr:only-child:hover > td.hms-table-empty-cell--crud {
+  background: var(--hms-color-surface) !important;
+}
+
+.hms-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 0.5rem;
+  text-align: center;
+}
+
+.hms-empty-state__icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  color: var(--hms-color-text-subtle);
+  background: var(--hms-color-primary-light);
+}
+
+.hms-empty-state__title {
+  margin: 0;
+  font-size: var(--hms-font-ui-sm);
+  font-weight: 600;
+  color: var(--hms-color-text-muted);
+}
+
+.hms-empty-state__desc {
+  margin: 0;
+  font-size: var(--hms-font-ui-sm);
+  color: var(--hms-color-text-subtle);
+}
+
+/* Shared form layout — section sub-cards + two-column field grids */
+.hms-form-body {
+  padding: var(--hms-card-gap);
+  background: var(--hms-color-canvas);
+  box-sizing: border-box;
+}
+
+.hms-card-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hms-card-gap);
+}
+
+/* Shared white card shell — borderless surface + shadow on canvas */
+.hms-card {
+  border: none;
+  border-radius: var(--hms-radius-card);
+  background: var(--hms-color-surface);
+  box-shadow: var(--hms-shadow-card);
+  box-sizing: border-box;
+}
+
+.hms-card-grid {
+  display: grid;
+  gap: var(--hms-card-gap);
+}
+
+.hms-form-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--hms-card-gap);
+  align-items: stretch;
+}
+
+.hms-form-card {
+  border: var(--hms-card-border);
+  border-radius: var(--hms-radius-card);
+  background: var(--hms-color-surface);
+  padding: var(--hms-card-padding);
+  box-shadow: var(--hms-shadow-card);
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.hms-form-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--hms-card-gap);
+  margin-bottom: 0.65rem;
+}
+
+.hms-form-card__title {
+  margin: 0;
+  font-size: var(--hms-font-section);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--hms-color-text);
+}
+
+.hms-form-card__sub {
+  margin: 0.15rem 0 0;
+  font-size: var(--hms-font-ui-sm);
+  line-height: 1.4;
+  color: var(--hms-color-text-muted);
+}
+
+.hms-form-card__stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hms-card-gap);
+}
+
+.hms-form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--hms-card-gap);
+  align-items: start;
+}
+
+.hms-form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--hms-card-gap);
+  align-items: start;
+}
+
+.hms-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  min-width: 0;
+}
+
+.hms-form-field--full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 960px) {
+  .hms-form-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .hms-form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .hms-form-grid-3 {
+    grid-template-columns: 1fr;
+  }
 }
 
 app-reports-page {
@@ -351,17 +800,47 @@ app-checkup-template-editor-page .cte-root {
   min-width: 0;
 }
 
-/* Solid toolbar CTA (list pages) — emerald, matches p-button-success */
+/* Solid toolbar CTA (list pages) — brand primary */
 button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link) {
-  background: var(--hms-color-primary-bright) !important;
-  border-color: var(--hms-color-primary-bright) !important;
+  background: var(--hms-color-primary) !important;
+  border-color: var(--hms-color-primary) !important;
   color: #ffffff !important;
-  box-shadow: 0 1px 2px rgb(16 185 129 / 14%);
+  box-shadow: 0 1px 2px rgb(37 99 235 / 0.18);
 }
 
 button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link):enabled:hover {
+  background: var(--hms-color-primary-hover) !important;
+  border-color: var(--hms-color-primary-hover) !important;
+  color: #ffffff !important;
+}
+
+button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link):disabled,
+button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link).p-disabled {
   background: var(--hms-color-primary) !important;
   border-color: var(--hms-color-primary) !important;
+  color: #ffffff !important;
+  opacity: 0.62;
+}
+
+button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link):disabled .p-button-label,
+button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link):disabled .p-button-icon,
+button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link).p-disabled .p-button-label,
+button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link).p-disabled .p-button-icon {
+  color: #ffffff !important;
+}
+
+app-surface-panel.hms-crud-surface button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link) {
+  min-height: 1.9rem !important;
+  border-radius: 9999px !important;
+  padding-block: 0.15rem !important;
+  padding-inline: 0.62rem !important;
+  font-size: 0.7rem !important;
+  font-weight: 500 !important;
+  flex: 0 0 auto;
+}
+
+app-surface-panel.hms-crud-surface button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link) .p-button-label,
+app-surface-panel.hms-crud-surface button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link) .p-button-icon {
   color: #ffffff !important;
 }
 
@@ -390,16 +869,16 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
   font-size: 0.85rem !important;
 }
 
-/* HMS solid success / primary — emerald (list pages, dialogs, forms) */
+/* HMS solid success — brand primary (list pages, dialogs, forms) */
 .p-button.p-button-success:not(.p-button-outlined):not(.p-button-text):not(.p-button-link) {
-  background: var(--hms-color-primary-bright) !important;
-  border-color: var(--hms-color-primary-bright) !important;
+  background: var(--hms-color-primary) !important;
+  border-color: var(--hms-color-primary) !important;
   color: #ffffff !important;
 }
 
 .p-button.p-button-success:not(.p-button-outlined):not(.p-button-text):not(.p-button-link):not(:disabled):hover {
-  background: var(--hms-color-primary) !important;
-  border-color: var(--hms-color-primary) !important;
+  background: var(--hms-color-primary-hover) !important;
+  border-color: var(--hms-color-primary-hover) !important;
   color: #ffffff !important;
 }
 
@@ -423,8 +902,8 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
 .p-dialog.hms-crud-dialog .p-dialog-header {
   flex-shrink: 0;
   padding: var(--hms-dialog-header-pad) !important;
-  border-bottom: 1px solid rgba(15, 81, 50, 0.1);
-  background: #fff;
+  border-bottom: 1px solid var(--hms-color-border);
+  background: var(--hms-color-surface);
 }
 
 .p-dialog.hms-crud-dialog .p-dialog-title {
@@ -794,6 +1273,15 @@ button.hms-toolbar-solid.p-button:not(.p-button-outlined):not(.p-button-text):no
 }
 
 /* ========= HMS global PrimeNG (pages + non-CRUD dialogs) — same density as tokens ========= */
+.p-button:focus-visible,
+.p-inputtext:focus-visible,
+.p-select:focus-visible,
+.p-checkbox-box:focus-visible,
+.p-radiobutton-box:focus-visible {
+  outline: 2px solid var(--hms-color-primary-border) !important;
+  outline-offset: 2px;
+}
+
 .p-inputtext.p-component,
 input.p-inputtext.p-component {
   font-size: var(--hms-input-font) !important;
@@ -881,9 +1369,23 @@ textarea.p-textarea,
   font-size: var(--hms-font-ui-sm) !important;
 }
 
+app-surface-panel .hms-surface-panel-body .p-datatable-tbody > tr > td.hms-table-empty-cell--crud {
+  height: 100% !important;
+  padding: var(--hms-card-gap) !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
 .p-datatable .p-datatable-thead > tr > th {
   font-size: var(--hms-font-label) !important;
   letter-spacing: 0.04em;
+  font-weight: var(--hms-table-head-weight) !important;
+  color: var(--hms-table-head-color) !important;
+}
+
+table thead th {
+  font-weight: var(--hms-table-head-weight);
+  color: var(--hms-table-head-color);
 }
 
 .p-paginator {
@@ -942,10 +1444,137 @@ textarea.p-textarea,
 .p-tag {
   font-size: 0.58rem !important;
   padding: 0.1rem 0.35rem !important;
+  border-radius: 999px !important;
+}
+
+.p-tag.p-tag-success {
+  background: var(--hms-color-success-soft) !important;
+  color: var(--hms-color-success-hover) !important;
+  border: 1px solid var(--hms-color-success-border) !important;
+}
+
+.p-tag.p-tag-warn {
+  background: var(--hms-color-warn-light) !important;
+  color: var(--hms-color-warn) !important;
+  border: 1px solid var(--hms-color-warn-border) !important;
+}
+
+.p-tag.p-tag-danger {
+  background: var(--hms-color-danger-light) !important;
+  color: var(--hms-color-danger) !important;
+  border: 1px solid var(--hms-color-danger-border) !important;
+}
+
+.p-tag.p-tag-info {
+  background: var(--hms-color-primary-light) !important;
+  color: var(--hms-color-primary-hover) !important;
+  border: 1px solid var(--hms-color-primary-border) !important;
+}
+
+.p-tag.p-tag-secondary {
+  background: var(--hms-color-canvas) !important;
+  color: var(--hms-color-text-muted) !important;
+  border: 1px solid var(--hms-color-border) !important;
 }
 
 .p-toast .p-toast-message-text,
 .p-toast .p-toast-detail,
 .p-toast .p-toast-summary {
   font-size: var(--hms-font-ui-sm) !important;
+}
+
+/*
+ * Map common Tailwind slate/blue utilities onto HMS tokens inside the app shell.
+ * Keeps list/form HTML pages consistent without rewriting every template.
+ */
+.app-shell-root .text-slate-900,
+.app-shell-root .text-slate-800,
+.app-shell-root .text-slate-700 {
+  color: var(--hms-color-text) !important;
+}
+
+.app-shell-root .text-slate-600,
+.app-shell-root .text-slate-500 {
+  color: var(--hms-color-text-muted) !important;
+}
+
+.app-shell-root .text-slate-400,
+.app-shell-root .text-slate-300 {
+  color: var(--hms-color-text-subtle) !important;
+}
+
+.app-shell-root .bg-slate-50,
+.app-shell-root .bg-gray-50,
+.app-shell-root .hover\:bg-slate-50:hover,
+.app-shell-root .hover\:bg-gray-50:hover {
+  background-color: var(--hms-color-primary-light) !important;
+}
+
+.app-shell-root .bg-slate-100,
+.app-shell-root .bg-gray-100 {
+  background-color: var(--hms-color-canvas) !important;
+}
+
+.app-shell-root .bg-white {
+  background-color: var(--hms-color-surface) !important;
+}
+
+.app-shell-root .border-slate-100,
+.app-shell-root .border-slate-200,
+.app-shell-root .border-gray-100,
+.app-shell-root .border-gray-200,
+.app-shell-root .border-blue-100 {
+  border-color: var(--hms-color-border) !important;
+}
+
+.app-shell-root .border-slate-300,
+.app-shell-root .border-gray-300 {
+  border-color: var(--hms-color-border-input) !important;
+}
+
+.app-shell-root .text-blue-600,
+.app-shell-root .text-blue-700,
+.app-shell-root .text-blue-800 {
+  color: var(--hms-color-primary) !important;
+}
+
+.app-shell-root .bg-blue-50,
+.app-shell-root .hover\:bg-blue-50:hover {
+  background-color: var(--hms-color-primary-light) !important;
+}
+
+.app-shell-root .bg-blue-100 {
+  background-color: var(--hms-color-primary-soft) !important;
+}
+
+.app-shell-root .text-emerald-600,
+.app-shell-root .text-emerald-700,
+.app-shell-root .text-green-600,
+.app-shell-root .text-green-700 {
+  color: var(--hms-color-success-hover) !important;
+}
+
+.app-shell-root .bg-emerald-50,
+.app-shell-root .bg-green-50 {
+  background-color: var(--hms-color-success-light) !important;
+}
+
+.app-shell-root .text-red-600,
+.app-shell-root .text-red-700 {
+  color: var(--hms-color-danger) !important;
+}
+
+.app-shell-root .bg-red-50 {
+  background-color: var(--hms-color-danger-light) !important;
+}
+
+.app-shell-root .text-amber-600,
+.app-shell-root .text-amber-700,
+.app-shell-root .text-orange-600 {
+  color: var(--hms-color-warn) !important;
+}
+
+.app-shell-root .bg-amber-50,
+.app-shell-root .bg-orange-50 {
+  background-color: var(--hms-color-warn-light) !important;
 }

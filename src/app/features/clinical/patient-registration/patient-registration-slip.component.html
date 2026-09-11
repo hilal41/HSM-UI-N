@@ -140,7 +140,7 @@
                           <thead>
                             <tr>
                               <th>Service</th>
-                              <th>Doctor</th>
+                              <th>Doctor / Priority</th>
                               <th class="slip-num">Price</th>
                               <th class="slip-num">Disc.</th>
                               <th>Notes</th>
@@ -153,7 +153,13 @@
                                   <div class="slip-svc-title">{{ row.serviceTitle }}</div>
                                   <div class="slip-svc-code">{{ row.serviceCode }}</div>
                                 </td>
-                                <td>{{ row.doctorName }}</td>
+                                <td>
+                                  @if (row.isTestLine) {
+                                    {{ row.priority || 'Routine' }}
+                                  } @else {
+                                    {{ row.doctorName }}
+                                  }
+                                </td>
                                 <td class="slip-num">{{ row.servicePrice }}</td>
                                 <td class="slip-num">{{ row.serviceDiscount }}</td>
                                 <td>{{ row.remarks || '—' }}</td>

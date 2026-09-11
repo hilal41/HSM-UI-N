@@ -6,6 +6,7 @@ import type {
   ChangePasswordRequest,
   ForgotPasswordRequest,
   ForgotPasswordResponse,
+  ImpersonateRequest,
   LoginRequest,
   LoginResponse,
   RefreshTokenRequest,
@@ -49,5 +50,9 @@ export class AuthApiService {
 
   switchBranch(body: SwitchBranchRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.base}/auth/switch-branch`, body);
+  }
+
+  impersonate(body: ImpersonateRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.base}/auth/impersonate`, body);
   }
 }

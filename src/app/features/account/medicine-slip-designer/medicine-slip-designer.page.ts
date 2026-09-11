@@ -9,6 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TextareaModule } from 'primeng/textarea';
 import { finalize } from 'rxjs';
+import { HospitalConfigurationApiService } from '../../../core/api/hospital-configuration-api.service';
 import { MeApiService } from '../../../core/api/me-api.service';
 import type {
   CheckupSaveResponse,
@@ -18,12 +19,20 @@ import type {
 } from '../../../core/models/api-contracts';
 import { HmsBlockSkeletonComponent } from '../../../shared/components/hms-block-skeleton/hms-block-skeleton.component';
 import { SurfacePanelComponent } from '../../../shared/components/surface-panel/surface-panel.component';
+import { SlipTemplateGalleryComponent } from '../../../shared/slip-designer/slip-template-gallery.component';
+import {
+  SLIP_CUSTOM_PRESET_ID,
+  isKnownPresetId,
+  markSlipPresetCustom,
+  presetDisplayName,
+} from '../../../shared/slip-designer/slip-preset.util';
 import type { CheckupFormDoc } from '../../clinical/checkup-templates/checkup-form-doc.model';
 import { MedicineSlipComponent } from '../../clinical/doctor-checkup/medicine-slip.component';
 import {
   MEDICINE_SLIP_ALIGN_OPTIONS,
   MEDICINE_SLIP_COLUMN_IDS,
   MEDICINE_SLIP_COLUMN_LABELS,
+  MEDICINE_SLIP_DEFAULT_PRESET_ID,
   MEDICINE_SLIP_FONT_OPTIONS,
   MEDICINE_SLIP_LOGO_PLACEMENT_OPTIONS,
   MEDICINE_SLIP_PRESET_OPTIONS,
@@ -42,7 +51,7 @@ import {
 const DESIGNER_PREVIEW_LOGO_DATA_URL =
   'data:image/svg+xml,' +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="56" viewBox="0 0 96 56"><rect width="96" height="56" rx="8" fill="#059669"/><text x="48" y="34" text-anchor="middle" fill="#fff" font-size="13" font-family="system-ui,sans-serif">Logo</text></svg>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="56" viewBox="0 0 96 56"><rect width="96" height="56" rx="8" fill="#2563eb"/><text x="48" y="34" text-anchor="middle" fill="#fff" font-size="13" font-family="system-ui,sans-serif">Logo</text></svg>`,
   );
 
 const SAMPLE_PATIENT: Patient = {
@@ -158,12 +167,14 @@ const SAMPLE_CHECKUP_FORM_DOC: CheckupFormDoc = {
     CheckboxModule,
     DragDropModule,
     MedicineSlipComponent,
+    SlipTemplateGalleryComponent,
   ],
   templateUrl: './medicine-slip-designer.page.html',
   styleUrl: './medicine-slip-designer.page.scss',
 })
 export class MedicineSlipDesignerPage implements OnInit {
   private readonly meApi = inject(MeApiService);
+  private readonly configApi = inject(HospitalConfigurationApiService);
   private readonly messages = inject(MessageService);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -171,6 +182,7 @@ export class MedicineSlipDesignerPage implements OnInit {
   saving = false;
   hospital: Hospital | null = null;
   draft: MedicineSlipTemplate = defaultMedicineSlipTemplate();
+  basedOnPresetId: string | null = null;
 
   readonly samplePatient = SAMPLE_PATIENT;
   readonly sampleVisit = SAMPLE_VISIT;
@@ -195,6 +207,9 @@ export class MedicineSlipDesignerPage implements OnInit {
           this.draft = cloneMedicineSlipTemplate(
             parseMedicineSlipTemplateJson(h.medicineSlipTemplateJson),
           );
+          this.basedOnPresetId = isKnownPresetId(this.draft.presetId, this.presetOptions)
+            ? this.draft.presetId
+            : null;
           this.cdr.markForCheck();
         },
         error: () => {
@@ -225,6 +240,7 @@ export class MedicineSlipDesignerPage implements OnInit {
   }
 
   applyPreset(presetId: string): void {
+    this.basedOnPresetId = presetId;
     this.draft = cloneMedicineSlipTemplate(
       applyMedicineSlipPresetId(presetId, {
         sectionOrder: this.draft.sectionOrder,
@@ -235,8 +251,43 @@ export class MedicineSlipDesignerPage implements OnInit {
     this.cdr.markForCheck();
   }
 
-  isPresetActive(id: string): boolean {
-    return this.draft.presetId === id;
+  onManualEdit(): void {
+    if (this.draft.presetId !== SLIP_CUSTOM_PRESET_ID && isKnownPresetId(this.draft.presetId, this.presetOptions)) {
+      this.basedOnPresetId = this.draft.presetId;
+    }
+    this.draft = markSlipPresetCustom(this.draft);
+    this.cdr.markForCheck();
+  }
+
+  get layoutStatusLabel(): string {
+    if (this.draft.presetId !== SLIP_CUSTOM_PRESET_ID) {
+      return presetDisplayName(this.draft.presetId, this.presetOptions);
+    }
+    if (this.basedOnPresetId) {
+      return `Based on: ${presetDisplayName(this.basedOnPresetId, this.presetOptions)}`;
+    }
+    return 'Custom layout';
+  }
+
+  get galleryActivePresetId(): string {
+    if (this.draft.presetId !== SLIP_CUSTOM_PRESET_ID) {
+      return this.draft.presetId;
+    }
+    return this.basedOnPresetId ?? '';
+  }
+
+  get canResetToTemplate(): boolean {
+    return (
+      this.draft.presetId !== SLIP_CUSTOM_PRESET_ID &&
+      isKnownPresetId(this.draft.presetId, this.presetOptions)
+    );
+  }
+
+  resetToTemplate(): void {
+    if (!this.canResetToTemplate) {
+      return;
+    }
+    this.applyPreset(this.draft.presetId);
   }
 
   isSectionShown(id: MedicineSlipSectionId): boolean {
@@ -248,7 +299,7 @@ export class MedicineSlipDesignerPage implements OnInit {
     if (shown) hidden.delete(id);
     else hidden.add(id);
     this.draft.hiddenSections = MEDICINE_SLIP_SECTION_IDS.filter((x) => hidden.has(x));
-    this.cdr.markForCheck();
+    this.onManualEdit();
   }
 
   isColumnShown(id: MedicineSlipColumnId): boolean {
@@ -261,34 +312,32 @@ export class MedicineSlipDesignerPage implements OnInit {
     else visible.delete(id);
     const next = MEDICINE_SLIP_COLUMN_IDS.filter((x) => visible.has(x));
     this.draft.visibleMedicineColumns = next.length > 0 ? next : ['medicineName'];
-    this.cdr.markForCheck();
+    this.onManualEdit();
   }
 
   onSectionDrop(event: CdkDragDrop<MedicineSlipSectionId[]>): void {
     moveItemInArray(this.draft.sectionOrder, event.previousIndex, event.currentIndex);
     this.draft = { ...this.draft, sectionOrder: [...this.draft.sectionOrder] };
-    this.cdr.markForCheck();
+    this.onManualEdit();
   }
 
   resetDefaults(): void {
     this.draft = defaultMedicineSlipTemplate();
+    this.basedOnPresetId = MEDICINE_SLIP_DEFAULT_PRESET_ID;
     this.cdr.markForCheck();
   }
 
   save(): void {
     if (!this.hospital) return;
     this.saving = true;
-    this.meApi
-      .updateMyHospital({
-        medicineSlipTemplateJson: serializeMedicineSlipTemplate(this.draft),
-      })
+    const templateJson = serializeMedicineSlipTemplate(this.draft);
+    this.configApi
+      .savePrescriptionSlip(templateJson)
       .pipe(finalize(() => (this.saving = false)))
       .subscribe({
-        next: (h) => {
-          this.hospital = h;
-          this.draft = cloneMedicineSlipTemplate(
-            parseMedicineSlipTemplateJson(h.medicineSlipTemplateJson),
-          );
+        next: () => {
+          this.hospital = { ...this.hospital!, medicineSlipTemplateJson: templateJson };
+          this.draft = cloneMedicineSlipTemplate(parseMedicineSlipTemplateJson(templateJson));
           this.messages.add({
             severity: 'success',
             summary: 'Saved',
@@ -296,11 +345,11 @@ export class MedicineSlipDesignerPage implements OnInit {
           });
           this.cdr.markForCheck();
         },
-        error: () => {
+        error: (err: { error?: { message?: string } }) => {
           this.messages.add({
             severity: 'error',
             summary: 'Save failed',
-            detail: 'Could not save medicine slip design.',
+            detail: err?.error?.message ?? 'Could not save medicine slip design.',
           });
           this.cdr.markForCheck();
         },

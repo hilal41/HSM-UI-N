@@ -1,0 +1,67 @@
+/* Shared laboratory CRUD header toolbar controls (match Clinical hms-crud-actions height). */
+
+.lab-toolbar {
+  align-items: center;
+}
+
+:host ::ng-deep .lt-toolbar-select.p-select {
+  width: 10.5rem;
+  min-width: 8rem;
+  min-height: 1.9rem;
+  flex: 0 1 auto;
+  border-radius: 0.65rem !important;
+  border: 1px solid var(--hms-color-border-input) !important;
+  background: var(--hms-color-surface) !important;
+}
+
+:host ::ng-deep .lt-toolbar-select--narrow.p-select {
+  width: 8.5rem;
+  min-width: 7rem;
+}
+
+:host ::ng-deep .lt-toolbar-select .p-select-label {
+  padding: 0.28rem 0.4rem 0.28rem 0.55rem !important;
+  font-size: 0.78rem !important;
+  font-weight: 500;
+  color: var(--hms-color-text) !important;
+  line-height: 1.25 !important;
+}
+
+:host ::ng-deep .lt-toolbar-select .p-select-dropdown {
+  width: 1.6rem;
+  color: var(--hms-color-text-muted);
+}
+
+:host ::ng-deep .lt-toolbar-select .p-select-dropdown-icon {
+  font-size: 0.7rem;
+}
+
+:host ::ng-deep .lt-toolbar-date.p-datepicker {
+  width: 7.25rem;
+  min-width: 7rem;
+  flex: 0 0 auto;
+}
+
+:host ::ng-deep .lt-toolbar-date .p-inputtext,
+:host ::ng-deep .lt-toolbar-date .p-datepicker-input {
+  min-height: 1.9rem !important;
+  border-radius: 0.65rem !important;
+  border: 1px solid var(--hms-color-border-input) !important;
+  padding-block: 0.28rem !important;
+  padding-inline: 0.55rem 1.75rem !important;
+  font-size: 0.78rem !important;
+  color: var(--hms-color-text) !important;
+  background: var(--hms-color-surface) !important;
+}
+
+:host ::ng-deep .lt-toolbar-date .p-datepicker-dropdown {
+  width: 1.6rem !important;
+  min-width: 1.6rem !important;
+}
+
+:host ::ng-deep .lt-toolbar-date .p-datepicker-dropdown .p-icon,
+:host ::ng-deep .lt-toolbar-date .p-datepicker-dropdown-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  font-size: 0.7rem;
+}

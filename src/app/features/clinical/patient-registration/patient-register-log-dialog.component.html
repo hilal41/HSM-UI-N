@@ -9,10 +9,13 @@
   [dismissableMask]="true"
 >
   <ng-template pTemplate="header">
-    <div class="pr-register-log-headrow">
-      <div class="pr-register-log-headrow__left">
-        <span class="pr-register-log-headrow__title">Recently registered patients</span>
-        <p class="pr-register-log-headrow__sub">
+    <span class="pr-register-log-headrow__title">Recently registered patients</span>
+  </ng-template>
+
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll pr-register-log-scroll">
+      <div class="pr-register-log-toolbar">
+        <p class="pr-register-log-toolbar__hint">
           @if (fromDate && toDate && isSingleDayRange()) {
             Showing visits saved on <strong>{{ fromDate | date: 'mediumDate' }}</strong>.
           } @else if (fromDate && toDate) {
@@ -22,64 +25,60 @@
             Showing today’s visits.
           }
         </p>
+        <div class="pr-register-log-toolbar__chips">
+          <button
+            pButton
+            type="button"
+            label="Today"
+            class="pr-pill-white pr-register-log-toolbar__chip"
+            [class.pr-register-log-toolbar__chip--active]="activeQuickFilter === 'today'"
+            [outlined]="activeQuickFilter !== 'today'"
+            [severity]="activeQuickFilter === 'today' ? undefined : 'secondary'"
+            (click)="applyQuickFilter('today')"
+          ></button>
+          <button
+            pButton
+            type="button"
+            label="Yesterday"
+            class="pr-pill-white pr-register-log-toolbar__chip"
+            [class.pr-register-log-toolbar__chip--active]="activeQuickFilter === 'yesterday'"
+            [outlined]="activeQuickFilter !== 'yesterday'"
+            [severity]="activeQuickFilter === 'yesterday' ? undefined : 'secondary'"
+            (click)="applyQuickFilter('yesterday')"
+          ></button>
+          <button
+            pButton
+            type="button"
+            label="Last 7 days"
+            class="pr-pill-white pr-register-log-toolbar__chip"
+            [class.pr-register-log-toolbar__chip--active]="activeQuickFilter === 'last7'"
+            [outlined]="activeQuickFilter !== 'last7'"
+            [severity]="activeQuickFilter === 'last7' ? undefined : 'secondary'"
+            (click)="applyQuickFilter('last7')"
+          ></button>
+          <button
+            pButton
+            type="button"
+            label="This month"
+            class="pr-pill-white pr-register-log-toolbar__chip"
+            [class.pr-register-log-toolbar__chip--active]="activeQuickFilter === 'month'"
+            [outlined]="activeQuickFilter !== 'month'"
+            [severity]="activeQuickFilter === 'month' ? undefined : 'secondary'"
+            (click)="applyQuickFilter('month')"
+          ></button>
+          <button
+            pButton
+            type="button"
+            [label]="showAdvancedFilters ? 'Hide date filter' : 'More'"
+            [icon]="showAdvancedFilters ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+            severity="secondary"
+            [outlined]="true"
+            class="pr-pill-white pr-register-log-toolbar__more"
+            (click)="toggleAdvancedFilters()"
+          ></button>
+        </div>
       </div>
-      <div class="pr-register-log-headrow__filters">
-        <button
-          pButton
-          type="button"
-          label="Today"
-          class="pr-pill-white pr-register-log-toolbar__chip"
-          [class.pr-register-log-toolbar__chip--active]="activeQuickFilter === 'today'"
-          [outlined]="activeQuickFilter !== 'today'"
-          [severity]="activeQuickFilter === 'today' ? undefined : 'secondary'"
-          (click)="applyQuickFilter('today')"
-        ></button>
-        <button
-          pButton
-          type="button"
-          label="Yesterday"
-          class="pr-pill-white pr-register-log-toolbar__chip"
-          [class.pr-register-log-toolbar__chip--active]="activeQuickFilter === 'yesterday'"
-          [outlined]="activeQuickFilter !== 'yesterday'"
-          [severity]="activeQuickFilter === 'yesterday' ? undefined : 'secondary'"
-          (click)="applyQuickFilter('yesterday')"
-        ></button>
-        <button
-          pButton
-          type="button"
-          label="Last 7 days"
-          class="pr-pill-white pr-register-log-toolbar__chip"
-          [class.pr-register-log-toolbar__chip--active]="activeQuickFilter === 'last7'"
-          [outlined]="activeQuickFilter !== 'last7'"
-          [severity]="activeQuickFilter === 'last7' ? undefined : 'secondary'"
-          (click)="applyQuickFilter('last7')"
-        ></button>
-        <button
-          pButton
-          type="button"
-          label="This month"
-          class="pr-pill-white pr-register-log-toolbar__chip"
-          [class.pr-register-log-toolbar__chip--active]="activeQuickFilter === 'month'"
-          [outlined]="activeQuickFilter !== 'month'"
-          [severity]="activeQuickFilter === 'month' ? undefined : 'secondary'"
-          (click)="applyQuickFilter('month')"
-        ></button>
-        <button
-          pButton
-          type="button"
-          [label]="showAdvancedFilters ? 'Hide date filter' : 'More'"
-          [icon]="showAdvancedFilters ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-          severity="secondary"
-          [outlined]="true"
-          class="pr-pill-white pr-register-log-toolbar__more"
-          (click)="toggleAdvancedFilters()"
-        ></button>
-      </div>
-    </div>
-  </ng-template>
 
-  <div class="hms-dialog-body">
-    <div class="hms-dialog-scroll pr-register-log-scroll">
       @if (showAdvancedFilters) {
         <div class="pr-register-log-filters">
           <div class="pr-register-log-filters__grid">

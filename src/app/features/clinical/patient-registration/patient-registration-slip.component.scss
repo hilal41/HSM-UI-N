@@ -4,8 +4,8 @@
 
 .slip-card {
   margin-top: 0.5rem;
-  background: #fff;
-  border: 1px solid color-mix(in srgb, var(--slip-border, #e2e8f0) 85%, transparent);
+  background: var(--hms-color-surface);
+  border: 1px solid color-mix(in srgb, var(--slip-border, var(--hms-color-border)) 85%, transparent);
   border-radius: 0.65rem;
   box-shadow:
     0 1px 2px rgba(15, 23, 42, 0.04),
@@ -13,7 +13,7 @@
   overflow: hidden;
   font-family: var(--slip-font-family, inherit);
   font-size: var(--slip-base, 12px);
-  color: var(--slip-body, #0f172a);
+  color: var(--slip-body, var(--hms-color-text));
   line-height: var(--slip-lh, 1.35);
 }
 
@@ -115,7 +115,7 @@
   margin: 0.15rem 0 0.35rem;
   font-size: 0.95em;
   line-height: var(--slip-lh, 1.35);
-  color: var(--slip-muted, #64748b);
+  color: var(--slip-muted, var(--hms-color-text-muted));
   font-style: italic;
 }
 
@@ -146,7 +146,7 @@
 
 .slip-header {
   padding-bottom: 0.35rem;
-  border-bottom: 1px solid var(--slip-border, #e2e8f0);
+  border-bottom: 1px solid var(--slip-border, var(--hms-color-border));
   margin-bottom: 0.35rem;
 }
 
@@ -166,13 +166,13 @@
   font-size: var(--slip-title, 1rem);
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--slip-title-c, #0f172a);
+  color: var(--slip-title-c, var(--hms-color-text));
 }
 
 .slip-header__meta {
   margin-top: 0.15rem;
   font-size: 0.85em;
-  color: var(--slip-muted, #64748b);
+  color: var(--slip-muted, var(--hms-color-text-muted));
 }
 
 .slip-block {
@@ -185,7 +185,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--slip-muted, #64748b);
+  color: var(--slip-muted, var(--hms-color-text-muted));
 }
 
 .slip-dl {
@@ -210,7 +210,7 @@
 .slip-dl dt {
   margin: 0;
   font-weight: 600;
-  color: color-mix(in srgb, var(--slip-muted, #64748b) 82%, var(--slip-body, #0f172a));
+  color: color-mix(in srgb, var(--slip-muted, var(--hms-color-text-muted)) 82%, var(--slip-body, var(--hms-color-text)));
   font-size: 0.85em;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -218,7 +218,7 @@
 
 .slip-dl dd {
   margin: 0;
-  color: var(--slip-body, #0f172a);
+  color: var(--slip-body, var(--hms-color-text));
   font-weight: 500;
   word-break: break-word;
 }
@@ -230,7 +230,7 @@
 .slip-muted {
   margin: 0;
   font-size: 0.92em;
-  color: var(--slip-muted, #64748b);
+  color: var(--slip-muted, var(--hms-color-text-muted));
 }
 
 .slip-table-scroll {
@@ -316,7 +316,7 @@
 
 .slip-table th,
 .slip-table td {
-  border: 1px solid var(--slip-border, #e2e8f0);
+  border: 1px solid var(--slip-border, var(--hms-color-border));
   padding: 0.25rem 0.35rem;
   text-align: left;
   vertical-align: top;
@@ -328,9 +328,9 @@
 }
 
 .slip-table th {
-  background: color-mix(in srgb, var(--slip-border, #e2e8f0) 35%, #fff);
+  background: color-mix(in srgb, var(--slip-border, var(--hms-color-border)) 35%, var(--hms-color-surface));
   font-weight: 600;
-  color: color-mix(in srgb, var(--slip-muted, #64748b) 70%, var(--slip-body, #0f172a));
+  color: color-mix(in srgb, var(--slip-muted, var(--hms-color-text-muted)) 70%, var(--slip-body, var(--hms-color-text)));
   font-size: 0.92em;
 }
 
@@ -342,19 +342,19 @@
 
 .slip-svc-title {
   font-weight: 600;
-  color: var(--slip-body, #0f172a);
+  color: var(--slip-body, var(--hms-color-text));
 }
 
 .slip-svc-code {
   font-size: 0.92em;
-  color: var(--slip-muted, #64748b);
+  color: var(--slip-muted, var(--hms-color-text-muted));
 }
 
 .slip-remarks {
   margin: 0 0 0.5rem;
   font-size: 1em;
   line-height: var(--slip-lh, 1.35);
-  color: color-mix(in srgb, var(--slip-body, #0f172a) 88%, var(--slip-muted, #64748b));
+  color: color-mix(in srgb, var(--slip-body, var(--hms-color-text)) 88%, var(--slip-muted, var(--hms-color-text-muted)));
 }
 
 .slip-totals {
@@ -371,15 +371,15 @@
   align-items: baseline;
   gap: 1rem;
   font-size: 1em;
-  color: color-mix(in srgb, var(--slip-muted, #64748b) 55%, var(--slip-body, #0f172a));
+  color: color-mix(in srgb, var(--slip-muted, var(--hms-color-text-muted)) 55%, var(--slip-body, var(--hms-color-text)));
 }
 
 .slip-totals__row--accent {
   margin-top: 0.15rem;
   padding-top: 0.35rem;
-  border-top: 1px solid var(--slip-border, #e2e8f0);
+  border-top: 1px solid var(--slip-border, var(--hms-color-border));
   font-weight: 600;
-  color: var(--slip-body, #0f172a);
+  color: var(--slip-body, var(--hms-color-text));
 }
 
 .slip-footer {
@@ -397,7 +397,7 @@
   padding: 0.75rem;
   text-align: center;
   font-size: 0.78rem;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
   border: 1px dashed rgba(148, 163, 184, 0.55);
   border-radius: 0.65rem;
   background: #fafafa;

@@ -9,6 +9,29 @@ import { DashboardDataService } from '../dashboard-data.service';
   selector: 'app-dashboard-recent-visits',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [DatePipe, RouterLink, TagModule, SkeletonModule],
+  styles: [
+    `
+      .dash-empty-state__action {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-top: 0.35rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.68rem;
+        font-weight: 600;
+        text-decoration: none;
+        color: #ffffff;
+        background: var(--hms-color-primary);
+        border: 1px solid var(--hms-color-primary-hover);
+        transition: background 0.15s ease;
+      }
+
+      .dash-empty-state__action:hover {
+        background: var(--hms-color-primary-hover);
+      }
+    `,
+  ],
   template: `
     <section class="dash-panel dash-section dash-section--recent" aria-label="Recent visits">
       <div class="dash-section-head">
@@ -51,9 +74,13 @@ import { DashboardDataService } from '../dashboard-data.service';
         </div>
       } @else if (!data.recentVisits().length) {
         <div class="dash-empty-state">
-          <span class="dash-empty-state__icon" aria-hidden="true"><i class="pi pi-inbox"></i></span>
+          <span class="dash-empty-state__icon" aria-hidden="true"><i class="pi pi-calendar-plus"></i></span>
           <p class="dash-empty-state__title">No recent visits</p>
-          <p class="dash-empty-state__desc">New registrations will appear here automatically.</p>
+          <p class="dash-empty-state__desc">Register a patient visit to see activity here.</p>
+          <a routerLink="/app/clinical/patient-registration" class="dash-empty-state__action">
+            Register visit
+            <i class="pi pi-arrow-right" aria-hidden="true"></i>
+          </a>
         </div>
       } @else {
         <div class="dash-recent-list">

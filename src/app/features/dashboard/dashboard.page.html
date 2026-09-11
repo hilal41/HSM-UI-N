@@ -1,74 +1,34 @@
 <div class="dash-root">
-    <header class="dash-welcome" aria-label="Welcome summary">
-      @if (data.welcomeState() === 'loading' || data.welcomeState() === 'idle') {
-        <div class="dash-welcome__skeleton">
-          <p-skeleton width="12rem" height="0.95rem" borderRadius="6px" />
-          <p-skeleton width="16rem" height="0.7rem" borderRadius="6px" />
+  <app-dashboard-welcome [today]="today" />
+
+  @if (data.permissionsLoaded() && data.canViewVisits()) {
+    <app-dashboard-financial-report />
+
+    <div class="dash-cards-stack">
+      <app-dashboard-stat-cards />
+
+      @defer (on viewport; prefetch on idle) {
+        <app-dashboard-service-sales />
+      } @placeholder (minimum 200ms) {
+        <div class="dash-panel dash-panel--placeholder" aria-hidden="true">
+          <p-skeleton width="8rem" height="0.8rem" borderRadius="6px" />
+          <p-skeleton width="100%" height="14rem" borderRadius="14px" />
         </div>
-      } @else if (data.welcome(); as welcome) {
-        <div class="dash-welcome__main">
-          <h2 class="dash-welcome__title">Welcome back, {{ welcome.displayName }}</h2>
-          <p class="dash-welcome__meta">
-            @if (welcome.roleName) {
-              <span>{{ welcome.roleName }}</span>
-            }
-            @if (welcome.roleName && welcome.hospitalName) {
-              <span class="dash-welcome__sep" aria-hidden="true">·</span>
-            }
-            @if (welcome.hospitalName) {
-              <span>{{ welcome.hospitalName }}</span>
-            }
-          </p>
+      } @loading (minimum 250ms) {
+        <div class="dash-panel dash-panel--placeholder" aria-hidden="true">
+          <p-skeleton width="8rem" height="0.8rem" borderRadius="6px" />
+          <p-skeleton width="100%" height="14rem" borderRadius="14px" />
         </div>
-        <time class="dash-welcome__date" [dateTime]="today.toISOString()">
-          {{ today | date: 'EEEE, MMM d' }}
-        </time>
       }
-    </header>
+    </div>
+  }
 
-    <app-dashboard-stat-cards />
-
-    @defer (on viewport; prefetch on idle) {
-      <app-dashboard-financial-report />
-    } @placeholder (minimum 200ms) {
-      <div class="dash-charts-section" aria-hidden="true">
-        <div class="dash-stat-grid dash-stat-grid--financial">
-          @for (i of financialPlaceholders; track i) {
-            <p-skeleton width="100%" height="4.5rem" borderRadius="12px" />
-          }
-        </div>
-        <div class="dash-panel dash-panel--placeholder">
-          <p-skeleton width="35%" height="0.75rem" borderRadius="6px" />
-          <p-skeleton width="100%" height="12rem" borderRadius="12px" />
-        </div>
-      </div>
-    } @loading (minimum 300ms) {
-      <div class="dash-charts-section" aria-hidden="true">
-        <div class="dash-stat-grid dash-stat-grid--financial">
-          @for (i of financialPlaceholders; track i) {
-            <p-skeleton width="100%" height="4.5rem" borderRadius="12px" />
-          }
-        </div>
-        <div class="dash-panel dash-panel--placeholder">
-          <p-skeleton width="35%" height="0.75rem" borderRadius="6px" />
-          <p-skeleton width="100%" height="12rem" borderRadius="12px" />
-        </div>
-      </div>
-    }
-
+  @if (data.permissionsLoaded() && data.canViewDepartments()) {
     @defer (on viewport; prefetch on idle) {
       <app-dashboard-charts />
     } @placeholder (minimum 200ms) {
       <div class="dash-charts-section" aria-hidden="true">
-        <div class="dash-panel dash-panel--placeholder">
-          <p-skeleton width="35%" height="0.75rem" borderRadius="6px" />
-          <p-skeleton width="100%" height="14rem" borderRadius="12px" />
-        </div>
         <div class="dash-charts-grid__row">
-          <div class="dash-panel dash-panel--placeholder">
-            <p-skeleton width="45%" height="0.75rem" borderRadius="6px" />
-            <p-skeleton width="100%" height="11rem" borderRadius="12px" />
-          </div>
           <div class="dash-panel dash-panel--placeholder">
             <p-skeleton width="45%" height="0.75rem" borderRadius="6px" />
             <p-skeleton width="100%" height="11rem" borderRadius="12px" />
@@ -77,15 +37,7 @@
       </div>
     } @loading (minimum 300ms) {
       <div class="dash-charts-section" aria-hidden="true">
-        <div class="dash-panel dash-panel--placeholder">
-          <p-skeleton width="35%" height="0.75rem" borderRadius="6px" />
-          <p-skeleton width="100%" height="14rem" borderRadius="12px" />
-        </div>
         <div class="dash-charts-grid__row">
-          <div class="dash-panel dash-panel--placeholder">
-            <p-skeleton width="45%" height="0.75rem" borderRadius="6px" />
-            <p-skeleton width="100%" height="11rem" borderRadius="12px" />
-          </div>
           <div class="dash-panel dash-panel--placeholder">
             <p-skeleton width="45%" height="0.75rem" borderRadius="6px" />
             <p-skeleton width="100%" height="11rem" borderRadius="12px" />
@@ -93,42 +45,6 @@
         </div>
       </div>
     }
+  }
 
-    <div class="dash-lower-grid">
-      @defer (on viewport; prefetch on idle) {
-        <app-dashboard-recent-visits />
-      } @placeholder (minimum 200ms) {
-        <div class="dash-panel dash-panel--placeholder" aria-hidden="true">
-          <p-skeleton width="7rem" height="0.8rem" borderRadius="6px" />
-          <p-skeleton width="100%" height="14rem" borderRadius="14px" />
-        </div>
-      } @loading (minimum 250ms) {
-        <div class="dash-panel dash-panel--placeholder" aria-hidden="true">
-          <p-skeleton width="7rem" height="0.8rem" borderRadius="6px" />
-          <p-skeleton width="100%" height="14rem" borderRadius="14px" />
-        </div>
-      }
-
-      @defer (on viewport; prefetch on idle) {
-        <app-dashboard-quick-links />
-      } @placeholder (minimum 200ms) {
-        <div class="dash-panel dash-panel--placeholder" aria-hidden="true">
-          <p-skeleton width="7rem" height="0.8rem" borderRadius="6px" />
-          <div class="dash-defer-placeholder__links">
-            @for (i of linkPlaceholders; track i) {
-              <p-skeleton width="100%" height="3.2rem" borderRadius="12px" />
-            }
-          </div>
-        </div>
-      } @loading (minimum 250ms) {
-        <div class="dash-panel dash-panel--placeholder" aria-hidden="true">
-          <p-skeleton width="7rem" height="0.8rem" borderRadius="6px" />
-          <div class="dash-defer-placeholder__links">
-            @for (i of linkPlaceholders; track i) {
-              <p-skeleton width="100%" height="3.2rem" borderRadius="12px" />
-            }
-          </div>
-        </div>
-      }
-    </div>
-  </div>
+</div>

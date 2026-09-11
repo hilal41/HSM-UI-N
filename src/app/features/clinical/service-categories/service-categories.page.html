@@ -1,6 +1,6 @@
 <app-surface-panel
   class="hms-crud-surface"
-  title="Service categories"
+  title="Service Categories"
   subtitle="Group services for catalog and pricing"
 >
   <div surfacePanelActions class="hms-crud-actions">
@@ -24,8 +24,9 @@
     [showLoader]="false"
     [value]="rows"
     [lazy]="true"
-    [paginator]="true"
-    [rows]="pageSize"
+    [paginator]="showPaginator"
+    [alwaysShowPaginator]="false"
+    [rows]="tablePageSize"
     [totalRecords]="totalCount"
     [loading]="loading"
     [rowsPerPageOptions]="[10, 20, 50]"
@@ -71,11 +72,15 @@
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="4" class="hms-table-empty-cell text-center text-sm text-slate-500">
-          <div class="flex flex-col items-center justify-center gap-2 py-4">
-            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
-            <span>No categories found.</span>
-          </div>
+        <td colspan="4" class="hms-table-empty-cell hms-table-empty-cell--crud">
+          <app-hms-crud-empty-state
+            icon="pi pi-tags"
+            title="No categories yet"
+            description="Group services into categories for easier browsing and reporting."
+            [actionable]="true"
+            actionLabel="Click to add a category"
+            (action)="openCreate()"
+          />
         </td>
       </tr>
     </ng-template>

@@ -4,15 +4,53 @@
   subtitle="Register and manage patient records"
 >
   <div surfacePanelActions class="hms-crud-actions">
-    <button
-      pButton
-      type="button"
-      label="New patient"
-      icon="pi pi-plus"
-      severity="secondary"
-      class="hms-toolbar-solid"
-      (click)="openCreate()"
-    ></button>
+    <div class="flex shrink-0 flex-wrap items-center justify-end gap-2">
+      <input
+        #patientImport
+        type="file"
+        accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        class="sr-only"
+        tabindex="-1"
+        (change)="onImportFileSelected($event)"
+      />
+      @if (menuPerms.can('clinical.patients', 'view')) {
+        <button
+          pButton
+          type="button"
+          label="Export Excel"
+          icon="pi pi-download"
+          severity="secondary"
+          [outlined]="true"
+          class="hms-toolbar-chip"
+          [loading]="exportingExcel"
+          [disabled]="exportingExcel"
+          (click)="exportExcel()"
+        ></button>
+      }
+      @if (menuPerms.can('clinical.patients', 'create')) {
+        <button
+          pButton
+          type="button"
+          label="Import Excel"
+          icon="pi pi-upload"
+          severity="secondary"
+          [outlined]="true"
+          class="hms-toolbar-chip"
+          [loading]="importingExcel"
+          [disabled]="importingExcel"
+          (click)="openImportPicker()"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="New patient"
+          icon="pi pi-plus"
+          severity="secondary"
+          class="hms-toolbar-solid"
+          (click)="openCreate()"
+        ></button>
+      }
+    </div>
   </div>
 
   <div class="hms-crud-body-spacer" aria-hidden="true"></div>
@@ -24,8 +62,9 @@
     [showLoader]="false"
     [value]="rows"
     [lazy]="true"
-    [paginator]="true"
-    [rows]="pageSize"
+    [paginator]="showPaginator"
+    [alwaysShowPaginator]="false"
+    [rows]="tablePageSize"
     [totalRecords]="totalCount"
     [loading]="loading"
     [rowsPerPageOptions]="[10, 20, 50]"
@@ -56,35 +95,55 @@
           />
         </td>
         <td class="text-end">
-          <button
-            pButton
-            type="button"
-            icon="pi pi-pencil"
-            [text]="true"
-            severity="secondary"
-            class="mr-1"
-            (click)="openEdit(row)"
-            aria-label="Edit"
-          ></button>
-          <button
-            pButton
-            type="button"
-            icon="pi pi-trash"
-            [text]="true"
-            severity="danger"
-            (click)="confirmDelete(row)"
-            aria-label="Delete"
-          ></button>
+          @if (showLabHistory()) {
+            <button
+              pButton
+              type="button"
+              icon="pi pi-flask"
+              [text]="true"
+              severity="help"
+              class="mr-1"
+              (click)="openLabHistory(row)"
+              aria-label="Lab history"
+            ></button>
+          }
+          @if (menuPerms.can('clinical.patients', 'edit')) {
+            <button
+              pButton
+              type="button"
+              icon="pi pi-pencil"
+              [text]="true"
+              severity="secondary"
+              class="mr-1"
+              (click)="openEdit(row)"
+              aria-label="Edit"
+            ></button>
+          }
+          @if (menuPerms.can('clinical.patients', 'delete')) {
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (click)="confirmDelete(row)"
+              aria-label="Delete"
+            ></button>
+          }
         </td>
       </tr>
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="6" class="hms-table-empty-cell text-center text-sm text-slate-500">
-          <div class="flex flex-col items-center justify-center gap-2 py-4">
-            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
-            <span>No patients found.</span>
-          </div>
+        <td colspan="6" class="hms-table-empty-cell hms-table-empty-cell--crud">
+          <app-hms-crud-empty-state
+            icon="pi pi-users"
+            title="No patients yet"
+            description="Register patients to manage visits, billing, and clinical records."
+            [actionable]="canCreatePatient"
+            actionLabel="Click to add a patient"
+            (action)="openCreate()"
+          />
         </td>
       </tr>
     </ng-template>
@@ -115,10 +174,12 @@
         <label class="hms-field-label hms-field-label--required" for="pt-ln">Last name</label>
         <input pInputText id="pt-ln" class="w-full" [(ngModel)]="formLastName" name="ptLn" />
       </div>
-      <div class="flex flex-col gap-1">
-        <label class="hms-field-label hms-field-label--required" for="pt-num">Patient number</label>
-        <input pInputText id="pt-num" class="w-full" [(ngModel)]="formPatientNumber" name="ptNum" />
-      </div>
+      @if (editingId != null) {
+        <div class="flex flex-col gap-1 sm:col-span-2">
+          <span class="hms-field-label">Patient number (MRN)</span>
+          <p class="font-mono text-sm m-0">{{ formPatientNumber || '—' }}</p>
+        </div>
+      }
       <div class="flex flex-col gap-1">
         <label class="hms-field-label hms-field-label--required" for="pt-dob">Date of birth</label>
         <p-datepicker
@@ -241,8 +302,8 @@
         />
       </div>
       <div class="flex flex-col gap-1">
-        <label class="hms-field-label" for="pt-ph">Phone</label>
-        <input pInputText id="pt-ph" class="w-full" [(ngModel)]="formPhone" name="ptPh" />
+        <label class="hms-field-label hms-field-label--required" for="pt-ph">Phone</label>
+        <input pInputText id="pt-ph" class="w-full" [(ngModel)]="formPhone" name="ptPh" aria-required="true" />
       </div>
       <div class="flex flex-col gap-1">
         <label class="hms-field-label" for="pt-em">Email</label>
@@ -314,3 +375,5 @@
     </div>
   </div>
 </p-dialog>
+
+<app-patient-lab-history-dialog />

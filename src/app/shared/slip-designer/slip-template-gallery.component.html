@@ -1,0 +1,47 @@
+<div class="stg-grid">
+  @for (p of presetOptions; track p.id) {
+    <article class="stg-card" [class.stg-card--active]="isActive(p.id)">
+      @if (p.recommended) {
+        <span class="stg-badge">Recommended</span>
+      }
+      <div class="stg-preview" aria-hidden="true">
+        <div class="stg-preview__scale">
+          @if (kind === 'registration') {
+            <app-patient-registration-slip
+              [patient]="regPatient"
+              [hospital]="previewHospital"
+              [template]="registrationPreview(p.id)"
+              [lines]="regLines"
+              [visitRemarks]="regRemarks"
+              [totalAmount]="regTotal"
+              [discountAmount]="regDiscount"
+              [ageYears]="regAge"
+            />
+          } @else {
+            <app-medicine-slip
+              [patient]="medPatient"
+              [hospital]="previewHospital"
+              [visit]="medVisit"
+              [checkup]="medCheckup"
+              [checkupFormDoc]="medCheckupFormDoc"
+              [template]="medicinePreview(p.id)"
+            />
+          }
+        </div>
+      </div>
+      <div class="stg-card__body">
+        <h3 class="stg-card__title">{{ p.name }}</h3>
+        <p class="stg-card__blurb">{{ p.blurb }}</p>
+        <button
+          pButton
+          type="button"
+          class="stg-card__action"
+          [label]="isActive(p.id) ? 'Selected' : 'Use this template'"
+          [outlined]="!isActive(p.id)"
+          [severity]="isActive(p.id) ? 'success' : 'secondary'"
+          (click)="presetApply.emit(p.id)"
+        ></button>
+      </div>
+    </article>
+  }
+</div>

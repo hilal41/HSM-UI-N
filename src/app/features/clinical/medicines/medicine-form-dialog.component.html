@@ -183,6 +183,101 @@
             placeholder="Enter description (optional)"
           ></textarea>
         </div>
+
+        <div class="med-form-field med-form-field--full">
+          <p class="m-0 text-[0.58rem] font-semibold uppercase tracking-wider text-slate-400">
+            Catalog &amp; compliance
+          </p>
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label" for="mf-barcode">Barcode</label>
+          <input pInputText id="mf-barcode" class="w-full" [(ngModel)]="barcode" name="mfBarcode" autocomplete="off" />
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label" for="mf-qr">QR code</label>
+          <input pInputText id="mf-qr" class="w-full" [(ngModel)]="qrCode" name="mfQr" autocomplete="off" />
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label" for="mf-hsn">HSN code</label>
+          <input pInputText id="mf-hsn" class="w-full" [(ngModel)]="hsnCode" name="mfHsn" autocomplete="off" />
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label" for="mf-tax">Tax %</label>
+          <p-inputNumber
+            inputId="mf-tax"
+            name="mfTax"
+            [(ngModel)]="taxPercent"
+            mode="decimal"
+            [minFractionDigits]="0"
+            [maxFractionDigits]="2"
+            [min]="0"
+            styleClass="w-full"
+            placeholder="0"
+          />
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label" for="mf-brand">Brand</label>
+          <input pInputText id="mf-brand" class="w-full" [(ngModel)]="brand" name="mfBrand" autocomplete="off" />
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label" for="mf-gstr">Generic strength</label>
+          <input
+            pInputText
+            id="mf-gstr"
+            class="w-full"
+            [(ngModel)]="genericStrength"
+            name="mfGstr"
+            autocomplete="off"
+          />
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label" for="mf-storage">Storage temperature</label>
+          <input
+            pInputText
+            id="mf-storage"
+            class="w-full"
+            [(ngModel)]="storageTemperature"
+            name="mfStorage"
+            placeholder="e.g. 2-8°C"
+            autocomplete="off"
+          />
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label" for="mf-ctrl">Controlled drug class</label>
+          <input
+            pInputText
+            id="mf-ctrl"
+            class="w-full"
+            [(ngModel)]="controlledDrugClass"
+            name="mfCtrl"
+            autocomplete="off"
+          />
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label" for="mf-pu">Purchase unit</label>
+          <input
+            pInputText
+            id="mf-pu"
+            class="w-full"
+            [(ngModel)]="purchaseUnit"
+            name="mfPu"
+            placeholder="Box, Bottle…"
+            autocomplete="off"
+          />
+        </div>
+        <div class="med-form-field">
+          <label class="hms-field-label" for="mf-su">Sale unit</label>
+          <input
+            pInputText
+            id="mf-su"
+            class="w-full"
+            [(ngModel)]="saleUnit"
+            name="mfSu"
+            placeholder="Tablet, ml…"
+            autocomplete="off"
+          />
+        </div>
+
         <div class="med-form-active">
           <p-toggleswitch inputId="mf-active" [(ngModel)]="isActive" name="mfActive" />
           <label class="m-0 text-xs leading-none text-slate-700" for="mf-active">Active</label>

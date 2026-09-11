@@ -1,0 +1,290 @@
+<app-surface-panel
+  class="hms-crud-surface rcv-surface"
+  title="Stock Purchases"
+  subtitle="Enter supplier deliveries here to add medicines into stock. Recent receipts appear on the right."
+>
+  <div surfacePanelActions class="hms-crud-actions rcv-header-actions">
+    <div class="rcv-header-fields">
+      <div class="rcv-field">
+        <label class="hms-field-label hms-field-label--required" for="rcv-supplier">Supplier</label>
+        <p-select
+          inputId="rcv-supplier"
+          [options]="suppliers"
+          optionLabel="name"
+          optionValue="id"
+          [(ngModel)]="supplierId"
+          placeholder="Who delivered?"
+          [filter]="true"
+          filterPlaceholder="Search supplier"
+          appendTo="body"
+          styleClass="w-full"
+        />
+      </div>
+      <div class="rcv-field">
+        <label class="hms-field-label hms-field-label--required" for="rcv-date">Date</label>
+        <input pInputText id="rcv-date" type="date" class="w-full" [(ngModel)]="receiptDate" />
+      </div>
+      <div class="rcv-field">
+        <label class="hms-field-label" for="rcv-invoice">Invoice no</label>
+        <input pInputText id="rcv-invoice" class="w-full" [(ngModel)]="invoiceNo" placeholder="Optional" />
+      </div>
+    </div>
+    @if (lines.length > 0) {
+      <button pButton type="button" label="Clear" class="p-button-text p-button-sm" (click)="clearDraft()"></button>
+    }
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+
+  <div class="hms-crud-panel-body rcv-shell">
+    <!-- LEFT: always-on receive workspace (like Dispense till) -->
+    <section class="rcv-work" aria-label="Receive delivery">
+      <div class="rcv-add">
+        <div class="rcv-add__row">
+          <div class="rcv-field rcv-field--grow">
+            <label class="hms-field-label hms-field-label--required" for="rcv-med">Medicine</label>
+            <p-select
+              inputId="rcv-med"
+              [options]="medicines"
+              optionLabel="medicineName"
+              optionValue="id"
+              [(ngModel)]="lineMedicineId"
+              (ngModelChange)="onMedicinePicked()"
+              [placeholder]="medPlaceholder()"
+              [filter]="true"
+              [filterPlaceholder]="medPlaceholder() || 'Search medicine…'"
+              appendTo="body"
+              styleClass="w-full rcv-med-select"
+            />
+          </div>
+          <div class="rcv-field">
+            <label class="hms-field-label hms-field-label--required" for="rcv-batch">Batch</label>
+            <input pInputText id="rcv-batch" class="w-full" [(ngModel)]="lineBatch" placeholder="Batch no" />
+          </div>
+          <div class="rcv-field">
+            <label class="hms-field-label hms-field-label--required" for="rcv-exp">Expiry</label>
+            <input pInputText id="rcv-exp" type="date" class="w-full" [(ngModel)]="lineExpiry" />
+          </div>
+          <div class="rcv-field rcv-field--sm">
+            <label class="hms-field-label hms-field-label--required" for="rcv-qty">Qty</label>
+            <p-inputNumber inputId="rcv-qty" [(ngModel)]="lineQty" [min]="0.01" styleClass="w-full" inputStyleClass="w-full" />
+          </div>
+          <div class="rcv-field rcv-field--sm">
+            <label class="hms-field-label" for="rcv-cost">Cost</label>
+            <p-inputNumber
+              inputId="rcv-cost"
+              [(ngModel)]="lineCost"
+              mode="decimal"
+              [minFractionDigits]="2"
+              styleClass="w-full"
+              inputStyleClass="w-full"
+            />
+          </div>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-plus"
+            label="Add"
+            class="hms-toolbar-solid rcv-add__btn"
+            (click)="addLine()"
+          ></button>
+        </div>
+      </div>
+
+      <div class="rcv-lines">
+        @if (lines.length === 0) {
+          <div class="rcv-empty">
+            <div class="rcv-empty__icon" aria-hidden="true">
+              <i class="pi pi-box"></i>
+            </div>
+            <p>No medicines yet</p>
+          </div>
+        } @else {
+          @for (line of lines; track $index) {
+            <div class="rcv-line">
+              <div class="rcv-line__name" [title]="line.medicineName">
+                <strong>{{ line.medicineName }}</strong>
+                <span>{{ line.batchNumber }} · exp {{ line.expiryDate }}</span>
+              </div>
+              <div class="rcv-stepper">
+                <button type="button" (click)="bumpQty($index, -1)" aria-label="Decrease">−</button>
+                <p-inputNumber
+                  [(ngModel)]="line.qty"
+                  [min]="0.01"
+                  [minFractionDigits]="0"
+                  [maxFractionDigits]="2"
+                  inputStyleClass="rcv-stepper__input"
+                />
+                <button type="button" (click)="bumpQty($index, 1)" aria-label="Increase">+</button>
+              </div>
+              <div class="rcv-line__amt">{{ line.qty * line.unitCost | number: '1.2-2' }}</div>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-times"
+                class="p-button-text p-button-sm p-button-danger"
+                (click)="removeLine($index)"
+                aria-label="Remove"
+              ></button>
+            </div>
+          }
+        }
+      </div>
+
+      <footer class="rcv-foot">
+        <div class="rcv-foot__summary" aria-label="Delivery summary">
+          <div class="rcv-foot__stat">
+            <span class="rcv-foot__label">Lines</span>
+            <strong class="rcv-foot__value">{{ lines.length }}</strong>
+          </div>
+          <span class="rcv-foot__sep" aria-hidden="true"></span>
+          <div class="rcv-foot__stat">
+            <span class="rcv-foot__label">Qty</span>
+            <strong class="rcv-foot__value">{{ linesQty | number: '1.0-2' }}</strong>
+          </div>
+          <span class="rcv-foot__sep" aria-hidden="true"></span>
+          <div class="rcv-foot__stat rcv-foot__stat--total">
+            <span class="rcv-foot__label">Total Cost</span>
+            <strong class="rcv-foot__amount">{{ linesTotal | number: '1.2-2' }}</strong>
+          </div>
+        </div>
+        <button
+          pButton
+          type="button"
+          label="Save to Stock"
+          icon="pi pi-check"
+          class="hms-toolbar-solid rcv-save"
+          [loading]="saving"
+          [disabled]="!canSave"
+          (click)="saveReceipt()"
+        ></button>
+      </footer>
+    </section>
+
+    <!-- RIGHT: history / detail split -->
+    <aside class="rcv-side" aria-label="Purchase history">
+      <div class="rcv-side__tabs">
+        <button
+          type="button"
+          class="rcv-side__tab"
+          [class.is-active]="historyTab === 'receipts'"
+          (click)="setHistoryTab('receipts')"
+        >
+          Receipts
+        </button>
+        <button
+          type="button"
+          class="rcv-side__tab"
+          [class.is-active]="historyTab === 'orders'"
+          (click)="setHistoryTab('orders')"
+        >
+          Orders
+        </button>
+      </div>
+
+      <div class="rcv-side__search">
+        <i class="pi pi-search" aria-hidden="true"></i>
+        <input
+          pInputText
+          class="rcv-side__search-input"
+          [(ngModel)]="historySearch"
+          (keyup.enter)="loadHistory()"
+          placeholder="Search…"
+        />
+        <button pButton type="button" icon="pi pi-search" class="p-button-text p-button-sm" (click)="loadHistory()"></button>
+      </div>
+
+      @if (selectedReceipt && historyTab === 'receipts') {
+        <div class="rcv-detail">
+          <div class="rcv-detail__meta">
+            <div class="rcv-detail__cell">
+              <span>Receipt</span>
+              <strong class="font-mono">{{ selectedReceipt.receiptNo }}</strong>
+            </div>
+            <div class="rcv-detail__cell">
+              <span>Date</span>
+              <strong>{{ selectedReceipt.receiptDate }}</strong>
+            </div>
+            <div class="rcv-detail__cell">
+              <span>Supplier</span>
+              <strong>{{ selectedReceipt.supplierName }}</strong>
+            </div>
+            <div class="rcv-detail__cell">
+              <span>Invoice</span>
+              <strong>{{ selectedReceipt.invoiceNo || '—' }}</strong>
+            </div>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-times"
+              class="p-button-text p-button-sm rcv-detail__close"
+              (click)="clearSelection()"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="rcv-detail__lines">
+            @for (l of selectedReceipt.lines; track l.id) {
+              <div class="rcv-detail__line">
+                <div>
+                  <strong>{{ l.medicineName }}</strong>
+                  <span>{{ l.batchNumber }} · {{ l.expiryDate }}</span>
+                </div>
+                <div class="rcv-detail__line-amt">
+                  {{ l.qty }} × {{ l.unitCost | number: '1.2-2' }}
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="rcv-history">
+          @if (historyLoading) {
+            <div class="rcv-side-empty">Loading…</div>
+          } @else if (historyTab === 'receipts') {
+            @for (row of receipts; track row.id) {
+              <button type="button" class="rcv-hist-card" (click)="selectReceipt(row)">
+                <strong class="rcv-hist-card__no font-mono">{{ row.receiptNo }}</strong>
+                <span class="rcv-hist-card__date">{{ row.receiptDate }}</span>
+                <span class="rcv-hist-card__supplier">{{ row.supplierName }}</span>
+                <span class="rcv-hist-card__inv">{{ row.invoiceNo || '—' }}</span>
+                <span class="rcv-hist-card__lines">{{ row.lines.length }} line(s)</span>
+              </button>
+            } @empty {
+              <div class="rcv-side-empty">
+                <p>No receipts yet</p>
+                <span>Save your first delivery on the left.</span>
+              </div>
+            }
+          } @else {
+            @for (row of orders; track row.id) {
+              <div class="rcv-hist-card rcv-hist-card--static">
+                <strong class="rcv-hist-card__no font-mono">{{ row.orderNo }}</strong>
+                <span class="rcv-hist-card__date">{{ row.orderDate }}</span>
+                <span class="rcv-hist-card__supplier">{{ row.supplierName }}</span>
+                <span class="rcv-hist-card__inv">
+                  <p-tag [value]="row.status" [severity]="orderSeverity(row.status)" />
+                </span>
+                @if (row.status === 'Draft') {
+                  <button
+                    pButton
+                    type="button"
+                    label="Submit"
+                    class="p-button-text p-button-sm"
+                    (click)="submitOrder(row.id, $event)"
+                  ></button>
+                } @else {
+                  <span class="rcv-hist-card__lines">{{ row.lines?.length || 0 }} line(s)</span>
+                }
+              </div>
+            } @empty {
+              <div class="rcv-side-empty">
+                <p>No purchase orders</p>
+                <span>Orders will show here when created.</span>
+              </div>
+            }
+          }
+        </div>
+      }
+    </aside>
+  </div>
+</app-surface-panel>

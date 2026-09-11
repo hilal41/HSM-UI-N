@@ -123,7 +123,7 @@
         </div>
       } @else if (data.state() === 'ready') {
         <section class="reports-section reports-section--financial" aria-label="Financial summary">
-          <h2 class="reports-section__title">Financial summary</h2>
+          <h2 class="reports-section__title">Clinical revenue (OPD / registration)</h2>
           <div class="reports-stat-grid">
             @for (card of data.financialCards(); track card.key) {
               <app-dashboard-stat-card [card]="card" />

@@ -1,0 +1,309 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Lab Worklist"
+  subtitle="Process orders, enter results, and review the audit trail"
+>
+  <div surfacePanelActions class="hms-crud-actions lab-toolbar">
+    <p-datepicker
+      [(ngModel)]="fromDate"
+      name="labWlFrom"
+      dateFormat="yy-mm-dd"
+      [showIcon]="true"
+      iconDisplay="input"
+      appendTo="body"
+      styleClass="lt-toolbar-date"
+      ariaLabel="From date"
+      (ngModelChange)="load()"
+    />
+    <p-datepicker
+      [(ngModel)]="toDate"
+      name="labWlTo"
+      dateFormat="yy-mm-dd"
+      [showIcon]="true"
+      iconDisplay="input"
+      appendTo="body"
+      styleClass="lt-toolbar-date"
+      ariaLabel="To date"
+      (ngModelChange)="load()"
+    />
+    <p-select
+      [options]="statusOptions"
+      [(ngModel)]="filterStatus"
+      name="labWlStatus"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Status"
+      appendTo="body"
+      styleClass="lt-toolbar-select lt-toolbar-select--narrow"
+      ariaLabel="Filter by status"
+    />
+    <p-select
+      [options]="priorityOptions"
+      [(ngModel)]="filterPriority"
+      name="labWlPriority"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Priority"
+      appendTo="body"
+      styleClass="lt-toolbar-select lt-toolbar-select--narrow"
+      ariaLabel="Filter by priority"
+    />
+    <p-select
+      [options]="tatOptions"
+      [(ngModel)]="filterTat"
+      name="labWlTat"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="TAT"
+      appendTo="body"
+      styleClass="lt-toolbar-select lt-toolbar-select--narrow"
+      ariaLabel="Filter by turnaround"
+      (ngModelChange)="load()"
+    />
+    <input
+      pInputText
+      type="search"
+      class="hms-toolbar-search hms-toolbar-search--grow min-w-0"
+      [(ngModel)]="searchInput"
+      name="labWlSearch"
+      placeholder="Patient or order no…"
+      aria-label="Search lab worklist"
+      (keyup.enter)="load()"
+    />
+    <button
+      pButton
+      type="button"
+      icon="pi pi-search"
+      severity="secondary"
+      [outlined]="true"
+      class="hms-toolbar-chip"
+      (click)="load()"
+      aria-label="Search"
+    ></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    <p-table
+      [showLoader]="false"
+      [value]="rows"
+      [loading]="loading"
+      [paginator]="showPaginator"
+      [alwaysShowPaginator]="false"
+      [rows]="25"
+      [totalRecords]="totalCount"
+      [tableStyle]="{ 'min-width': '100%' }"
+      styleClass="p-datatable-sm hms-crud-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Order</th>
+          <th>Date</th>
+          <th>Patient</th>
+          <th>Tests</th>
+          <th>Doctor</th>
+          <th>Priority</th>
+          <th>TAT</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td class="font-mono text-sm">{{ row.orderNumber }}</td>
+          <td class="text-sm">{{ row.createdAt | date: 'short' }}</td>
+          <td>
+            {{ row.patientName }}
+            <div class="text-xs text-slate-500">{{ row.patientNumber }}</div>
+            @if (row.branchName) {
+              <div class="text-xs text-slate-400">{{ row.branchName }}</div>
+            }
+          </td>
+          <td>{{ row.testSummary }}</td>
+          <td class="text-sm">{{ row.orderedByDoctorName || '—' }}</td>
+          <td><p-tag [value]="row.priority" /></td>
+          <td>
+            @if (row.turnaroundHours != null) {
+              <p-tag
+                [value]="row.isOverdue ? 'Overdue' : 'On time'"
+                [severity]="row.isOverdue ? 'danger' : 'success'"
+              />
+            } @else {
+              <span class="text-slate-400">—</span>
+            }
+          </td>
+          <td><p-tag [value]="row.orderStatus" severity="info" /></td>
+          <td>
+            <button pButton type="button" label="Open" class="p-button-sm" (click)="openOrder(row)"></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="loadingbody">
+        <app-hms-table-loading-body [cols]="9" />
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="9" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state
+              icon="pi pi-flask"
+              [title]="hasActiveFilter ? 'No matching lab orders' : 'No lab orders for this period'"
+              [description]="hasActiveFilter ? 'Widen the date range or clear status, priority, and TAT filters.' : 'Orders from patient visits will appear here for processing.'"
+            />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog [(visible)]="detailOpen" header="Lab order" [modal]="true" [style]="{ width: 'min(95vw, 42rem)' }">
+  @if (detailLoading) {
+    <p>Loading…</p>
+  } @else if (selectedOrder) {
+    <div class="flex flex-wrap justify-between gap-2 mb-3">
+      <div class="text-sm">
+        <strong>{{ selectedOrder.patientName }}</strong> · {{ selectedOrder.orderNumber }}
+        <div class="text-slate-500">{{ selectedOrder.createdAt | date: 'medium' }}</div>
+        @if (selectedOrder.orderedByDoctorName) {
+          <div class="text-slate-500">Ordered by {{ selectedOrder.orderedByDoctorName }}</div>
+        }
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        @if (canEditPriority()) {
+          <p-select
+            [options]="editPriorityOptions"
+            [ngModel]="selectedOrder.priority"
+            (ngModelChange)="onPriorityChange($event)"
+            optionLabel="label"
+            optionValue="value"
+            appendTo="body"
+            styleClass="lt-toolbar-select lt-toolbar-select--narrow"
+            [disabled]="prioritySaving"
+            ariaLabel="Order priority"
+          />
+        } @else {
+          <p-tag [value]="selectedOrder.priority" />
+        }
+        @if (canPrint()) {
+          <button
+            pButton
+            type="button"
+            label="Print report"
+            icon="pi pi-print"
+            class="p-button-sm p-button-outlined"
+            (click)="printResults()"
+          ></button>
+        }
+      </div>
+    </div>
+
+    <p-tabs [(value)]="detailTab">
+      <p-tablist>
+        <p-tab value="lines">Tests</p-tab>
+        <p-tab value="events">Audit trail</p-tab>
+      </p-tablist>
+      <p-tabpanels>
+        <p-tabpanel value="lines">
+          <p-table [value]="selectedOrder.lines" size="small">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Test</th>
+                <th>Accession</th>
+                <th>Result</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-line>
+              <tr>
+                <td>{{ line.testName }}</td>
+                <td class="font-mono text-xs">{{ line.accessionNumber || '—' }}</td>
+                <td class="text-sm">
+                  @if (line.result) {
+                    {{ lineResultSummary(line) }}
+                    @for (flag of lineAbnormalFlags(line); track flag) {
+                      <p-tag [value]="flag" [severity]="flagSeverity(flag)" class="ml-1" />
+                    }
+                    @if (lineReleaseMeta(line); as meta) {
+                      <div class="mt-1 text-[0.68rem] text-slate-500">{{ meta }}</div>
+                    }
+                  } @else {
+                    —
+                  }
+                </td>
+                <td><p-tag [value]="line.status" [severity]="lineSeverity(line.status)" /></td>
+                <td class="flex flex-wrap gap-1">
+                  @if (line.status === 'Ordered') {
+                    <button pButton type="button" label="Collect" class="p-button-sm p-button-outlined" (click)="collect(line)"></button>
+                    <button pButton type="button" label="Cancel" class="p-button-sm p-button-text p-button-danger" (click)="cancelLine(line)"></button>
+                  }
+                  @if (line.status === 'Collected') {
+                    <button pButton type="button" label="Result" class="p-button-sm" (click)="openResult(line)"></button>
+                    <button pButton type="button" label="Cancel" class="p-button-sm p-button-text p-button-danger" (click)="cancelLine(line)"></button>
+                  }
+                  @if (line.status === 'InProgress' || line.status === 'ResultEntered') {
+                    <button pButton type="button" label="Result" class="p-button-sm" (click)="openResult(line)"></button>
+                  }
+                  @if (line.status === 'ResultEntered') {
+                    <button pButton type="button" label="Verify" class="p-button-sm p-button-success" (click)="verify(line)"></button>
+                  }
+                  @if (line.status === 'Verified') {
+                    <button pButton type="button" label="Release" class="p-button-sm p-button-success" (click)="release(line)"></button>
+                  }
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+          <p class="text-sm mt-3">
+            Total: {{ selectedOrder.totalAmount | number: '1.2-2' }} · Billing:
+            {{ isRegistrationBilled() ? 'Collected at registration' : 'Legacy order (no separate lab payment)' }}
+          </p>
+        </p-tabpanel>
+        <p-tabpanel value="events">
+          @if (eventsLoading) {
+            <p class="text-sm text-slate-500">Loading events…</p>
+          } @else if (orderEvents.length === 0) {
+            <p class="text-sm text-slate-500">No audit events recorded.</p>
+          } @else {
+            <ul class="text-sm space-y-2 max-h-64 overflow-auto">
+              @for (ev of orderEvents; track ev.id) {
+                <li class="border-b border-slate-100 pb-2">
+                  <strong>{{ ev.eventType }}</strong>
+                  @if (ev.oldStatus || ev.newStatus) {
+                    <span class="text-slate-600"> · {{ ev.oldStatus ?? '—' }} → {{ ev.newStatus ?? '—' }}</span>
+                  }
+                  <div class="text-xs text-slate-500">{{ ev.createdAt | date: 'medium' }} · {{ ev.userName ?? 'System' }}</div>
+                </li>
+              }
+            </ul>
+          }
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  }
+</p-dialog>
+
+<p-dialog [(visible)]="resultDialogOpen" header="Enter result" [modal]="true" [style]="{ width: 'min(95vw, 32rem)' }">
+  @if (resultLine) {
+    <p class="text-sm mb-2 font-medium">{{ resultLine.testName }}</p>
+  }
+  @if (isPanelResult) {
+    <div class="space-y-2 max-h-80 overflow-auto mb-2">
+      @for (param of resultPanelValues; track param.code) {
+        <div class="grid grid-cols-[1fr_6rem] gap-2 items-center">
+          <label class="text-xs text-slate-600">{{ param.name }}</label>
+          <input pInputText class="w-full" [(ngModel)]="param.value" [placeholder]="param.unit ?? 'Value'" />
+        </div>
+      }
+    </div>
+  } @else {
+    <input pInputText class="w-full mb-2" [(ngModel)]="resultValue" placeholder="Result value" />
+  }
+  <input pInputText class="w-full" [(ngModel)]="resultNotes" placeholder="Notes (optional)" />
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancel" class="p-button-text" (click)="resultDialogOpen = false"></button>
+    <button pButton type="button" label="Save" [loading]="resultSaving" (click)="saveResult()"></button>
+  </ng-template>
+</p-dialog>
+
+<p-confirmDialog />

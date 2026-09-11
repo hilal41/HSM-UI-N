@@ -13,14 +13,17 @@ import { TextareaModule } from 'primeng/textarea';
 import { finalize } from 'rxjs';
 import { ClinicalDepartmentsApiService } from '../../../core/api/clinical-departments-api.service';
 import type { Department } from '../../../core/models/api-contracts';
+import { HmsCrudEmptyStateComponent } from '../../../shared/components/hms-crud-empty-state/hms-crud-empty-state.component';
 import { HmsTableLoadingBodyComponent } from '../../../shared/components/hms-table-loading-body/hms-table-loading-body.component';
 import { SurfacePanelComponent } from '../../../shared/components/surface-panel/surface-panel.component';
+import { showCrudPaginator } from '../../../shared/utils/crud-page.state';
 
 @Component({
   selector: 'app-departments-page',
   imports: [
     FormsModule,
     SurfacePanelComponent,
+    HmsCrudEmptyStateComponent,
     HmsTableLoadingBodyComponent,
     TableModule,
     TagModule,
@@ -43,6 +46,10 @@ export class DepartmentsPage implements OnInit {
   loading = false;
   saving = false;
   errorMessage: string | null = null;
+
+  get showPaginator(): boolean {
+    return showCrudPaginator(this.rows.length, 10);
+  }
 
   dialogOpen = false;
   editingId: number | null = null;

@@ -1,6 +1,6 @@
 <app-surface-panel
   class="hms-crud-surface"
-  title="Doctor checkup (OPD patients)"
+  title="Doctor Checkup (OPD Patients)"
   subtitle="Patients assigned OPD services"
 >
   <div surfacePanelActions class="hms-crud-actions dc-toolbar">
@@ -120,7 +120,8 @@
     [showLoader]="false"
     [value]="rows"
     [loading]="loading"
-    [paginator]="true"
+    [paginator]="showPaginator"
+    [alwaysShowPaginator]="false"
     [rows]="20"
     [rowsPerPageOptions]="[10, 20, 50]"
     [tableStyle]="{ 'min-width': '100%' }"
@@ -172,6 +173,9 @@
           <span class="dc-checkup-status" [class.dc-checkup-status--checked]="row.hasCheckup">
             {{ row.hasCheckup ? 'Checked' : 'Unchecked' }}
           </span>
+          @if (row.hasLabOrder) {
+            <span class="dc-lab-badge">Lab</span>
+          }
         </td>
         <td class="text-end">
           <button
@@ -188,11 +192,12 @@
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="8" class="hms-table-empty-cell py-6 text-center text-sm text-slate-500">
-          <div class="flex flex-col items-center justify-center gap-2 py-4">
-            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
-            <span>No patients found with OPD services.</span>
-          </div>
+        <td colspan="8" class="hms-table-empty-cell hms-table-empty-cell--crud">
+          <app-hms-crud-empty-state
+            icon="pi pi-user-edit"
+            [title]="hasActiveFilter ? 'No matching OPD patients' : 'No OPD patients for today'"
+            [description]="hasActiveFilter ? 'Try a different date range, status, or search term.' : 'Patients with OPD services will appear here when registered.'"
+          />
         </td>
       </tr>
     </ng-template>

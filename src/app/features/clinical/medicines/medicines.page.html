@@ -12,6 +12,7 @@
         [(ngModel)]="searchInput"
         name="medSearch"
         placeholder="Search name, code, generic…"
+        aria-label="Search medicines"
         (keyup.enter)="applySearch()"
       />
       <button
@@ -80,8 +81,9 @@
     [showLoader]="false"
     [value]="rows"
     [lazy]="true"
-    [paginator]="true"
-    [rows]="pageSize"
+    [paginator]="showPaginator"
+    [alwaysShowPaginator]="false"
+    [rows]="tablePageSize"
     [totalRecords]="totalCount"
     [loading]="loading"
     [rowsPerPageOptions]="[10, 20, 50]"
@@ -95,7 +97,6 @@
         <th>Name</th>
         <th>Category</th>
         <th>Form</th>
-        <th>Expiry</th>
         <th>Active</th>
         <th class="w-36 text-end">Actions</th>
       </tr>
@@ -111,7 +112,6 @@
         </td>
         <td class="text-sm">{{ row.category }}</td>
         <td class="text-sm">{{ row.form }}</td>
-        <td class="text-sm text-slate-600">{{ row.expiryDate }}</td>
         <td>
           @if (row.isActive) {
             <p-tag value="Active" severity="success" styleClass="text-xs" />
@@ -144,16 +144,20 @@
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="7" class="hms-table-empty-cell text-center text-sm text-slate-500">
-          <div class="flex flex-col items-center justify-center gap-2 py-4">
-            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
-            <span>No medicines found.</span>
-          </div>
+        <td colspan="6" class="hms-table-empty-cell hms-table-empty-cell--crud">
+          <app-hms-crud-empty-state
+            icon="pi pi-plus-circle"
+            [title]="hasActiveFilter ? 'No matching medicines' : 'No medicines yet'"
+            [description]="hasActiveFilter ? 'Try a different search or clear filters.' : 'Add medicines for prescriptions, dispensing, and inventory.'"
+            [actionable]="!hasActiveFilter"
+            actionLabel="Click to add a medicine"
+            (action)="openCreate()"
+          />
         </td>
       </tr>
     </ng-template>
     <ng-template pTemplate="loadingbody" let-columns>
-      <app-hms-table-loading-body [cols]="columns?.length || 7" />
+      <app-hms-table-loading-body [cols]="columns?.length || 6" />
     </ng-template>
   </p-table>
   </div>

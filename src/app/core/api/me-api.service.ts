@@ -8,6 +8,8 @@ import type {
   Hospital,
   MeResponse,
   UpdateHospitalRequest,
+  UpdateMyProfileRequest,
+  User,
 } from '../models/api-contracts';
 
 @Injectable({ providedIn: 'root' })
@@ -33,5 +35,13 @@ export class MeApiService {
 
   updateMyHospital(body: UpdateHospitalRequest): Observable<Hospital> {
     return this.http.put<Hospital>(`${this.base}/Me/hospital`, body);
+  }
+
+  getMyProfile(): Observable<User> {
+    return this.http.get<User>(`${this.base}/Me/profile`);
+  }
+
+  updateMyProfile(body: UpdateMyProfileRequest): Observable<User> {
+    return this.http.put<User>(`${this.base}/Me/profile`, body);
   }
 }

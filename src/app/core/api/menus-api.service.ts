@@ -14,6 +14,12 @@ export class MenusApiService {
     return this.http.get<AppMenuTree[]>(`${this.base}/Menus/tree`, { params });
   }
 
+  /** Hospital-licensed tree for role editor; platform users receive the full tree. */
+  getLicensedTree(activeOnly = true): Observable<AppMenuTree[]> {
+    const params = new HttpParams().set('activeOnly', String(activeOnly));
+    return this.http.get<AppMenuTree[]>(`${this.base}/Menus/licensed-tree`, { params });
+  }
+
   getById(id: number): Observable<AppMenu> {
     return this.http.get<AppMenu>(`${this.base}/Menus/${id}`);
   }

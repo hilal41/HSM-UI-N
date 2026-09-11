@@ -206,8 +206,8 @@ export class PatientRegisterLogDialogComponent implements OnChanges {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (res) => {
-          this.rows = res.items;
-          this.totalCount = res.totalCount;
+          this.rows = Array.isArray(res.items) ? res.items : [];
+          this.totalCount = res.totalCount ?? 0;
           this.page = res.page;
           if (collapseFiltersAfter) {
             this.showAdvancedFilters = false;

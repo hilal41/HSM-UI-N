@@ -1,16 +1,19 @@
 <div class="dcf-root">
   @for (sec of sections(); track sec.id) {
-    <section class="dcf-section">
-      <h3 class="dcf-section-title">{{ sec.title }}</h3>
-      <div class="dcf-grid">
+    <article class="hms-form-card dcf-section">
+      <header class="hms-form-card__head">
+        <h3 class="hms-form-card__title">{{ sec.title }}</h3>
+      </header>
+      <div class="hms-form-grid-2 dcf-grid">
         @for (field of sec.fields; track field.id) {
           <div
-            class="dcf-field"
+            class="hms-form-field dcf-field"
             [class.dcf-field--checkbox]="field.type === 'checkbox'"
             [class.dcf-field--radio]="field.type === 'radio'"
+            [class.hms-form-field--full]="field.type === 'radio' || field.type === 'textarea'"
           >
             @if (field.type !== 'checkbox') {
-              <label class="dcf-label" [for]="'dcf-' + field.id">
+              <label class="hms-field-label" [for]="'dcf-' + field.id">
                 {{ field.label }}
                 @if (field.required) {
                   <span class="dcf-req">*</span>
@@ -24,7 +27,7 @@
                   pTextarea
                   [id]="'dcf-' + field.id"
                   [name]="field.id"
-                  [rows]="1"
+                  [rows]="2"
                   class="dcf-control dcf-control--ta w-full"
                   [placeholder]="field.placeholder ?? ''"
                   [ngModel]="valueFor(field)"
@@ -103,6 +106,6 @@
           </div>
         }
       </div>
-    </section>
+    </article>
   }
 </div>

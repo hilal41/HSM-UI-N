@@ -1,0 +1,118 @@
+<app-surface-panel class="hms-crud-surface hsc-surface" [title]="title" [subtitle]="subtitle">
+  <div surfacePanelActions class="hms-crud-actions">
+    @if (canEdit) {
+      <button
+        pButton
+        type="button"
+        label="Save changes"
+        icon="pi pi-check"
+        severity="success"
+        class="hms-toolbar-solid"
+        [loading]="saving"
+        [disabled]="loading || !category"
+        (click)="save()"
+      ></button>
+    }
+  </div>
+
+  <div class="hms-crud-panel-body hsc-body">
+    @if (loading) {
+      <app-hms-block-skeleton [lines]="10" ariaLabel="Loading settings" />
+    } @else if (errorMessage) {
+      <p-message severity="warn" [text]="errorMessage" styleClass="w-full" />
+    } @else if (category) {
+      @if (!canEdit) {
+        <p-message
+          severity="info"
+          text="You can view these settings but do not have permission to change them."
+          styleClass="w-full hsc-readonly-note"
+        />
+      }
+
+      <section class="hsc-card" [attr.aria-label]="title">
+        <header class="hsc-card__head">
+          <span class="hsc-card__icon" aria-hidden="true">
+            <i [class]="'pi ' + categoryIcon"></i>
+          </span>
+          <div class="hsc-card__head-text">
+            <h3 class="hsc-card__title">{{ title }}</h3>
+            <p class="hsc-card__subtitle">
+              Changes apply to the whole hospital as soon as you save.
+            </p>
+          </div>
+          <span class="hsc-count-badge">{{ category.settings.length }} settings</span>
+        </header>
+
+        <div class="hsc-grid">
+          @for (setting of category.settings; track setting.key) {
+            @if (isBoolean(setting)) {
+              <label class="hsc-toggle" [class.hsc-toggle--on]="boolValue(setting.key)">
+                <p-checkbox
+                  [binary]="true"
+                  [ngModel]="boolValue(setting.key)"
+                  (ngModelChange)="setBoolValue(setting.key, $event)"
+                  [disabled]="!canEdit || !setting.isEditable"
+                  [inputId]="'hsc-' + setting.key"
+                />
+                <span class="hsc-toggle__text">
+                  <span class="hms-field-label">{{ setting.label }}</span>
+                  @if (setting.description) {
+                    <span class="hsc-hint">{{ setting.description }}</span>
+                  }
+                </span>
+              </label>
+            } @else {
+              <div class="hsc-field">
+                <label
+                  class="hms-field-label"
+                  [class.hms-field-label--required]="setting.isRequired"
+                  [for]="'hsc-' + setting.key"
+                >
+                  {{ setting.label }}
+                </label>
+                @if (isSelect(setting)) {
+                  <p-select
+                    [inputId]="'hsc-' + setting.key"
+                    [(ngModel)]="draft[setting.key]"
+                    [options]="setting.options"
+                    optionLabel="label"
+                    optionValue="value"
+                    [showClear]="!setting.isRequired"
+                    [disabled]="!canEdit || !setting.isEditable"
+                    placeholder="Select…"
+                    styleClass="w-full"
+                    appendTo="body"
+                  />
+                } @else {
+                  <input
+                    pInputText
+                    [id]="'hsc-' + setting.key"
+                    class="w-full"
+                    [type]="isNumber(setting) ? 'number' : 'text'"
+                    [(ngModel)]="draft[setting.key]"
+                    [attr.maxlength]="setting.maxLength ?? null"
+                    [disabled]="!canEdit || !setting.isEditable"
+                    [placeholder]="setting.defaultValue ?? ''"
+                  />
+                }
+                @if (setting.description) {
+                  <p class="hsc-hint">{{ setting.description }}</p>
+                }
+              </div>
+            }
+          }
+        </div>
+
+        @if (isMrnCategory && configuration) {
+          <div class="hsc-preview">
+            <span class="hsc-preview__label">
+              <i class="pi pi-eye" aria-hidden="true"></i>
+              Next MRN preview
+            </span>
+            <div class="hsc-mrn-preview" aria-live="polite">{{ mrnPreview }}</div>
+          </div>
+        }
+      </section>
+    }
+  </div>
+</app-surface-panel>

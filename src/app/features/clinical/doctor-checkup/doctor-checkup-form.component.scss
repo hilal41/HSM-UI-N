@@ -5,84 +5,28 @@
 .dcf-root {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--hms-main-pad);
 }
 
 .dcf-section {
   margin: 0;
 }
 
-.dcf-section-title {
-  margin: 0 0 0.2rem;
-  padding-bottom: 0.12rem;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #475569;
-  border-bottom: 1px solid rgb(226 232 240 / 0.9);
+.dcf-section .hms-form-card__head {
+  margin-bottom: 0.65rem;
 }
 
 .dcf-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.28rem 0.38rem;
-  padding-top: 0.2rem;
-}
-
-@media (max-width: 1100px) {
-  .dcf-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 720px) {
-  .dcf-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 520px) {
-  .dcf-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .dcf-field--radio {
-    grid-column: auto;
-  }
-}
-
-.dcf-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  min-width: 0;
+  gap: 0.55rem 0.75rem;
 }
 
 .dcf-field--checkbox {
   justify-content: flex-end;
-  padding-top: 0.85rem;
-}
-
-.dcf-field--radio {
-  grid-column: span 2;
-}
-
-.dcf-label {
-  font-size: 0.58rem;
-  font-weight: 600;
-  color: #64748b;
-  line-height: 1.15;
-  display: -webkit-box;
-  line-clamp: 2;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  min-height: 1.3em;
+  padding-top: 0.35rem;
 }
 
 .dcf-req {
-  color: #dc2626;
+  color: var(--hms-color-danger);
 }
 
 .dcf-check-row {
@@ -93,9 +37,9 @@
 }
 
 .dcf-check-label {
-  font-size: 0.62rem;
+  font-size: var(--hms-font-ui-sm);
   font-weight: 600;
-  color: #0f172a;
+  color: var(--hms-color-text);
   line-height: 1.2;
 }
 
@@ -111,7 +55,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
-  font-size: 0.62rem;
+  font-size: var(--hms-font-ui-sm);
   line-height: 1.2;
 }
 
@@ -136,8 +80,11 @@
   line-height: 1.25 !important;
   padding: 0.18rem 0.32rem !important;
   min-height: 1.5rem !important;
-  max-height: 2.25rem !important;
-  resize: none;
+  resize: vertical;
+}
+
+:host ::ng-deep textarea.dcf-control--ta {
+  max-height: none;
 }
 
 :host ::ng-deep .dcf-control.p-select {

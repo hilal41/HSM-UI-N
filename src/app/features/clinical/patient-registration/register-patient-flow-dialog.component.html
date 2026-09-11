@@ -2,7 +2,9 @@
   [modal]="true"
   [style]="{ width: 'min(96vw, calc(38rem * 1.4))' }"
   [contentStyle]="{ overflow: 'hidden', padding: '0' }"
-  styleClass="pr-flow-dialog hms-crud-dialog"
+  [styleClass]="
+    'pr-flow-dialog hms-crud-dialog' + (mode === 'register' ? ' pr-flow-dialog--register' : '')
+  "
   [visible]="visible"
   (visibleChange)="onVisibleChange($event)"
   [draggable]="false"
@@ -12,14 +14,6 @@
     <div class="pr-flow-header" [class.pr-flow-header--register]="mode === 'register'">
       @if (mode === 'search') {
         <span class="pr-flow-header__title">Existing patient</span>
-        <button
-          pButton
-          type="button"
-          label="Register new patient"
-          icon="pi pi-user-plus"
-          class="pr-flow-header__register pr-pill-white"
-          (click)="goRegisterNew()"
-        ></button>
       } @else {
         <button
           pButton

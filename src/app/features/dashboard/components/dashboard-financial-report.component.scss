@@ -1,0 +1,124 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+@keyframes dash-ledger-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Ledger panel — flat pipeline, no icon cards ── */
+.dash-ledger {
+  border-radius: var(--hms-radius-card);
+  border: var(--hms-card-border);
+  background: var(--hms-color-surface);
+  box-shadow: var(--hms-shadow-card);
+  overflow: hidden;
+  animation: dash-ledger-in 0.45s ease both;
+}
+
+/* Pipeline row */
+.dash-ledger__pipeline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  padding: 0.85rem var(--hms-card-padding);
+  gap: 0;
+}
+
+.dash-ledger__cell {
+  flex: 1 1 5.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 0;
+  padding: 0.5rem 0.65rem;
+}
+
+.dash-ledger__label {
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--hms-color-text-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-ledger__amount {
+  font-size: clamp(1rem, 1.8vw, 1.35rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--hms-color-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-ledger__amount--muted {
+  color: var(--hms-color-text-muted);
+}
+
+.dash-ledger__amount--success {
+  color: var(--hms-color-success-hover);
+}
+
+.dash-ledger__amount--warn {
+  color: var(--hms-color-warn-hover, #d97706);
+}
+
+.dash-ledger__op {
+  flex: 0 0 auto;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--hms-color-text-subtle);
+}
+
+.dash-ledger__split {
+  flex: 0 0 1px;
+  align-self: stretch;
+  margin: 0.25rem 0.5rem;
+  background: var(--hms-color-border);
+}
+
+/* Mobile: stack pipeline vertically */
+@media (max-width: 720px) {
+  .dash-ledger__pipeline {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .dash-ledger__op,
+  .dash-ledger__split {
+    display: none;
+  }
+
+  .dash-ledger__cell {
+    flex: 1 1 auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--hms-color-border);
+  }
+
+  .dash-ledger__cell:last-child {
+    border-bottom: none;
+  }
+}

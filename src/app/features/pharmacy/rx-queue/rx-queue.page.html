@@ -1,0 +1,47 @@
+<app-surface-panel class="hms-crud-surface" title="Rx Queue" subtitle="Pending prescriptions from doctor checkups">
+  <div surfacePanelActions class="hms-crud-actions">
+    <input pInputText [(ngModel)]="searchInput" placeholder="Patient / medicine…" (keyup.enter)="onLazyLoad({ first: 0, rows: pageSize })" />
+    <button pButton type="button" icon="pi pi-search" [outlined]="true" (click)="onLazyLoad({ first: 0, rows: pageSize })"></button>
+  </div>
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    <p-table
+      [value]="rows"
+      [lazy]="true"
+      [paginator]="showPaginator"
+      [alwaysShowPaginator]="false"
+      [rows]="tablePageSize"
+      [totalRecords]="totalCount"
+      [loading]="loading"
+      [showLoader]="false"
+      (onLazyLoad)="onLazyLoad($event)"
+      styleClass="p-datatable-sm hms-crud-table"
+    >
+      <ng-template pTemplate="header">
+        <tr><th>Patient</th><th>MRN</th><th>Checkup</th><th>Lines</th><th></th></tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td>{{ row.patientName }}</td>
+          <td class="font-mono text-sm">{{ row.mrn || '—' }}</td>
+          <td>{{ row.checkupAt | date: 'short' }}</td>
+          <td>{{ row.pendingLineCount }}</td>
+          <td class="text-right">
+            <button pButton type="button" label="Dispense" icon="pi pi-cart-plus" (click)="dispense(row)"></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state
+              icon="pi pi-clock"
+              title="No pending prescriptions"
+              description="Prescriptions from clinical visits will queue here for dispensing."
+            />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</app-surface-panel>

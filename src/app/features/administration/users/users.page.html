@@ -1,300 +1,438 @@
 <app-surface-panel
   class="hms-crud-surface"
   title="Users"
-  subtitle="Accounts, roles, and access"
+  subtitle="Accounts, roles, and access control"
 >
   <div surfacePanelActions class="hms-crud-actions">
-    <button
-      pButton
-      type="button"
-      label="New user"
-      icon="pi pi-plus"
-      severity="secondary"
-      class="hms-toolbar-solid"
-      (click)="openCreate()"
-    ></button>
+    @if (menuPerms.can('admin.users', 'create')) {
+      <button
+        pButton
+        type="button"
+        label="New user"
+        icon="pi pi-plus"
+        severity="secondary"
+        class="hms-toolbar-solid"
+        (click)="openCreate()"
+      ></button>
+    }
   </div>
 
   <div class="hms-crud-body-spacer" aria-hidden="true"></div>
   <div class="hms-crud-panel-body">
-  @if (errorMessage) {
-    <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
-  }
-  <p-table
-    [showLoader]="false"
-    [value]="rows"
-    [lazy]="true"
-    [paginator]="true"
-    [rows]="pageSize"
-    [totalRecords]="totalCount"
-    [loading]="loading"
-    [rowsPerPageOptions]="[10, 20, 50]"
-    (onLazyLoad)="onLazyLoad($event)"
-    [tableStyle]="{ 'min-width': '100%' }"
-    styleClass="p-datatable-sm"
-  >
-    <ng-template #header>
-      <tr>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Active</th>
-        <th class="min-w-[16rem] text-end">Actions</th>
-      </tr>
-    </ng-template>
-    <ng-template #body let-row>
-      <tr>
-        <td class="font-mono text-xs">{{ row.userName }}</td>
-        <td>{{ row.email }}</td>
-        <td>{{ row.roleName ?? '—' }}</td>
-        <td>
-          <p-tag [value]="row.isActive ? 'Yes' : 'No'" [severity]="row.isActive ? 'success' : 'secondary'" />
-        </td>
-        <td class="text-end">
-          <div class="flex flex-wrap justify-end gap-1">
-            <button
-              pButton
-              type="button"
-              icon="pi pi-eye"
-              [text]="true"
-              severity="secondary"
-              (click)="openUserDetail(row)"
-              title="View detail"
-              aria-label="View detail"
-            ></button>
-            <button
-              pButton
-              type="button"
-              icon="pi pi-pencil"
-              [text]="true"
-              severity="secondary"
-              (click)="openEdit(row)"
-              title="Edit"
-              aria-label="Edit"
-            ></button>
-            <button
-              pButton
-              type="button"
-              icon="pi pi-shield"
-              [text]="true"
-              severity="success"
-              (click)="openRoleDialog(row)"
-              title="Assign role"
-              aria-label="Assign role"
-            ></button>
-            <button
-              pButton
-              type="button"
-              icon="pi pi-building"
-              [text]="true"
-              severity="secondary"
-              (click)="openDeptDialog(row)"
-              title="Departments"
-              aria-label="Departments"
-            ></button>
-            <button
-              pButton
-              type="button"
-              icon="pi pi-sitemap"
-              [text]="true"
-              severity="secondary"
-              (click)="openBranchDialog(row)"
-              title="Branches"
-              aria-label="Branches"
-            ></button>
-            <button
-              pButton
-              type="button"
-              icon="pi pi-trash"
-              [text]="true"
-              severity="danger"
-              (click)="confirmDelete(row)"
-              title="Delete"
-              aria-label="Delete"
-            ></button>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-    <ng-template #emptymessage>
-      <tr>
-        <td colspan="5" class="hms-table-empty-cell text-center text-sm text-slate-500">
-          <div class="flex flex-col items-center justify-center gap-2 py-4">
-            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
-            <span>No users found.</span>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="loadingbody" let-columns>
-      <app-hms-table-loading-body [cols]="columns?.length || 5" />
-    </ng-template>
-  </p-table>
+    @if (errorMessage) {
+      <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+    }
+    <p-table
+      [showLoader]="false"
+      [value]="rows"
+      [lazy]="true"
+      [paginator]="showPaginator"
+      [alwaysShowPaginator]="false"
+      [rows]="tablePageSize"
+      [totalRecords]="totalCount"
+      [loading]="loading"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      (onLazyLoad)="onLazyLoad($event)"
+      [tableStyle]="{ 'min-width': '100%' }"
+      styleClass="p-datatable-sm hms-crud-table"
+    >
+      <ng-template #header>
+        <tr>
+          <th>Name / Username</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Branch access</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-row>
+        <tr>
+          <td>
+            <div class="font-medium text-slate-800">
+              {{ (row.firstName || row.lastName) ? ((row.firstName ?? '') + ' ' + (row.lastName ?? '')) : '—' }}
+            </div>
+            <div class="font-mono text-[0.7rem] text-slate-400">{{ row.userName }}</div>
+          </td>
+          <td class="text-sm">{{ row.email }}</td>
+          <td>
+            @if (row.roleName) {
+              <p-tag [value]="row.roleName" severity="secondary" />
+            } @else {
+              <span class="text-slate-400">—</span>
+            }
+          </td>
+          <td>
+            @if (row.branchAccessMode === 'AssignedOnly') {
+              <p-tag value="Assigned only" severity="warn" icon="pi pi-lock" />
+            } @else if (row.hospitalId) {
+              <p-tag value="All branches" severity="info" icon="pi pi-globe" />
+            } @else {
+              <span class="text-slate-400">—</span>
+            }
+          </td>
+          <td>
+            <p-tag [value]="row.isActive ? 'Active' : 'Inactive'" [severity]="row.isActive ? 'success' : 'secondary'" />
+          </td>
+          <td class="text-end">
+            <div class="flex flex-wrap justify-end gap-1">
+              <button pButton type="button" icon="pi pi-eye" [text]="true" severity="secondary"
+                (click)="openUserDetail(row)" title="View detail" aria-label="View detail"></button>
+              @if (menuPerms.can('admin.users', 'edit')) {
+                <button pButton type="button" icon="pi pi-pencil" [text]="true" severity="secondary"
+                  (click)="openEdit(row)" title="Edit profile" aria-label="Edit profile"></button>
+                <button pButton type="button" icon="pi pi-shield" [text]="true" severity="secondary"
+                  (click)="openRoleDialog(row)" title="Change role" aria-label="Change role"></button>
+                <button pButton type="button" icon="pi pi-building" [text]="true" severity="secondary"
+                  (click)="openDeptDialog(row)" title="Departments" aria-label="Departments"></button>
+                <button pButton type="button" icon="pi pi-sitemap" [text]="true"
+                  [severity]="row.branchAccessMode === 'AssignedOnly' ? 'warn' : 'secondary'"
+                  (click)="openBranchDialog(row)" title="Branch access" aria-label="Branch access"></button>
+              }
+              @if (menuPerms.can('admin.users', 'delete')) {
+                <button pButton type="button" icon="pi pi-trash" [text]="true" severity="danger"
+                  (click)="confirmDelete(row)" title="Delete user" aria-label="Delete user"></button>
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="6" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state
+              icon="pi pi-user-plus"
+              title="No users yet"
+              description="Create staff accounts and assign roles, branches, and permissions."
+              [actionable]="true"
+              actionLabel="Click to add a user"
+              (action)="openCreate()"
+            />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="loadingbody" let-columns>
+        <app-hms-table-loading-body [cols]="columns?.length || 6" />
+      </ng-template>
+    </p-table>
   </div>
 </app-surface-panel>
 
+<!-- ── Create / Edit user dialog ─────────────────────────── -->
 <p-dialog
   [header]="editingId == null ? 'New user' : 'Edit user'"
   [(visible)]="dialogOpen"
   [modal]="true"
-  [style]="{ width: 'min(95vw, 36rem)' }"
+  [style]="{ width: 'min(95vw, 38rem)' }"
   [contentStyle]="{ overflow: 'hidden', padding: '0' }"
   styleClass="hms-crud-dialog"
   (onHide)="closeDialog()"
 >
   <div class="hms-dialog-body">
     <div class="hms-dialog-scroll">
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      <div class="flex flex-col gap-1">
-        <label class="hms-field-label" for="u-fn">First name</label>
-        <input pInputText id="u-fn" class="w-full" [(ngModel)]="formFirstName" name="uFn" />
-      </div>
-      <div class="flex flex-col gap-1">
-        <label class="hms-field-label" for="u-ln">Last name</label>
-        <input pInputText id="u-ln" class="w-full" [(ngModel)]="formLastName" name="uLn" />
-      </div>
-      <div class="flex flex-col gap-1">
-        <label class="hms-field-label hms-field-label--required" for="u-un">Username</label>
-        <input pInputText id="u-un" class="w-full" [(ngModel)]="formUserName" name="uUn" />
-      </div>
-      <div class="flex flex-col gap-1">
-        <label class="hms-field-label hms-field-label--required" for="u-em">Email</label>
-        <input pInputText id="u-em" type="email" class="w-full" [(ngModel)]="formEmail" name="uEm" />
-      </div>
-      <div class="flex flex-col gap-1 sm:col-span-2">
-        <label
-          class="hms-field-label"
-          [class.hms-field-label--required]="editingId == null"
-          for="u-pw"
-        >Password</label>
-        <p-password
-          inputId="u-pw"
-          [(ngModel)]="formPassword"
-          name="uPw"
-          [feedback]="editingId == null"
-          [toggleMask]="true"
-          styleClass="w-full"
-          inputStyleClass="w-full"
-          [placeholder]="editingId == null ? 'Required' : 'Leave blank to keep'"
-        />
-      </div>
-      <div class="flex flex-col gap-1">
-        <label class="hms-field-label" for="u-ph">Phone</label>
-        <input pInputText id="u-ph" class="w-full" [(ngModel)]="formPhone" name="uPh" />
-      </div>
-      <div class="flex flex-col gap-1">
-        <label class="hms-field-label" for="u-rl">Role</label>
-        <p-select
-          inputId="u-rl"
-          [(ngModel)]="formRoleId"
-          name="uRl"
-          [options]="roleOptions"
-          optionLabel="label"
-          optionValue="value"
-          [showClear]="true"
-          placeholder="Role"
-          styleClass="w-full"
-          appendTo="body"
-        />
-      </div>
-      <div class="flex flex-col gap-1 sm:col-span-2">
-        <label class="hms-field-label" for="u-ad">Address</label>
-        <textarea pTextarea id="u-ad" [(ngModel)]="formAddress" name="uAd" rows="2" class="w-full"></textarea>
-      </div>
-      <div class="flex items-center gap-2 sm:col-span-2">
-        <p-toggleswitch inputId="u-ac" [(ngModel)]="formIsActive" name="uAc" />
-        <label for="u-ac" class="text-sm text-slate-600">Active</label>
-      </div>
-      @if (editingId == null && branchOptions.length) {
-        <div class="flex flex-col gap-1 sm:col-span-2">
-          <label class="hms-field-label" for="u-create-branches">Branches</label>
-          <p-multiselect
-            inputId="u-create-branches"
-            [(ngModel)]="formCreateBranchIds"
-            name="uCreateBranches"
-            [options]="branchOptions"
-            optionLabel="label"
-            optionValue="value"
-            display="chip"
-            placeholder="Assign branches (defaults to Main)"
-            styleClass="w-full"
-            appendTo="body"
-          />
+      <div class="flex flex-col gap-5">
+
+        <!-- Section: Identity -->
+        <div>
+          <p class="mb-2 text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400">Personal info</p>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div class="flex flex-col gap-1">
+              <label class="hms-field-label" for="u-fn">First name</label>
+              <input pInputText id="u-fn" class="w-full" [(ngModel)]="formFirstName" name="uFn" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="hms-field-label" for="u-ln">Last name</label>
+              <input pInputText id="u-ln" class="w-full" [(ngModel)]="formLastName" name="uLn" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="hms-field-label" for="u-ph">Phone</label>
+              <input pInputText id="u-ph" class="w-full" [(ngModel)]="formPhone" name="uPh" />
+            </div>
+            <div class="flex flex-col gap-1 sm:col-span-2">
+              <label class="hms-field-label" for="u-ad">Address</label>
+              <textarea pTextarea id="u-ad" [(ngModel)]="formAddress" name="uAd" rows="2" class="w-full"></textarea>
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="hms-field-label" for="u-jt">Job title</label>
+              <input pInputText id="u-jt" class="w-full" [(ngModel)]="formJobTitle" name="uJt" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="hms-field-label" for="u-emp">Employee number</label>
+              <input pInputText id="u-emp" class="w-full" [(ngModel)]="formEmployeeNumber" name="uEmp" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="hms-field-label" for="u-lang">Language</label>
+              <p-select
+                inputId="u-lang"
+                [(ngModel)]="formLanguage"
+                name="uLang"
+                [options]="languageOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select language"
+                styleClass="w-full"
+                appendTo="body"
+              />
+            </div>
+            <div class="flex flex-col gap-1 sm:col-span-2">
+              <label class="hms-field-label" for="u-pic">Profile picture</label>
+              <div class="flex flex-wrap items-center gap-3">
+                @if (formProfilePictureBase64) {
+                  <img
+                    [src]="formProfilePictureBase64"
+                    alt="Profile preview"
+                    class="h-14 w-14 rounded-full object-cover ring-1 ring-slate-200"
+                  />
+                } @else {
+                  <div class="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-400 ring-1 ring-slate-200">
+                    <i class="pi pi-user" aria-hidden="true"></i>
+                  </div>
+                }
+                <div class="flex flex-wrap gap-2">
+                  <input
+                    #uPicUpload
+                    type="file"
+                    accept="image/*"
+                    class="sr-only"
+                    (change)="onProfilePictureSelected($event)"
+                  />
+                  <button
+                    pButton
+                    type="button"
+                    label="Upload"
+                    icon="pi pi-upload"
+                    severity="secondary"
+                    [outlined]="true"
+                    (click)="uPicUpload.click()"
+                  ></button>
+                  @if (formProfilePictureBase64) {
+                    <button
+                      pButton
+                      type="button"
+                      label="Clear"
+                      severity="secondary"
+                      [text]="true"
+                      (click)="clearProfilePicture()"
+                    ></button>
+                  }
+                </div>
+              </div>
+            </div>
+            @if (editingId != null) {
+              <div class="flex flex-col gap-1">
+                <label class="hms-field-label" for="u-last-login">Last login</label>
+                <input
+                  pInputText
+                  id="u-last-login"
+                  class="w-full"
+                  [value]="formLastLoginAt ? (formLastLoginAt | date: 'medium') : '—'"
+                  readonly
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="hms-field-label" for="u-last-pw">Last password change</label>
+                <input
+                  pInputText
+                  id="u-last-pw"
+                  class="w-full"
+                  [value]="formLastPasswordChangeAt ? (formLastPasswordChangeAt | date: 'medium') : '—'"
+                  readonly
+                />
+              </div>
+            }
+          </div>
         </div>
-        <div class="flex flex-col gap-1 sm:col-span-2">
-          <label class="hms-field-label" for="u-create-default-branch">Default branch</label>
-          <p-select
-            inputId="u-create-default-branch"
-            [(ngModel)]="formCreateDefaultBranchId"
-            name="uCreateDefaultBranch"
-            [options]="filteredCreateDefaultBranchOptions"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Default"
-            styleClass="w-full"
-            appendTo="body"
-          />
+
+        <p-divider styleClass="my-0" />
+
+        <!-- Section: Account -->
+        <div>
+          <p class="mb-2 text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400">Account</p>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div class="flex flex-col gap-1">
+              <label class="hms-field-label hms-field-label--required" for="u-un">Username</label>
+              <input pInputText id="u-un" class="w-full" [(ngModel)]="formUserName" name="uUn" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="hms-field-label hms-field-label--required" for="u-em">Email</label>
+              <input pInputText id="u-em" type="email" class="w-full" [(ngModel)]="formEmail" name="uEm" />
+            </div>
+            <div class="flex flex-col gap-1 sm:col-span-2">
+              <label class="hms-field-label" [class.hms-field-label--required]="editingId == null" for="u-pw">
+                Password
+              </label>
+              <p-password
+                inputId="u-pw"
+                [(ngModel)]="formPassword"
+                name="uPw"
+                [feedback]="editingId == null"
+                [toggleMask]="true"
+                styleClass="w-full"
+                inputStyleClass="w-full"
+                [placeholder]="editingId == null ? 'Min 8 characters, at least 1 uppercase' : 'Leave blank to keep current password'"
+              />
+            </div>
+            <div class="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 sm:col-span-2">
+              <p-toggleswitch inputId="u-ac" [(ngModel)]="formIsActive" name="uAc" />
+              <div>
+                <label for="u-ac" class="cursor-pointer text-sm font-medium text-slate-700">Active account</label>
+                <p class="text-[0.7rem] text-slate-400">Inactive users cannot log in to any branch.</p>
+              </div>
+            </div>
+          </div>
         </div>
-      }
+
+        <p-divider styleClass="my-0" />
+
+        <!-- Section: Role & Branch Access -->
+        <div>
+          <p class="mb-2 text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400">Role &amp; access</p>
+          <div class="flex flex-col gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="hms-field-label" for="u-rl">Role <span class="text-[0.65rem] font-normal text-slate-400">— controls which pages &amp; actions this user can perform</span></label>
+              <p-select
+                inputId="u-rl"
+                [(ngModel)]="formRoleId"
+                name="uRl"
+                [options]="roleOptions"
+                optionLabel="label"
+                optionValue="value"
+                [showClear]="true"
+                placeholder="Select a role"
+                styleClass="w-full"
+                appendTo="body"
+              />
+            </div>
+
+            @if (branchOptions.length) {
+              <div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p class="text-[0.7rem] font-semibold uppercase tracking-wider text-slate-500">Branch access</p>
+
+                <!-- Access mode cards -->
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <label
+                    class="flex cursor-pointer items-start gap-2.5 rounded-lg border-2 p-3 transition-colors"
+                    [class.border-blue-500]="formBranchAccessMode === 'AllBranches'"
+                    [class.bg-blue-50]="formBranchAccessMode === 'AllBranches'"
+                    [class.border-slate-200]="formBranchAccessMode !== 'AllBranches'"
+                    [class.bg-white]="formBranchAccessMode !== 'AllBranches'"
+                  >
+                    <input type="radio" name="branchMode" value="AllBranches" [(ngModel)]="formBranchAccessMode" class="mt-0.5 accent-blue-600" />
+                    <div>
+                      <p class="text-xs font-semibold text-slate-700">All branches</p>
+                      <p class="text-[0.68rem] text-slate-500">Can access every active branch in the hospital</p>
+                    </div>
+                  </label>
+                  <label
+                    class="flex cursor-pointer items-start gap-2.5 rounded-lg border-2 p-3 transition-colors"
+                    [class.border-orange-400]="formBranchAccessMode === 'AssignedOnly'"
+                    [class.bg-orange-50]="formBranchAccessMode === 'AssignedOnly'"
+                    [class.border-slate-200]="formBranchAccessMode !== 'AssignedOnly'"
+                    [class.bg-white]="formBranchAccessMode !== 'AssignedOnly'"
+                  >
+                    <input type="radio" name="branchMode" value="AssignedOnly" [(ngModel)]="formBranchAccessMode" class="mt-0.5 accent-orange-500" />
+                    <div>
+                      <p class="text-xs font-semibold text-slate-700">Assigned only</p>
+                      <p class="text-[0.68rem] text-slate-500">Restricted to the branches you select below</p>
+                    </div>
+                  </label>
+                </div>
+
+                @if (editingId == null) {
+                  <div class="flex flex-col gap-1">
+                    <label class="hms-field-label" for="u-create-branches">
+                      Assign branches
+                      @if (formBranchAccessMode === 'AssignedOnly') {
+                        <span class="text-orange-500"> *</span>
+                      }
+                    </label>
+                    <p-multiselect
+                      inputId="u-create-branches"
+                      [(ngModel)]="formCreateBranchIds"
+                      name="uCreateBranches"
+                      [options]="branchOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                      display="chip"
+                      [placeholder]="formBranchAccessMode === 'AssignedOnly' ? 'Select branches (required)' : 'Optional — leave empty for all branches'"
+                      styleClass="w-full"
+                      appendTo="body"
+                    />
+                  </div>
+                  @if (formCreateBranchIds.length > 1) {
+                    <div class="flex flex-col gap-1">
+                      <label class="hms-field-label" for="u-create-default-branch">Default branch <span class="text-[0.65rem] font-normal text-slate-400">— opened automatically at login</span></label>
+                      <p-select
+                        inputId="u-create-default-branch"
+                        [(ngModel)]="formCreateDefaultBranchId"
+                        name="uCreateDefaultBranch"
+                        [options]="filteredCreateDefaultBranchOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Select default"
+                        styleClass="w-full"
+                        appendTo="body"
+                      />
+                    </div>
+                  }
+                } @else {
+                  <p class="text-[0.68rem] text-slate-400">
+                    <i class="pi pi-info-circle mr-1"></i>
+                    To change branch assignments after creating, use the
+                    <b>Branch access</b> button (<i class="pi pi-sitemap"></i>) on the user row.
+                  </p>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
       </div>
     </div>
     <div class="hms-dialog-footer">
       <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="closeDialog()"></button>
-      <button
-        pButton
-        type="button"
-        label="Save"
-        icon="pi pi-check"
-        severity="success"
-        [loading]="saving"
-        (click)="saveUser()"
-      ></button>
+      <button pButton type="button" label="Save user" icon="pi pi-check" severity="success" [loading]="saving" (click)="saveUser()"></button>
     </div>
   </div>
 </p-dialog>
 
+<!-- ── Assign role dialog ─────────────────────────────────── -->
 <p-dialog
-  header="Assign role"
+  header="Change role"
   [(visible)]="roleDialogOpen"
   [modal]="true"
-  [style]="{ width: 'min(95vw, 24rem)' }"
+  [style]="{ width: 'min(95vw, 26rem)' }"
   [contentStyle]="{ overflow: 'hidden', padding: '0' }"
   styleClass="hms-crud-dialog"
 >
   <div class="hms-dialog-body">
     <div class="hms-dialog-scroll">
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-    <div class="flex flex-col gap-1 sm:col-span-2">
-      <label class="hms-field-label hms-field-label--required" for="ar-rl">Role</label>
-      <p-select
-        inputId="ar-rl"
-        [(ngModel)]="assignRoleId"
-        name="arRl"
-        [options]="roleOptions"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Role"
-        styleClass="w-full"
-        appendTo="body"
-      />
-    </div>
+      <div class="flex flex-col gap-3">
+        <p class="text-sm text-slate-500">The role controls which pages and actions this user can see. Choose carefully — it affects all their branches.</p>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label hms-field-label--required" for="ar-rl">Role</label>
+          <p-select
+            inputId="ar-rl"
+            [(ngModel)]="assignRoleId"
+            name="arRl"
+            [options]="roleOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select role"
+            styleClass="w-full"
+            appendTo="body"
+          />
+        </div>
       </div>
     </div>
     <div class="hms-dialog-footer">
       <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="roleDialogOpen = false"></button>
-      <button
-        pButton
-        type="button"
-        label="Save"
-        icon="pi pi-check"
-        severity="success"
-        [loading]="saving"
-        (click)="saveRole()"
-      ></button>
+      <button pButton type="button" label="Save" icon="pi pi-check" severity="success" [loading]="saving" (click)="saveRole()"></button>
     </div>
   </div>
 </p-dialog>
 
+<!-- ── Departments dialog ─────────────────────────────────── -->
 <p-dialog
   header="User departments"
   [(visible)]="deptDialogOpen"
@@ -305,181 +443,282 @@
 >
   <div class="hms-dialog-body">
     <div class="hms-dialog-scroll">
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-    <div class="flex flex-col gap-1 sm:col-span-2">
-      <label class="hms-field-label" for="u-depts">Departments</label>
-      <p-multiselect
-        inputId="u-depts"
-        [(ngModel)]="selectedDeptIds"
-        name="uDepts"
-        [options]="departmentOptions"
-        optionLabel="label"
-        optionValue="value"
-        display="chip"
-        placeholder="Departments"
-        styleClass="w-full"
-        appendTo="body"
-      />
-    </div>
+      <div class="flex flex-col gap-3">
+        <p class="text-sm text-slate-500">Departments further scope what this user sees within their assigned branches.</p>
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label" for="u-depts">Departments</label>
+          <p-multiselect
+            inputId="u-depts"
+            [(ngModel)]="selectedDeptIds"
+            name="uDepts"
+            [options]="departmentOptions"
+            optionLabel="label"
+            optionValue="value"
+            display="chip"
+            placeholder="Select departments"
+            styleClass="w-full"
+            appendTo="body"
+          />
+        </div>
       </div>
     </div>
     <div class="hms-dialog-footer">
       <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="deptDialogOpen = false"></button>
-      <button
-        pButton
-        type="button"
-        label="Save"
-        icon="pi pi-check"
-        severity="success"
-        [loading]="saving"
-        (click)="saveDepartments()"
-      ></button>
+      <button pButton type="button" label="Save" icon="pi pi-check" severity="success" [loading]="saving" (click)="saveDepartments()"></button>
     </div>
   </div>
 </p-dialog>
 
+<!-- ── Branch access dialog ───────────────────────────────── -->
 <p-dialog
-  header="User branches"
+  header="Branch access"
   [(visible)]="branchDialogOpen"
   [modal]="true"
-  [style]="{ width: 'min(95vw, 28rem)' }"
+  [style]="{ width: 'min(95vw, 32rem)' }"
   [contentStyle]="{ overflow: 'hidden', padding: '0' }"
   styleClass="hms-crud-dialog"
 >
   <div class="hms-dialog-body">
     <div class="hms-dialog-scroll">
-      <div class="grid grid-cols-1 gap-3">
-        <div class="flex flex-col gap-1">
-          <label class="hms-field-label" for="u-branches">Branches</label>
-          <p-multiselect
-            inputId="u-branches"
-            [(ngModel)]="selectedBranchIds"
-            name="uBranches"
-            [options]="branchOptions"
-            optionLabel="label"
-            optionValue="value"
-            display="chip"
-            placeholder="Branches"
-            styleClass="w-full"
-            appendTo="body"
-          />
+      <div class="flex flex-col gap-4">
+
+        <!-- Access mode cards -->
+        <div>
+          <p class="mb-2 text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400">Access mode</p>
+          <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <label
+              class="flex cursor-pointer items-start gap-2.5 rounded-lg border-2 p-3 transition-colors"
+              [class.border-blue-500]="dialogBranchAccessMode === 'AllBranches'"
+              [class.bg-blue-50]="dialogBranchAccessMode === 'AllBranches'"
+              [class.border-slate-200]="dialogBranchAccessMode !== 'AllBranches'"
+              [class.bg-white]="dialogBranchAccessMode !== 'AllBranches'"
+            >
+              <input type="radio" name="dlgBranchMode" value="AllBranches" [(ngModel)]="dialogBranchAccessMode" class="mt-0.5 accent-blue-600" />
+              <div>
+                <p class="text-xs font-semibold text-slate-700">All branches</p>
+                <p class="text-[0.68rem] text-slate-500">Can access every active branch — no restrictions</p>
+              </div>
+            </label>
+            <label
+              class="flex cursor-pointer items-start gap-2.5 rounded-lg border-2 p-3 transition-colors"
+              [class.border-orange-400]="dialogBranchAccessMode === 'AssignedOnly'"
+              [class.bg-orange-50]="dialogBranchAccessMode === 'AssignedOnly'"
+              [class.border-slate-200]="dialogBranchAccessMode !== 'AssignedOnly'"
+              [class.bg-white]="dialogBranchAccessMode !== 'AssignedOnly'"
+            >
+              <input type="radio" name="dlgBranchMode" value="AssignedOnly" [(ngModel)]="dialogBranchAccessMode" class="mt-0.5 accent-orange-500" />
+              <div>
+                <p class="text-xs font-semibold text-slate-700">Assigned only</p>
+                <p class="text-[0.68rem] text-slate-500">Restricted to the specific branches listed below</p>
+              </div>
+            </label>
+          </div>
         </div>
-        <div class="flex flex-col gap-1">
-          <label class="hms-field-label" for="u-default-branch">Default branch</label>
-          <p-select
-            inputId="u-default-branch"
-            [(ngModel)]="defaultBranchId"
-            name="uDefaultBranch"
-            [options]="filteredDefaultBranchOptions"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Default"
-            styleClass="w-full"
-            appendTo="body"
-          />
+
+        <p-divider styleClass="my-0" />
+
+        <!-- Branch assignments -->
+        <div>
+          <p class="mb-2 text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400">
+            Branch assignments
+            @if (dialogBranchAccessMode === 'AllBranches') {
+              <span class="ml-1 font-normal normal-case text-slate-400">(optional when mode is All branches)</span>
+            } @else {
+              <span class="ml-1 font-normal normal-case text-orange-500">required for Assigned only mode</span>
+            }
+          </p>
+          <div class="flex flex-col gap-3">
+            <p-multiselect
+              [(ngModel)]="selectedBranchIds"
+              name="uBranches"
+              [options]="branchOptions"
+              optionLabel="label"
+              optionValue="value"
+              display="chip"
+              [placeholder]="dialogBranchAccessMode === 'AssignedOnly' ? 'Select branches this user can access' : 'Optional — leave empty for all branches'"
+              styleClass="w-full"
+              appendTo="body"
+            />
+            @if (selectedBranchIds.length > 1) {
+              <div class="flex flex-col gap-1">
+                <label class="hms-field-label" for="u-default-branch">Default branch <span class="text-[0.65rem] font-normal text-slate-400">— opened automatically at login when user has multiple branches</span></label>
+                <p-select
+                  inputId="u-default-branch"
+                  [(ngModel)]="defaultBranchId"
+                  name="uDefaultBranch"
+                  [options]="filteredDefaultBranchOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select default"
+                  styleClass="w-full"
+                  appendTo="body"
+                />
+              </div>
+            }
+            @if (dialogBranchAccessMode === 'AssignedOnly' && selectedBranchIds.length === 0) {
+              <p-message
+                severity="warn"
+                text="No branches assigned. With 'Assigned only' mode, this user will have no access until you assign at least one branch."
+                styleClass="w-full"
+              />
+            }
+          </div>
         </div>
+
       </div>
     </div>
     <div class="hms-dialog-footer">
       <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="branchDialogOpen = false"></button>
-      <button
-        pButton
-        type="button"
-        label="Save"
-        icon="pi pi-check"
-        severity="success"
-        [loading]="saving"
-        (click)="saveBranches()"
-      ></button>
+      <button pButton type="button" label="Save access" icon="pi pi-check" severity="success" [loading]="saving" (click)="saveBranches()"></button>
     </div>
   </div>
 </p-dialog>
 
+<!-- ── User detail dialog ─────────────────────────────────── -->
 <p-dialog
   header="User detail"
   [(visible)]="detailDialogOpen"
   [modal]="true"
-  [style]="{ width: 'min(95vw, 36rem)' }"
+  [style]="{ width: 'min(95vw, 38rem)' }"
   [contentStyle]="{ overflow: 'hidden', padding: '0' }"
   styleClass="hms-crud-dialog"
   (onHide)="closeUserDetail()"
 >
   <div class="hms-dialog-body">
     <div class="hms-dialog-scroll">
-  @if (detailLoading) {
-    <app-hms-block-skeleton [lines]="12" ariaLabel="Loading user detail" />
-  } @else if (userDetail) {
-    <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-      <div>
-        <span class="text-xs font-medium text-slate-500">First name</span>
-        <p class="text-slate-800">{{ userDetail.firstName ?? '—' }}</p>
-      </div>
-      <div>
-        <span class="text-xs font-medium text-slate-500">Last name</span>
-        <p class="text-slate-800">{{ userDetail.lastName ?? '—' }}</p>
-      </div>
-      <div>
-        <span class="text-xs font-medium text-slate-500">ID</span>
-        <p class="font-mono text-slate-800">{{ userDetail.id }}</p>
-      </div>
-      <div>
-        <span class="text-xs font-medium text-slate-500">Username</span>
-        <p class="text-slate-800">{{ userDetail.userName }}</p>
-      </div>
-      <div class="sm:col-span-2">
-        <span class="text-xs font-medium text-slate-500">Email</span>
-        <p class="text-slate-800">{{ userDetail.email }}</p>
-      </div>
-      <div>
-        <span class="text-xs font-medium text-slate-500">Role</span>
-        <p class="text-slate-800">{{ userDetail.roleName ?? '—' }}</p>
-      </div>
-      <div>
-        <span class="text-xs font-medium text-slate-500">Phone</span>
-        <p class="text-slate-800">{{ userDetail.phone ?? '—' }}</p>
-      </div>
-      <div class="sm:col-span-2">
-        <span class="text-xs font-medium text-slate-500">Address</span>
-        <p class="text-slate-600">{{ userDetail.address ?? '—' }}</p>
-      </div>
-      <div>
-        <span class="text-xs font-medium text-slate-500">Active</span>
-        <p class="text-slate-800">{{ userDetail.isActive ? 'Yes' : 'No' }}</p>
-      </div>
-      <div>
-        <span class="text-xs font-medium text-slate-500">Hospital ID</span>
-        <p class="text-slate-800">{{ userDetail.hospitalId ?? '—' }}</p>
-      </div>
-      <div class="text-xs text-slate-500 sm:col-span-2">
-        Created: {{ userDetail.createdAt | date: 'medium' }} · Updated:
-        {{ userDetail.updatedAt | date: 'medium' }}
-      </div>
-      <div class="sm:col-span-2">
-        <span class="mb-2 block text-xs font-medium text-slate-500">Departments</span>
-        <div class="flex flex-wrap gap-2">
-          @for (d of userDetail.departments; track d.id) {
-            <p-chip [label]="d.name" icon="pi pi-building" />
-          } @empty {
-            <span class="text-slate-500">None</span>
+      @if (detailLoading) {
+        <app-hms-block-skeleton [lines]="12" ariaLabel="Loading user detail" />
+      } @else if (userDetail) {
+        <div class="flex flex-col gap-5 text-sm">
+
+          <!-- Identity -->
+          <div>
+            <p class="mb-2 text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400">Personal info</p>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <span class="text-xs font-medium text-slate-500">First name</span>
+                <p class="text-slate-800">{{ userDetail.firstName ?? '—' }}</p>
+              </div>
+              <div>
+                <span class="text-xs font-medium text-slate-500">Last name</span>
+                <p class="text-slate-800">{{ userDetail.lastName ?? '—' }}</p>
+              </div>
+              <div>
+                <span class="text-xs font-medium text-slate-500">Phone</span>
+                <p class="text-slate-800">{{ userDetail.phone ?? '—' }}</p>
+              </div>
+              <div class="col-span-2">
+                <span class="text-xs font-medium text-slate-500">Address</span>
+                <p class="text-slate-600">{{ userDetail.address ?? '—' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <p-divider styleClass="my-0" />
+
+          <!-- Account -->
+          <div>
+            <p class="mb-2 text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400">Account</p>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <span class="text-xs font-medium text-slate-500">Username</span>
+                <p class="font-mono text-slate-800">{{ userDetail.userName }}</p>
+              </div>
+              <div class="col-span-2">
+                <span class="text-xs font-medium text-slate-500">Email</span>
+                <p class="text-slate-800">{{ userDetail.email }}</p>
+              </div>
+              <div>
+                <span class="text-xs font-medium text-slate-500">Status</span>
+                <div class="mt-0.5">
+                  <p-tag [value]="userDetail.isActive ? 'Active' : 'Inactive'" [severity]="userDetail.isActive ? 'success' : 'secondary'" />
+                </div>
+              </div>
+              <div>
+                <span class="text-xs font-medium text-slate-500">Role</span>
+                <div class="mt-0.5">
+                  @if (userDetail.roleName) {
+                    <p-tag [value]="userDetail.roleName" severity="secondary" />
+                  } @else {
+                    <span class="text-slate-400">No role assigned</span>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p-divider styleClass="my-0" />
+
+          <!-- Branch access -->
+          <div>
+            <p class="mb-2 text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400">Branch access</p>
+            <div class="flex flex-col gap-3">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-medium text-slate-500">Access mode:</span>
+                @if (userDetail.branchAccessMode === 'AssignedOnly') {
+                  <p-tag value="Assigned only" severity="warn" icon="pi pi-lock" />
+                  <span class="text-[0.68rem] text-slate-400">— can only access explicitly assigned branches</span>
+                } @else {
+                  <p-tag value="All branches" severity="info" icon="pi pi-globe" />
+                  <span class="text-[0.68rem] text-slate-400">— can access every active branch</span>
+                }
+              </div>
+              @if (userDetail.branches?.length) {
+                <div>
+                  <span class="mb-1.5 block text-xs font-medium text-slate-500">Assigned branches</span>
+                  <div class="flex flex-wrap gap-2">
+                    @for (b of userDetail.branches; track b.id) {
+                      <div class="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-xs text-slate-700">
+                        @if (b.isMain) { <i class="pi pi-star-fill text-[0.6rem] text-blue-400"></i> }
+                        @if (b.isDefault) { <i class="pi pi-home text-[0.6rem] text-green-500"></i> }
+                        {{ b.name }}
+                        @if (b.isDefault) { <span class="text-[0.6rem] text-green-500">(default)</span> }
+                      </div>
+                    }
+                  </div>
+                </div>
+              } @else {
+                @if (userDetail.branchAccessMode === 'AssignedOnly') {
+                  <p-message severity="warn" text="No branches assigned — this user currently has no access." styleClass="w-full" />
+                } @else {
+                  <p class="text-[0.7rem] text-slate-400">No specific branches assigned — user can access all active branches.</p>
+                }
+              }
+              @if (userDetail.departments?.length) {
+                <div>
+                  <span class="mb-1.5 block text-xs font-medium text-slate-500">Departments</span>
+                  <div class="flex flex-wrap gap-2">
+                    @for (d of userDetail.departments; track d.id) {
+                      <p-chip [label]="d.name" icon="pi pi-building" />
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          @if (userDetail.allowedModules?.length) {
+            <p-divider styleClass="my-0" />
+            <div>
+              <p class="mb-2 text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400">Allowed modules</p>
+              <div class="flex flex-wrap gap-2">
+                @for (m of userDetail.allowedModules; track m.id) {
+                  <p-tag severity="success" [value]="m.name" />
+                }
+              </div>
+            </div>
           }
+
+          <p class="text-[0.68rem] text-slate-400">
+            Created: {{ userDetail.createdAt | date: 'medium' }}
+            @if (userDetail.updatedAt) { · Updated: {{ userDetail.updatedAt | date: 'medium' }} }
+          </p>
+
         </div>
-      </div>
-      <div class="sm:col-span-2">
-        <span class="mb-2 block text-xs font-medium text-slate-500">Allowed menus from role</span>
-        <div class="flex flex-wrap gap-2">
-          @for (m of userDetail.allowedModules; track m.id) {
-            <p-tag severity="success" [value]="m.name" />
-          } @empty {
-            <span class="text-slate-500">None</span>
-          }
-        </div>
-      </div>
-    </div>
-  }
+      }
     </div>
   </div>
   <ng-template #footer>
     <button pButton type="button" label="Close" severity="secondary" (click)="closeUserDetail()"></button>
   </ng-template>
 </p-dialog>
-

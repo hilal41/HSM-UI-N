@@ -1,0 +1,125 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Audit logs"
+  subtitle="Platform activity across hospitals, users, and configuration"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <div class="flex items-center gap-3 rounded-lg border border-[var(--hms-color-border)] bg-[var(--hms-color-surface)] px-3 py-2">
+      <p-toggleswitch
+        inputId="al-audit-enabled"
+        [ngModel]="auditLogsEnabled"
+        (ngModelChange)="onAuditToggle($event)"
+        name="alAuditEnabled"
+        [disabled]="auditToggleLoading || auditToggleSaving"
+      />
+      <label for="al-audit-enabled" class="cursor-pointer text-sm font-medium text-[var(--hms-color-text)]">
+        Audit logging {{ auditLogsEnabled ? 'On' : 'Off' }}
+      </label>
+    </div>
+  </div>
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    @if (!auditLogsEnabled && !auditToggleLoading) {
+      <p-message
+        severity="warn"
+        text="Audit logging is off. New activity will not be recorded. Existing logs remain available below."
+        styleClass="mb-4 w-full"
+      />
+    }
+    @if (errorMessage) {
+      <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+    }
+
+    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+      <div class="flex min-w-[10rem] flex-1 flex-col gap-1">
+        <label class="hms-field-label" for="al-entity">Entity type</label>
+        <input
+          pInputText
+          id="al-entity"
+          class="w-full"
+          [(ngModel)]="filterEntityType"
+          name="alEntity"
+          placeholder="e.g. Hospital"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="al-from">From</label>
+        <p-datepicker
+          inputId="al-from"
+          [(ngModel)]="filterDateFrom"
+          name="alFrom"
+          [showIcon]="true"
+          dateFormat="dd/mm/yy"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label" for="al-to">To</label>
+        <p-datepicker
+          inputId="al-to"
+          [(ngModel)]="filterDateTo"
+          name="alTo"
+          [showIcon]="true"
+          dateFormat="dd/mm/yy"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      </div>
+      <div class="flex gap-2">
+        <button pButton type="button" label="Apply" icon="pi pi-filter" (click)="applyFilters()"></button>
+        <button pButton type="button" label="Clear" severity="secondary" [outlined]="true" (click)="clearFilters()"></button>
+      </div>
+    </div>
+
+    <p-table
+      [showLoader]="false"
+      [value]="rows"
+      [lazy]="true"
+      [paginator]="showPaginator"
+      [alwaysShowPaginator]="false"
+      [rows]="tablePageSize"
+      [totalRecords]="totalCount"
+      [loading]="loading"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      (onLazyLoad)="onLazyLoad($event)"
+      [tableStyle]="{ 'min-width': '100%' }"
+      styleClass="p-datatable-sm hms-crud-table"
+    >
+      <ng-template #header>
+        <tr>
+          <th>When</th>
+          <th>User</th>
+          <th>Action</th>
+          <th>Entity type</th>
+          <th>Entity id</th>
+          <th>IP</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-row>
+        <tr>
+          <td class="whitespace-nowrap text-sm text-slate-600">{{ row.createdAt | date: 'medium' }}</td>
+          <td class="text-sm">{{ row.userName ?? '—' }}</td>
+          <td class="font-mono text-xs">{{ row.action }}</td>
+          <td class="text-sm">{{ row.entityType }}</td>
+          <td class="font-mono text-xs text-slate-500">{{ row.entityId ?? '—' }}</td>
+          <td class="font-mono text-xs text-slate-500">{{ row.ipAddress ?? '—' }}</td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="6" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state
+              icon="pi pi-history"
+              [title]="hasActiveFilter ? 'No matching audit entries' : 'No audit entries yet'"
+              [description]="hasActiveFilter ? 'Try adjusting entity type or date filters.' : 'System activity will appear here as users make changes.'"
+            />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="loadingbody" let-columns>
+        <app-hms-table-loading-body [cols]="columns?.length || 6" />
+      </ng-template>
+    </p-table>
+  </div>
+</app-surface-panel>

@@ -88,13 +88,13 @@
 :host ::ng-deep .med-form-dialog .p-dialog-title {
   font-size: 1rem !important;
   font-weight: 700 !important;
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
 }
 
 :host ::ng-deep .med-form-dialog .hms-field-label {
   font-size: 0.58rem !important;
   font-weight: 600 !important;
-  color: #64748b !important;
+  color: var(--hms-color-text-muted) !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
 }
@@ -115,7 +115,7 @@
   max-height: 2.25rem !important;
   border-radius: 0.35rem !important;
   border-color: rgb(203 213 225 / 0.95) !important;
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
   font-size: 0.68rem !important;
   line-height: 1.25 !important;
   padding: 0.18rem 0.32rem !important;
@@ -131,7 +131,7 @@
   padding: 0.18rem 0.32rem !important;
   font-size: 0.68rem !important;
   line-height: 1.25 !important;
-  color: #0f172a !important;
+  color: var(--hms-color-text) !important;
 }
 
 :host ::ng-deep .med-form-dialog textarea {
@@ -144,5 +144,5 @@
   gap: 0.65rem;
   padding: 0.8rem 1.15rem 0.95rem;
   border-top: 1px solid rgb(226 232 240 / 0.95);
-  background: #ffffff;
+  background: var(--hms-color-surface);
 }

@@ -1,0 +1,175 @@
+/* Card chrome lives on the component so parents with default encapsulation still render correctly. */
+
+@keyframes dash-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+:host {
+  --dash-stat-card-height: 5.75rem;
+  --dash-primary: var(--hms-color-primary);
+  --dash-primary-dark: var(--hms-color-primary-hover);
+  --dash-primary-soft: var(--hms-color-primary-soft);
+  --dash-primary-border: var(--hms-color-primary-border);
+}
+
+.dash-stat-card {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: var(--hms-card-gap);
+  min-width: 0;
+  width: 100%;
+  height: var(--dash-stat-card-height, 5.75rem);
+  min-height: var(--dash-stat-card-height, 5.75rem);
+  max-height: var(--dash-stat-card-height, 5.75rem);
+  box-sizing: border-box;
+  padding: var(--hms-card-padding);
+  border-radius: var(--hms-radius-card);
+  border: var(--hms-card-border);
+  background: var(--hms-color-surface);
+  box-shadow: var(--hms-shadow-card);
+  overflow: hidden;
+  animation: dash-rise-in 0.55s ease both;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.dash-stat-card--interactive {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.dash-stat-card--interactive:hover,
+.dash-stat-card--interactive:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgb(37 99 235 / 0.12);
+}
+
+.dash-stat-card__icon {
+  flex: 0 0 auto;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  color: var(--dash-primary-dark);
+  background: var(--dash-primary-soft);
+  border: 1px solid var(--dash-primary-border);
+}
+
+.dash-stat-card__body {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.dash-stat-card__footer {
+  display: flex;
+  align-items: center;
+  min-height: 1.15rem;
+  max-height: 1.15rem;
+  margin-top: 0.22rem;
+  overflow: hidden;
+}
+
+.dash-stat-card__label {
+  margin: 0;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--hms-color-text-subtle);
+}
+
+.dash-stat-card__value {
+  margin: 0.12rem 0 0;
+  font-size: clamp(1.05rem, 1.6vw, 1.45rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--hms-color-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-stat-card__hint {
+  margin: 0;
+  font-size: 0.62rem;
+  color: var(--hms-color-text-subtle);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-stat-card__trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  margin: 0;
+  padding: 0.12rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  background: var(--hms-color-canvas);
+  color: var(--hms-color-text-muted);
+  line-height: 1.15;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-stat-card__trend--up {
+  color: var(--hms-color-success-hover);
+  background: var(--hms-color-success-soft);
+  border: 1px solid var(--hms-color-success-border);
+}
+
+.dash-stat-card__trend--down {
+  color: var(--hms-color-text-muted);
+  background: var(--hms-color-canvas);
+}
+
+.dash-stat-card__arrow {
+  flex: 0 0 auto;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  color: var(--hms-color-text-subtle);
+  background: var(--hms-color-primary-light);
+  font-size: 0.65rem;
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.dash-stat-card__arrow--hidden {
+  display: none;
+}
+
+.dash-stat-card--interactive:hover .dash-stat-card__arrow {
+  transform: translateX(2px);
+  color: var(--stat-tone, var(--dash-primary-dark));
+  background: var(--stat-tone-soft, var(--dash-primary-soft));
+}

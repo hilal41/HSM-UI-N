@@ -1,0 +1,56 @@
+<section class="dash-charts-section" aria-label="Financial summary">
+  @if (isLoading()) {
+    <div class="dash-ledger dash-ledger--skeleton" aria-hidden="true">
+      <div class="dash-ledger__pipeline">
+        @for (i of [0, 1, 2, 3, 4]; track i) {
+          <div class="dash-ledger__cell">
+            <p-skeleton width="70%" height="0.5rem" borderRadius="4px" />
+            <p-skeleton width="50%" height="1.2rem" borderRadius="6px" />
+          </div>
+        }
+      </div>
+    </div>
+  } @else if (data.financialError()) {
+    <div class="dash-panel dash-inline-error" role="alert">
+      <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+      <span>{{ data.financialError() }}</span>
+    </div>
+  } @else {
+    <article class="dash-ledger">
+      <div class="dash-ledger__pipeline" role="list">
+        <div class="dash-ledger__cell" role="listitem">
+          <span class="dash-ledger__label">Service charges</span>
+          <span class="dash-ledger__amount">{{ display().service | number: '1.0-0' }}</span>
+        </div>
+
+        <div class="dash-ledger__op dash-ledger__op--minus" aria-hidden="true">−</div>
+
+        <div class="dash-ledger__cell" role="listitem">
+          <span class="dash-ledger__label">Discount</span>
+          <span class="dash-ledger__amount dash-ledger__amount--muted">{{ display().discount | number: '1.0-0' }}</span>
+        </div>
+
+        <div class="dash-ledger__op dash-ledger__op--eq" aria-hidden="true">=</div>
+
+        <div class="dash-ledger__cell" role="listitem">
+          <span class="dash-ledger__label">Net revenue</span>
+          <span class="dash-ledger__amount">{{ display().net | number: '1.0-0' }}</span>
+        </div>
+
+        <div class="dash-ledger__split" aria-hidden="true"></div>
+
+        <div class="dash-ledger__cell dash-ledger__cell--received" role="listitem">
+          <span class="dash-ledger__label">Received</span>
+          <span class="dash-ledger__amount dash-ledger__amount--success">{{ display().received | number: '1.0-0' }}</span>
+        </div>
+
+        <div class="dash-ledger__split" aria-hidden="true"></div>
+
+        <div class="dash-ledger__cell dash-ledger__cell--outstanding" role="listitem">
+          <span class="dash-ledger__label">Outstanding</span>
+          <span class="dash-ledger__amount dash-ledger__amount--warn">{{ display().outstanding | number: '1.0-0' }}</span>
+        </div>
+      </div>
+    </article>
+  }
+</section>

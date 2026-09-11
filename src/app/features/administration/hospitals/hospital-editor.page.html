@@ -1,0 +1,596 @@
+<div class="heditor">
+  @if (loadError) {
+    <div class="heditor-error">
+      <p-message severity="error" [text]="loadError" styleClass="w-full" />
+      <button
+        pButton
+        type="button"
+        label="Back to hospitals"
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [outlined]="true"
+        (click)="cancel()"
+      ></button>
+    </div>
+  } @else if (loading) {
+    <app-hms-block-skeleton [lines]="18" ariaLabel="Loading hospital editor" />
+  } @else {
+    <header class="heditor-hero">
+      <div class="heditor-hero__main">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-arrow-left"
+          severity="secondary"
+          [text]="true"
+          class="heditor-hero__back"
+          aria-label="Back to hospitals"
+          pTooltip="Back to hospitals"
+          (click)="cancel()"
+        ></button>
+        <div class="heditor-hero__icon" aria-hidden="true">
+          <i class="pi" [class.pi-plus]="isCreateMode" [class.pi-building]="!isCreateMode"></i>
+        </div>
+        <div class="heditor-hero__copy">
+          <p class="heditor-hero__eyebrow">
+            {{ isCreateMode ? 'Platform onboarding' : 'Hospital profile' }}
+          </p>
+          <h1 class="heditor-hero__title">
+            @if (isCreateMode) {
+              New hospital tenant
+            } @else {
+              {{ formNamePreview || 'Edit hospital' }}
+            }
+          </h1>
+          <p class="heditor-hero__sub">
+            @if (isCreateMode) {
+              Capture identity, license menus, and optionally provision the first administrator.
+            } @else {
+              Update identity, contact details, and operational settings for this tenant.
+            }
+          </p>
+          @if (!isCreateMode) {
+            <div class="heditor-hero__meta">
+              <span class="heditor-chip heditor-chip--code">{{ form.controls.code.value }}</span>
+              <p-tag
+                [value]="form.controls.status.value"
+                [severity]="statusSeverity(form.controls.status.value)"
+              />
+              <a
+                class="heditor-link"
+                [routerLink]="['/app/admin/hospitals', editingId, 'menus']"
+              >
+                <i class="pi pi-list-check" aria-hidden="true"></i>
+                Manage menus
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="heditor-hero__aside">
+        @if (isCreateMode) {
+          <div class="heditor-stat">
+            <span class="heditor-stat__value">{{ selectedMenuCount }}</span>
+            <span class="heditor-stat__label">of {{ totalRoutableMenus }} menus</span>
+          </div>
+          @if (formNamePreview) {
+            <div class="heditor-stat heditor-stat--soft">
+              <span class="heditor-stat__value heditor-stat__value--sm">{{ formNamePreview }}</span>
+              <span class="heditor-stat__label">Working name</span>
+            </div>
+          }
+        } @else {
+          <div class="heditor-hero__actions">
+            <button
+              pButton
+              type="button"
+              label="Delete"
+              icon="pi pi-trash"
+              severity="danger"
+              [outlined]="true"
+              [disabled]="saving"
+              (click)="confirmSoftDelete()"
+            ></button>
+          </div>
+        }
+      </div>
+    </header>
+
+    <div class="heditor-layout" [class.heditor-layout--edit]="!isCreateMode">
+      <aside class="heditor-aside">
+        <section class="heditor-panel">
+          <header class="heditor-panel__head">
+            <span class="heditor-panel__icon" aria-hidden="true"><i class="pi pi-id-card"></i></span>
+            <div>
+              <h2 class="heditor-panel__title">Hospital details</h2>
+              <p class="heditor-panel__sub">Identity and contact information</p>
+            </div>
+          </header>
+
+          <div class="heditor-fields" [formGroup]="form">
+            <div class="heditor-field heditor-field--half">
+              <label class="heditor-label heditor-label--required" for="h-name">Name</label>
+              <input
+                pInputText
+                id="h-name"
+                class="w-full"
+                formControlName="name"
+                placeholder="City General Hospital"
+                autocomplete="organization"
+              />
+            </div>
+            <div class="heditor-field heditor-field--half">
+              <label class="heditor-label heditor-label--required" for="h-code">Code</label>
+              <input
+                pInputText
+                id="h-code"
+                class="w-full heditor-code"
+                formControlName="code"
+                placeholder="CGH"
+                autocomplete="off"
+              />
+            </div>
+            <div class="heditor-field heditor-field--full">
+              <label class="heditor-label" for="h-addr">Address</label>
+              <input
+                pInputText
+                id="h-addr"
+                class="w-full"
+                formControlName="address"
+                placeholder="Street, city, country"
+                autocomplete="street-address"
+              />
+            </div>
+            <div class="heditor-field heditor-field--half">
+              <label class="heditor-label" for="h-ph">Phone</label>
+              <span class="heditor-input-wrap">
+                <i class="pi pi-phone heditor-input-wrap__icon" aria-hidden="true"></i>
+                <input
+                  pInputText
+                  id="h-ph"
+                  class="w-full heditor-input-wrap__control"
+                  formControlName="phone"
+                  placeholder="+1 …"
+                  autocomplete="tel"
+                />
+              </span>
+            </div>
+            <div class="heditor-field heditor-field--half">
+              <label class="heditor-label" for="h-em">Email</label>
+              <span class="heditor-input-wrap">
+                <i class="pi pi-envelope heditor-input-wrap__icon" aria-hidden="true"></i>
+                <input
+                  pInputText
+                  id="h-em"
+                  type="email"
+                  class="w-full heditor-input-wrap__control"
+                  formControlName="email"
+                  placeholder="contact@hospital.com"
+                  autocomplete="email"
+                />
+              </span>
+            </div>
+            @if (!isCreateMode) {
+              <div class="heditor-field heditor-field--full">
+                <label class="heditor-label" for="h-st">Status</label>
+                <p-select
+                  inputId="h-st"
+                  formControlName="status"
+                  [options]="statusOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  styleClass="w-full"
+                  appendTo="body"
+                />
+                <p class="heditor-hint">{{ statusHelp }}</p>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="heditor-panel">
+          <header class="heditor-panel__head">
+            <span class="heditor-panel__icon heditor-panel__icon--support" aria-hidden="true">
+              <i class="pi pi-verified"></i>
+            </span>
+            <div>
+              <h2 class="heditor-panel__title">Compliance</h2>
+              <p class="heditor-panel__sub">License, tax, and hospital classification</p>
+            </div>
+          </header>
+          <div class="heditor-fields" [formGroup]="form">
+            <div class="heditor-field heditor-field--half">
+              <label class="heditor-label" for="h-license">License number</label>
+              <input pInputText id="h-license" class="w-full" formControlName="licenseNumber" placeholder="Facility licence #" />
+            </div>
+            <div class="heditor-field heditor-field--half">
+              <label class="heditor-label" for="h-tax">Tax number</label>
+              <input pInputText id="h-tax" class="w-full" formControlName="taxNumber" placeholder="NTN / VAT / TIN" />
+            </div>
+            <div class="heditor-field heditor-field--half">
+              <label class="heditor-label" for="h-type">Hospital type</label>
+              <p-select
+                inputId="h-type"
+                formControlName="hospitalType"
+                [options]="hospitalTypeOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select type"
+                [showClear]="true"
+                styleClass="w-full"
+                appendTo="body"
+              />
+            </div>
+            <div class="heditor-field heditor-field--half">
+              <label class="heditor-label" for="h-size">Hospital size</label>
+              <p-select
+                inputId="h-size"
+                formControlName="hospitalSize"
+                [options]="hospitalSizeOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select size"
+                [showClear]="true"
+                styleClass="w-full"
+                appendTo="body"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section class="heditor-panel">
+          <header class="heditor-panel__head">
+            <span class="heditor-panel__icon" aria-hidden="true"><i class="pi pi-globe"></i></span>
+            <div>
+              <h2 class="heditor-panel__title">Locale defaults</h2>
+              <p class="heditor-panel__sub">Currency, date/time, language, and timezone</p>
+            </div>
+          </header>
+          <div class="heditor-fields" [formGroup]="form">
+            <div class="heditor-field heditor-field--half">
+              <label class="heditor-label" for="h-currency">Currency symbol</label>
+              <p-select
+                inputId="h-currency"
+                formControlName="currencySymbol"
+                [options]="currencySymbolOptions"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="w-full"
+                appendTo="body"
+              />
+            </div>
+            <div class="heditor-field heditor-field--half">
+              <label class="heditor-label" for="h-lang">Default language</label>
+              <p-select
+                inputId="h-lang"
+                formControlName="defaultLanguage"
+                [options]="languageOptions"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="w-full"
+                appendTo="body"
+              />
+            </div>
+            <div class="heditor-field heditor-field--half">
+              <label class="heditor-label" for="h-date-fmt">Date format</label>
+              <p-select
+                inputId="h-date-fmt"
+                formControlName="dateFormat"
+                [options]="dateFormatOptions"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="w-full"
+                appendTo="body"
+              />
+            </div>
+            <div class="heditor-field heditor-field--half">
+              <label class="heditor-label" for="h-time-fmt">Time format</label>
+              <p-select
+                inputId="h-time-fmt"
+                formControlName="timeFormat"
+                [options]="timeFormatOptions"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="w-full"
+                appendTo="body"
+              />
+            </div>
+            <div class="heditor-field heditor-field--half">
+              <label class="heditor-label" for="h-tz">Default timezone</label>
+              <p-select
+                inputId="h-tz"
+                formControlName="defaultTimeZoneId"
+                [options]="timeZoneOptions"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="w-full"
+                appendTo="body"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section class="heditor-panel">
+          <header class="heditor-panel__head">
+            <span class="heditor-panel__icon heditor-panel__icon--menus" aria-hidden="true">
+              <i class="pi pi-hashtag"></i>
+            </span>
+            <div>
+              <h2 class="heditor-panel__title">MRN format</h2>
+              <p class="heditor-panel__sub">One sequence per hospital — blank Reg No auto-generates</p>
+            </div>
+          </header>
+          <div class="heditor-fields" [formGroup]="form">
+            <div class="heditor-field heditor-field--full">
+              <label class="heditor-label" for="h-mrn-fmt">Format template</label>
+              <input
+                pInputText
+                id="h-mrn-fmt"
+                class="w-full heditor-code"
+                formControlName="mrnFormat"
+                placeholder="{CODE}-{YYYY}-{#####}"
+              />
+              <p class="heditor-hint">{{ mrnTokenHelp }}</p>
+            </div>
+            <div class="heditor-field heditor-field--half">
+              <label class="heditor-label" for="h-mrn-prefix">Prefix (optional)</label>
+              <input
+                pInputText
+                id="h-mrn-prefix"
+                class="w-full heditor-code"
+                formControlName="mrnPrefix"
+                placeholder="Uses hospital code if empty"
+              />
+            </div>
+            <div class="heditor-field heditor-field--half">
+              <label class="heditor-label">Next MRN preview</label>
+              <div class="heditor-mrn-preview" aria-live="polite">{{ mrnPreview }}</div>
+            </div>
+          </div>
+        </section>
+
+        <label class="heditor-setting" for="h-branch-crud" [formGroup]="form">
+          <span class="heditor-setting__icon" aria-hidden="true"><i class="pi pi-sitemap"></i></span>
+          <span class="heditor-setting__copy">
+            <span class="heditor-setting__title">Branch self-management</span>
+            <span class="heditor-setting__desc">
+              Allow this hospital to create and edit its own branches
+            </span>
+          </span>
+          <p-toggleswitch
+            formControlName="allowHospitalBranchManagement"
+            inputId="h-branch-crud"
+          />
+        </label>
+
+        @if (!isCreateMode) {
+          <section class="heditor-panel heditor-panel--wide">
+            <header class="heditor-panel__head">
+              <span class="heditor-panel__icon heditor-panel__icon--support" aria-hidden="true">
+                <i class="pi pi-wrench"></i>
+              </span>
+              <div>
+                <h2 class="heditor-panel__title">Support actions</h2>
+                <p class="heditor-panel__sub">Reset admin access or sign in as their administrator</p>
+              </div>
+            </header>
+            <div class="heditor-support">
+              <button
+                pButton
+                type="button"
+                label="Reset admin password"
+                icon="pi pi-key"
+                severity="secondary"
+                [outlined]="true"
+                class="heditor-support__btn"
+                (click)="openResetAdminPassword()"
+              ></button>
+              <button
+                pButton
+                type="button"
+                label="Impersonate administrator"
+                icon="pi pi-user"
+                severity="warn"
+                [outlined]="true"
+                class="heditor-support__btn"
+                [loading]="impersonating"
+                [disabled]="impersonating"
+                (click)="impersonateAdministrator()"
+              ></button>
+            </div>
+          </section>
+        }
+
+        @if (isCreateMode) {
+          <section class="heditor-panel heditor-panel--admin">
+            <button
+              type="button"
+              class="heditor-admin-toggle"
+              (click)="adminExpanded = !adminExpanded"
+              [attr.aria-expanded]="adminExpanded"
+            >
+              <span class="heditor-panel__icon heditor-panel__icon--admin" aria-hidden="true">
+                <i class="pi pi-user-plus"></i>
+              </span>
+              <span class="heditor-admin-toggle__copy">
+                <span class="heditor-panel__title">Initial administrator</span>
+                <span class="heditor-panel__sub">Optional — first login for this hospital</span>
+              </span>
+              @if (hasAdminDraft) {
+                <p-tag severity="success" value="Draft" />
+              } @else {
+                <p-tag severity="secondary" value="Optional" />
+              }
+              <i
+                class="pi heditor-admin-toggle__chevron"
+                [class.pi-chevron-down]="!adminExpanded"
+                [class.pi-chevron-up]="adminExpanded"
+                aria-hidden="true"
+              ></i>
+            </button>
+
+            @if (adminExpanded) {
+              <div class="heditor-fields heditor-fields--admin" [formGroup]="form">
+                <div class="heditor-field heditor-field--full">
+                  <label class="heditor-label" for="h-role-name">Role name</label>
+                  <input pInputText id="h-role-name" class="w-full" formControlName="initialRoleName" />
+                </div>
+                <div class="heditor-field heditor-field--half">
+                  <label class="heditor-label" for="h-admin-user">Username</label>
+                  <input pInputText id="h-admin-user" class="w-full" formControlName="adminUserName" autocomplete="off" />
+                </div>
+                <div class="heditor-field heditor-field--half">
+                  <label class="heditor-label" for="h-admin-email">Email</label>
+                  <input
+                    pInputText
+                    id="h-admin-email"
+                    type="email"
+                    class="w-full"
+                    formControlName="adminEmail"
+                    autocomplete="off"
+                  />
+                </div>
+                <div class="heditor-field heditor-field--full">
+                  <label class="heditor-label" for="h-admin-pass">Password</label>
+                  <p-password
+                    inputId="h-admin-pass"
+                    formControlName="adminPassword"
+                    styleClass="w-full"
+                    [inputStyleClass]="'w-full'"
+                    [feedback]="false"
+                    [toggleMask]="true"
+                    placeholder="Min 8 characters"
+                  />
+                </div>
+                <div class="heditor-field heditor-field--half">
+                  <label class="heditor-label" for="h-admin-fn">First name</label>
+                  <input pInputText id="h-admin-fn" class="w-full" formControlName="adminFirstName" />
+                </div>
+                <div class="heditor-field heditor-field--half">
+                  <label class="heditor-label" for="h-admin-ln">Last name</label>
+                  <input pInputText id="h-admin-ln" class="w-full" formControlName="adminLastName" />
+                </div>
+              </div>
+            }
+          </section>
+        }
+      </aside>
+
+      @if (isCreateMode) {
+        <main class="heditor-main">
+          <section class="heditor-panel heditor-panel--menus">
+            <header class="heditor-panel__head heditor-panel__head--row">
+              <div class="heditor-panel__head-lead">
+                <span class="heditor-panel__icon heditor-panel__icon--menus" aria-hidden="true">
+                  <i class="pi pi-th-large"></i>
+                </span>
+                <div>
+                  <h2 class="heditor-panel__title">Allowed menus</h2>
+                  <p class="heditor-panel__sub">
+                    License pages for this hospital. Roles cannot exceed this set.
+                  </p>
+                </div>
+              </div>
+              <span class="heditor-pill">
+                <i class="pi pi-check-circle" aria-hidden="true"></i>
+                {{ selectedMenuCount }} selected
+              </span>
+            </header>
+            <app-hospital-menu-picker
+              layout="page"
+              [menuTree]="menuTree"
+              [selectedMenuIds]="formMenuIds"
+              [applyDefaultSelection]="formMenuIds.length === 0"
+              (selectedMenuIdsChange)="formMenuIds = $event"
+            />
+          </section>
+        </main>
+      }
+    </div>
+
+    <footer class="heditor-footer">
+      <div class="heditor-footer__summary">
+        @if (isCreateMode) {
+          <span class="heditor-footer__count">{{ selectedMenuCount }} menus</span>
+          <span class="heditor-footer__sep" aria-hidden="true">·</span>
+          <span class="heditor-footer__hint">Ready to create tenant</span>
+        } @else {
+          <span class="heditor-footer__hint">Save changes to {{ formNamePreview || 'this hospital' }}</span>
+        }
+      </div>
+      <div class="heditor-footer__actions">
+        <button
+          pButton
+          type="button"
+          label="Cancel"
+          severity="secondary"
+          [outlined]="true"
+          [disabled]="saving"
+          (click)="cancel()"
+        ></button>
+        <button
+          pButton
+          type="button"
+          [label]="isCreateMode ? 'Create hospital' : 'Save changes'"
+          icon="pi pi-check"
+          class="heditor-footer__save"
+          [loading]="saving"
+          [disabled]="saving"
+          (click)="save()"
+        ></button>
+      </div>
+    </footer>
+  }
+</div>
+
+<p-dialog
+  header="Reset admin password"
+  [(visible)]="resetPasswordDialogOpen"
+  [modal]="true"
+  [style]="{ width: 'min(95vw, 28rem)' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '0' }"
+  styleClass="hms-crud-dialog"
+>
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll">
+      <div class="flex flex-col gap-3">
+        <p class="text-sm text-slate-500">
+          Sets a new password for this hospital’s Administrator account. Share it securely with the hospital contact.
+        </p>
+        <div class="flex flex-col gap-1">
+          <label class="heditor-label heditor-label--required" for="h-reset-pw">New password</label>
+          <p-password
+            inputId="h-reset-pw"
+            [(ngModel)]="newAdminPassword"
+            name="hResetPw"
+            [feedback]="true"
+            [toggleMask]="true"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+            placeholder="Min 8 characters"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button
+        pButton
+        type="button"
+        label="Cancel"
+        severity="secondary"
+        [outlined]="true"
+        (click)="resetPasswordDialogOpen = false"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Reset password"
+        icon="pi pi-check"
+        severity="success"
+        [loading]="resetPasswordSaving"
+        (click)="submitResetAdminPassword()"
+      ></button>
+    </div>
+  </div>
+</p-dialog>

@@ -1,0 +1,369 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* ─── Toolbar ───────────────────────────────────────────────────────────────── */
+
+.hbs-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.85rem;
+}
+
+.hbs-search {
+  flex: 1 1 14rem;
+  min-width: 12rem;
+  position: relative;
+
+  .pi-search {
+    position: absolute;
+    left: 0.7rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--hms-color-text-subtle);
+    font-size: 0.85rem;
+    z-index: 1;
+  }
+
+  input {
+    padding-left: 2.15rem;
+  }
+}
+
+.hbs-status-filter {
+  min-width: 10rem;
+}
+
+.hbs-toolbar__meta {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--hms-color-text-muted, var(--hms-color-text-muted));
+  white-space: nowrap;
+}
+
+/* ─── Hospital row ──────────────────────────────────────────────────────────── */
+
+.hbs-expand-col {
+  width: 2.75rem;
+  min-width: 2.75rem;
+  padding-right: 0 !important;
+}
+
+.hbs-hospital-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.hbs-hospital-cell__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.55rem;
+  background: linear-gradient(145deg, var(--hms-color-primary-light), var(--hms-color-primary-light));
+  color: var(--hms-color-primary-hover);
+  flex-shrink: 0;
+
+  .pi {
+    font-size: 0.9rem;
+  }
+}
+
+.hbs-hospital-cell__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.hbs-hospital-cell__name {
+  font-weight: 600;
+  color: var(--hms-color-text, var(--hms-color-text));
+  line-height: 1.25;
+}
+
+.hbs-hospital-cell__code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.68rem;
+  color: var(--hms-color-text-muted);
+}
+
+.hbs-branch-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--hms-color-canvas);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--hms-color-text);
+
+  .pi {
+    font-size: 0.7rem;
+    color: var(--hms-color-primary);
+  }
+}
+
+.hbs-actions {
+  white-space: nowrap;
+}
+
+:host ::ng-deep .hbs-hospital-table tr.hbs-row--expanded > td {
+  background: #f8fbff !important;
+  border-bottom-color: transparent !important;
+}
+
+:host ::ng-deep .hbs-hospital-table tr.hbs-row--expanded + tr .hbs-expansion-cell {
+  border-top: none !important;
+}
+
+:host ::ng-deep .hbs-hospital-table .p-datatable-tbody > tr > td.hbs-expansion-cell {
+  padding: 0 !important;
+}
+
+/* ─── Branch panel ──────────────────────────────────────────────────────────── */
+
+.hbs-branch-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem 1rem 3.1rem;
+  background:
+    linear-gradient(180deg, #f0f7ff 0%, var(--hms-color-primary-light) 3rem),
+    var(--hms-color-primary-light);
+  border-left: 3px solid rgb(37 99 235 / 0.28);
+  border-bottom: 1px solid var(--hms-color-border, var(--hms-color-border));
+}
+
+.hbs-branch-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.hbs-branch-panel__title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.hbs-branch-panel__eyebrow {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--hms-color-text-muted);
+}
+
+.hbs-branch-panel__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--hms-color-text, var(--hms-color-text));
+
+  .pi {
+    font-size: 0.78rem;
+    color: var(--hms-color-primary);
+  }
+}
+
+.hbs-branch-panel__loading {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 0;
+  font-size: 0.78rem;
+  color: var(--hms-color-text-muted, var(--hms-color-text-muted));
+
+  .pi {
+    color: var(--hms-color-primary);
+  }
+}
+
+.hbs-new-branch-btn {
+  flex-shrink: 0;
+}
+
+/* ─── Branch cards ──────────────────────────────────────────────────────────── */
+
+.hbs-branch-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16.5rem, 1fr));
+  gap: 0.65rem;
+}
+
+.hbs-branch-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.75rem;
+  background: var(--hms-color-surface);
+  border: 1px solid var(--hms-color-border);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.hbs-branch-card:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 4px 12px rgb(37 99 235 / 0.08);
+}
+
+.hbs-branch-card--main {
+  border-color: #93c5fd;
+  background: linear-gradient(180deg, #f8fbff, var(--hms-color-surface) 55%);
+}
+
+.hbs-branch-card__main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.hbs-branch-card__identity {
+  min-width: 0;
+}
+
+.hbs-branch-card__code {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--hms-color-primary);
+  background: var(--hms-color-primary-light);
+  border-radius: 0.3rem;
+  padding: 0.1rem 0.35rem;
+  margin-bottom: 0.25rem;
+}
+
+.hbs-branch-card__name {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 650;
+  line-height: 1.25;
+  color: var(--hms-color-text);
+}
+
+.hbs-branch-card__warn {
+  margin: 0.35rem 0 0;
+  font-size: 0.68rem;
+  color: #c2410c;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+
+  .pi {
+    margin-top: 0.1rem;
+    flex-shrink: 0;
+  }
+}
+
+.hbs-branch-card__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.hbs-branch-card__details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.75rem;
+  font-size: 0.7rem;
+  color: var(--hms-color-text-muted);
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28rem;
+  }
+
+  .pi {
+    font-size: 0.65rem;
+    color: var(--hms-color-text-subtle);
+  }
+}
+
+.hbs-branch-card__actions {
+  display: flex;
+  gap: 0.15rem;
+  margin-top: 0.1rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--hms-color-canvas);
+}
+
+/* ─── Empty ─────────────────────────────────────────────────────────────────── */
+
+.hbs-empty-branches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 0.75rem;
+  border: 1px dashed var(--hms-color-border-input);
+  background: var(--hms-color-surface);
+
+  > .pi-sitemap {
+    font-size: 1.35rem;
+    color: var(--hms-color-text-subtle);
+  }
+}
+
+.hbs-empty-branches__title {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: var(--hms-color-text);
+}
+
+.hbs-empty-branches__hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  color: var(--hms-color-text-muted);
+  max-width: 22rem;
+}
+
+.hbs-dialog-hospital {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0.75rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 0.45rem;
+  background: var(--hms-color-primary-light);
+  color: var(--hms-color-nav);
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  .pi {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .hbs-branch-panel {
+    padding-left: 1rem;
+  }
+
+  .hbs-toolbar__meta {
+    margin-left: 0;
+    width: 100%;
+  }
+}

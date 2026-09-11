@@ -1,0 +1,95 @@
+<app-surface-panel class="hms-crud-surface" title="IPD Wards" subtitle="Ward units under clinical departments">
+  <div surfacePanelActions class="hms-crud-actions">
+    <p-select
+      [(ngModel)]="filterDepartmentId"
+      [options]="departments"
+      optionLabel="name"
+      optionValue="id"
+      placeholder="All departments"
+      [showClear]="true"
+      styleClass="mr-2"
+      appendTo="body"
+      (onChange)="load()"
+    />
+    <button pButton type="button" label="New ward" icon="pi pi-plus" severity="secondary" class="hms-toolbar-solid" (click)="openCreate()"></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    @if (errorMessage) {
+      <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+    }
+    <p-table [showLoader]="false" [value]="rows" [loading]="loading" styleClass="p-datatable-sm hms-crud-table" [paginator]="showPaginator" [rows]="10">
+      <ng-template #header>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Department</th>
+          <th>Beds</th>
+          <th>Status</th>
+          <th class="w-40 text-end">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-row>
+        <tr>
+          <td class="font-mono text-xs">{{ row.wardCode }}</td>
+          <td>{{ row.name }}</td>
+          <td>{{ row.departmentName ?? '—' }}</td>
+          <td>{{ row.availableBedCount }} / {{ row.bedCount }}</td>
+          <td><p-tag [value]="row.status" [severity]="row.status === 'Active' ? 'success' : 'secondary'" /></td>
+          <td class="text-end">
+            <button pButton type="button" icon="pi pi-pencil" [text]="true" severity="secondary" class="mr-1" (click)="openEdit(row)"></button>
+            <button pButton type="button" icon="pi pi-trash" [text]="true" severity="danger" (click)="confirmDelete(row)"></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="6" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state icon="pi pi-building" title="No wards yet" description="Create wards to organize inpatient beds." [actionable]="true" actionLabel="Add ward" (action)="openCreate()" />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="loadingbody" let-columns>
+        <app-hms-table-loading-body [cols]="columns?.length || 6" />
+      </ng-template>
+    </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog [header]="editingId == null ? 'New ward' : 'Edit ward'" [(visible)]="dialogOpen" [modal]="true" [style]="{ width: 'min(95vw, 32rem)' }" styleClass="hms-crud-dialog">
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll grid grid-cols-1 gap-3">
+      @if (editingId == null) {
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label hms-field-label--required">Department</label>
+          <p-select [(ngModel)]="formDepartmentId" [options]="departments" optionLabel="name" optionValue="id" styleClass="w-full" appendTo="body" />
+        </div>
+      }
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required">Code</label>
+        <input pInputText class="w-full" [(ngModel)]="formCode" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required">Name</label>
+        <input pInputText class="w-full" [(ngModel)]="formName" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label">Description</label>
+        <textarea pTextarea rows="2" class="w-full" [(ngModel)]="formDescription"></textarea>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label">Sort order</label>
+        <p-inputNumber [(ngModel)]="formSortOrder" [useGrouping]="false" styleClass="w-full" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label">Status</label>
+        <p-select [(ngModel)]="formStatus" [options]="statusOptions" optionLabel="label" optionValue="value" styleClass="w-full" appendTo="body" />
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="dialogOpen = false"></button>
+      <button pButton type="button" label="Save" icon="pi pi-check" severity="success" [loading]="saving" (click)="save()"></button>
+    </div>
+  </div>
+</p-dialog>

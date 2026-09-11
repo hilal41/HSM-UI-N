@@ -8,14 +8,18 @@ import { TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { finalize } from 'rxjs';
 import { ClinicalServicesApiService } from '../../../core/api/clinical-services-api.service';
 import type { ClinicalService } from '../../../core/models/api-contracts';
+import { MenuPermissionService } from '../../../core/services/menu-permission.service';
+import { HmsCrudEmptyStateComponent } from '../../../shared/components/hms-crud-empty-state/hms-crud-empty-state.component';
 import { HmsTableLoadingBodyComponent } from '../../../shared/components/hms-table-loading-body/hms-table-loading-body.component';
 import { SurfacePanelComponent } from '../../../shared/components/surface-panel/surface-panel.component';
+import { CrudListState } from '../../../shared/utils/crud-page.state';
 
 @Component({
   selector: 'app-services-catalog-page',
   imports: [
     DecimalPipe,
     SurfacePanelComponent,
+    HmsCrudEmptyStateComponent,
     HmsTableLoadingBodyComponent,
     TableModule,
     MessageModule,
@@ -29,44 +33,56 @@ export class ServicesCatalogPage {
   private readonly confirm = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
   private readonly cdr = inject(ChangeDetectorRef);
+  readonly menuPerms = inject(MenuPermissionService);
 
-  rows: ClinicalService[] = [];
-  totalCount = 0;
-  loading = false;
-  errorMessage: string | null = null;
-  readonly pageSize = 20;
+  readonly list = new CrudListState<ClinicalService>(20);
+
+  get rows(): ClinicalService[] {
+    return this.list.rows;
+  }
+
+  get totalCount(): number {
+    return this.list.totalCount;
+  }
+
+  get loading(): boolean {
+    return this.list.loading;
+  }
+
+  get errorMessage(): string | null {
+    return this.list.errorMessage;
+  }
+
+  get tablePageSize(): number {
+    return this.list.tablePageSize;
+  }
 
   onLazyLoad(event: TableLazyLoadEvent): void {
-    const rows = event.rows ?? this.pageSize;
-    const first = event.first ?? 0;
-    const page = Math.floor(first / rows) + 1;
-    this.loading = true;
-    this.errorMessage = null;
+    const { page, pageSize } = this.list.syncLazyEvent(event);
+    this.list.beginLoad();
     this.api
-      .getPaged({ page, pageSize: rows })
-      .pipe(finalize(() => (this.loading = false)))
+      .getPaged({ page, pageSize })
+      .pipe(finalize(() => (this.list.loading = false)))
       .subscribe({
         next: (res) => {
-          this.rows = res.items;
-          this.totalCount = res.totalCount;
+          this.list.applySuccess(res.items, res.totalCount);
           this.cdr.markForCheck();
         },
         error: () => {
-          this.errorMessage = 'Unable to load services.';
+          this.list.applyError('Unable to load services.');
           this.cdr.markForCheck();
         },
       });
   }
 
   reloadTable(): void {
-    this.loading = true;
+    this.list.beginLoad();
     this.api
-      .getPaged({ page: 1, pageSize: this.pageSize })
-      .pipe(finalize(() => (this.loading = false)))
+      .getPaged({ page: 1, pageSize: this.list.defaultPageSize })
+      .pipe(finalize(() => (this.list.loading = false)))
       .subscribe({
         next: (res) => {
-          this.rows = res.items;
-          this.totalCount = res.totalCount;
+          this.list.applySuccess(res.items, res.totalCount);
           this.cdr.markForCheck();
         },
         error: () => this.cdr.markForCheck(),

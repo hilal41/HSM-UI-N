@@ -1,0 +1,129 @@
+<section class="dash-charts-section" aria-label="Service sales">
+  @if (showBranchFilter()) {
+    <div class="dash-section-head">
+      <div class="dash-section-head__actions">
+        <p-select
+          [(ngModel)]="selectedBranchFilter"
+          [options]="branchFilterOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Branch"
+          styleClass="dash-branch-select"
+          appendTo="body"
+          (ngModelChange)="reload()"
+        />
+      </div>
+    </div>
+  }
+
+  <div class="dash-split-row">
+    @if (state() === 'loading' || state() === 'idle') {
+      <div class="dash-split-row__col dash-split-row__col--services">
+        <section class="dash-panel dash-section dash-section--services" aria-label="Breakdown by service">
+          <div class="dash-section-head dash-section-head--compact">
+            <div class="dash-section-head__title-wrap">
+              <span class="dash-section-icon" aria-hidden="true"><i class="pi pi-tag"></i></span>
+              <div>
+                <p-skeleton width="8rem" height="0.8rem" borderRadius="6px" />
+                <p-skeleton width="10rem" height="0.55rem" borderRadius="6px" style="margin-top: 0.35rem" />
+              </div>
+            </div>
+          </div>
+          <div class="dash-recent-list dash-recent-list--skeleton">
+            @for (i of rowSkeletonSlots; track i) {
+              <div class="dash-recent-row">
+                <p-skeleton shape="circle" size="2.25rem" />
+                <div class="dash-recent-row__main">
+                  <p-skeleton width="55%" height="0.7rem" borderRadius="6px" />
+                  <p-skeleton width="35%" height="0.55rem" borderRadius="6px" />
+                </div>
+                <p-skeleton width="4.5rem" height="1.3rem" borderRadius="999px" />
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+    } @else if (error()) {
+      <div class="dash-split-row__col dash-split-row__col--services">
+        <section class="dash-panel dash-section dash-section--services" aria-label="Breakdown by service">
+          <div class="dash-section-head dash-section-head--compact">
+            <div class="dash-section-head__title-wrap">
+              <span class="dash-section-icon" aria-hidden="true"><i class="pi pi-tag"></i></span>
+              <div>
+                <h2 class="dash-section-title">Breakdown by service</h2>
+                <p class="dash-section-subtitle">Per-service sales and discounts</p>
+              </div>
+            </div>
+          </div>
+          <div class="dash-inline-error" role="alert">
+            <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+            <span>{{ error() }}</span>
+          </div>
+        </section>
+      </div>
+    } @else {
+      <div class="dash-split-row__col dash-split-row__col--services">
+        <section class="dash-panel dash-section dash-section--services" aria-label="Breakdown by service">
+          <div class="dash-section-head dash-section-head--compact">
+            <div class="dash-section-head__title-wrap">
+              <span class="dash-section-icon" aria-hidden="true"><i class="pi pi-tag"></i></span>
+              <div>
+                <h2 class="dash-section-title">Breakdown by service</h2>
+                <p class="dash-section-subtitle">
+                  @if (summary()?.items?.length) {
+                    {{ summary()!.items.length }} services · {{ summary()!.totalLineCount }} line items
+                  } @else {
+                    Per-service sales and discounts
+                  }
+                </p>
+              </div>
+            </div>
+            <span class="dash-chart-card__badge">{{ periodBadge() }}</span>
+          </div>
+
+          @if (!(summary()?.items?.length)) {
+            <div class="dash-empty-state">
+              <span class="dash-empty-state__icon" aria-hidden="true"><i class="pi pi-chart-bar"></i></span>
+              <p class="dash-empty-state__title">No service sales</p>
+              <p class="dash-empty-state__desc">No billed services found for the selected period.</p>
+            </div>
+          } @else {
+            <div class="dash-recent-list">
+              @for (row of summary()!.items; track row.clinicalServiceId; let i = $index) {
+                <div class="dash-recent-row" [style.animation-delay]="stagger(i)">
+                  <span class="dash-avatar" [attr.aria-label]="row.serviceName + ' avatar'">
+                    {{ serviceInitials(row.serviceName) }}
+                  </span>
+                  <div class="dash-recent-row__main">
+                    <p class="dash-recent-row__name">{{ row.serviceName }}</p>
+                    <p class="dash-recent-row__meta">
+                      <span>{{ row.lineCount }} {{ row.lineCount === 1 ? 'line' : 'lines' }}</span>
+                      @if (row.serviceCode) {
+                        <span class="dash-recent-row__sep" aria-hidden="true">·</span>
+                        <span>{{ row.serviceCode }}</span>
+                      }
+                      <span class="dash-recent-row__sep" aria-hidden="true">·</span>
+                      <span>Sales {{ formatMoney(row.totalAmount) }}</span>
+                      @if (row.discount > 0) {
+                        <span class="dash-recent-row__sep" aria-hidden="true">·</span>
+                        <span>Disc {{ formatMoney(row.discount) }}</span>
+                      }
+                    </p>
+                  </div>
+                  <div class="dash-recent-row__end">
+                    <span class="dash-recent-row__date">Net amount</span>
+                    <p-tag [value]="formatMoney(row.netAmount)" severity="success" [rounded]="true" />
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </section>
+      </div>
+    }
+
+    <div class="dash-split-row__col dash-split-row__col--recent">
+      <app-dashboard-recent-visits />
+    </div>
+  </div>
+</section>

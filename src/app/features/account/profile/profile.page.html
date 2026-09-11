@@ -1,87 +1,394 @@
-<app-surface-panel title="Profile">
-  @if (loading) {
-    <app-hms-block-skeleton [lines]="12" ariaLabel="Loading profile" />
-  } @else if (errorMessage) {
-    <p-message severity="error" [text]="errorMessage" styleClass="w-full" />
-  } @else if (data) {
-    <div class="flex flex-col gap-6">
-      <div>
-        <h2 class="text-sm font-medium text-slate-500">Account</h2>
-        <p class="mt-1 text-lg font-semibold text-slate-800">
-          {{ data.user.firstName ?? '' }} {{ data.user.lastName ?? '' }}
-        </p>
-        <p class="text-sm text-slate-600">{{ data.user.userName }} · {{ data.user.email }}</p>
-        <p class="mt-2 text-sm text-slate-600">
-          Role:
-          <span class="font-medium text-emerald-900">{{ data.roleName ?? data.user.roleName ?? '—' }}</span>
-        </p>
-      </div>
+<app-surface-panel
+  class="hms-crud-surface pf-surface"
+  title="Profile"
+  subtitle="Your account, preferences, access, and security"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <button
+      pButton
+      type="button"
+      label="Refresh token"
+      icon="pi pi-refresh"
+      severity="secondary"
+      [outlined]="true"
+      [loading]="refreshing"
+      (click)="refreshAccessToken()"
+    ></button>
+    <a
+      pButton
+      routerLink="/app/account/change-password"
+      label="Change password"
+      icon="pi pi-key"
+      class="hms-toolbar-solid"
+    ></a>
+  </div>
 
-      <div>
-        <h3 class="mb-2 text-sm font-medium text-slate-500">Departments</h3>
-        <div class="flex flex-wrap gap-2">
-          @for (d of data.departments; track d.id) {
-            <p-chip [label]="d.name" icon="pi pi-building" />
-          } @empty {
-            <span class="text-sm text-slate-500">No departments linked.</span>
-          }
-        </div>
-      </div>
+  <div class="hms-crud-panel-body pf-body">
+    @if (loading) {
+      <app-hms-block-skeleton [lines]="14" ariaLabel="Loading profile" />
+    } @else if (errorMessage) {
+      <p-message severity="error" [text]="errorMessage" styleClass="w-full" />
+    } @else if (data) {
+      <div class="pf-layout">
+        <!-- Sidebar -->
+        <aside class="pf-sidebar">
+          <section class="pf-hero" aria-labelledby="pf-hero-name">
+            <div class="pf-hero__avatar-wrap">
+              @if (formProfilePictureBase64) {
+                <img
+                  [src]="formProfilePictureBase64"
+                  alt=""
+                  class="pf-hero__photo"
+                />
+              } @else {
+                <div class="pf-hero__avatar" aria-hidden="true">{{ initials }}</div>
+              }
+            </div>
+            <div class="pf-hero__main">
+              <p class="pf-hero__eyebrow">Signed in as</p>
+              <h2 id="pf-hero-name" class="pf-hero__name">{{ displayName }}</h2>
+              <p class="pf-hero__meta">
+                <span>{{ data.user.userName }}</span>
+                <span class="pf-hero__sep" aria-hidden="true">·</span>
+                <span>{{ data.user.email }}</span>
+              </p>
+              <div class="pf-hero__badges">
+                <span
+                  class="pf-badge"
+                  [class.pf-badge--platform]="!data.hospitalId"
+                  [class.pf-badge--role]="!!data.hospitalId"
+                >
+                  <i class="pi pi-shield" aria-hidden="true"></i>
+                  {{ roleLabel }}
+                </span>
+                @if (activeBranchName) {
+                  <span class="pf-badge pf-badge--branch">
+                    <i class="pi pi-map-marker" aria-hidden="true"></i>
+                    {{ activeBranchName }}
+                  </span>
+                }
+              </div>
+            </div>
+          </section>
 
-      <div class="rounded-lg border border-[var(--hms-color-border)] bg-[var(--hms-color-canvas)]/30 p-4">
-        <h3 class="mb-2 text-sm font-medium text-slate-500">Session</h3>
-        <p class="mb-3 text-sm text-slate-600">Rotate the access token using your current refresh token.</p>
-        <button
-          pButton
-          type="button"
-          label="Refresh access token"
-          icon="pi pi-refresh"
-          severity="success"
-          [outlined]="true"
-          [loading]="refreshing"
-          (click)="refreshAccessToken()"
-        ></button>
-      </div>
+          <section class="pf-card" aria-labelledby="pf-account-title">
+            <header class="pf-card__head">
+              <span class="pf-card__icon" aria-hidden="true"><i class="pi pi-id-card"></i></span>
+              <div class="pf-card__head-text">
+                <h3 id="pf-account-title" class="pf-card__title">Account details</h3>
+                <p class="pf-card__subtitle">Identity linked to your login</p>
+              </div>
+            </header>
+            <div class="pf-fields pf-fields--grid">
+              <div class="pf-field">
+                <span class="pf-field__label">Full name</span>
+                <span class="pf-field__value">{{ displayName }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-field__label">Username</span>
+                <span class="pf-field__value">{{ data.user.userName }}</span>
+              </div>
+              <div class="pf-field pf-field--span">
+                <span class="pf-field__label">Email</span>
+                <span class="pf-field__value">{{ data.user.email }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-field__label">User ID</span>
+                <span class="pf-field__value pf-field__value--mono">#{{ data.user.id }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-field__label">Role</span>
+                <span class="pf-field__value">{{ roleLabel }}</span>
+              </div>
+            </div>
+          </section>
 
-      <div>
-        <h3 class="mb-2 text-sm font-medium text-slate-500">Allowed modules (from GET /Me)</h3>
-        <div class="flex flex-wrap gap-2">
-          @for (m of data.allowedModules; track m.id) {
-            <p-tag severity="success" [value]="m.name" />
-          } @empty {
-            <span class="text-sm text-slate-500">No modules listed.</span>
-          }
-        </div>
-      </div>
-
-      <div class="rounded-lg border border-[var(--hms-color-border)] bg-[var(--hms-color-surface)] p-4">
-        <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <h3 class="text-sm font-medium text-slate-500">Allowed modules (GET /Me/allowed-modules)</h3>
-          <button
-            pButton
-            type="button"
-            label="Reload"
-            icon="pi pi-refresh"
-            [text]="true"
-            severity="secondary"
-            [loading]="loadingAllowedModules"
-            (click)="loadAllowedModulesEndpoint()"
-          ></button>
-        </div>
-        @if (allowedModulesError) {
-          <p-message severity="warn" [text]="allowedModulesError" styleClass="w-full" />
-        } @else if (loadingAllowedModules) {
-          <app-hms-block-skeleton [lines]="8" ariaLabel="Loading modules" />
-        } @else {
-          <div class="flex flex-wrap gap-2">
-            @for (m of allowedModulesEndpoint; track m.id) {
-              <p-tag severity="success" [value]="m.name + ' (' + m.code + ')'" />
-            } @empty {
-              <span class="text-sm text-slate-500">No modules returned.</span>
+          <section class="pf-card" aria-labelledby="pf-prefs-title">
+            <header class="pf-card__head">
+              <span class="pf-card__icon pf-card__icon--prefs" aria-hidden="true">
+                <i class="pi pi-globe"></i>
+              </span>
+              <div class="pf-card__head-text">
+                <h3 id="pf-prefs-title" class="pf-card__title">Preferences</h3>
+                <p class="pf-card__subtitle">Language and profile picture</p>
+              </div>
+            </header>
+            @if (preferencesLoading) {
+              <app-hms-block-skeleton [lines]="4" ariaLabel="Loading preferences" />
+            } @else {
+              <div class="pf-fields">
+                <div class="pf-field">
+                  <label class="hms-field-label" for="pf-lang">Language</label>
+                  <p-select
+                    inputId="pf-lang"
+                    [(ngModel)]="formLanguage"
+                    name="profileLang"
+                    [options]="languageOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    styleClass="w-full"
+                    appendTo="body"
+                  />
+                </div>
+                <div class="pf-field">
+                  <span class="hms-field-label">Profile picture</span>
+                  <div class="pf-pic-wrap">
+                    @if (formProfilePictureBase64) {
+                      <div class="pf-pic-preview">
+                        <img
+                          [src]="formProfilePictureBase64"
+                          alt="Profile preview"
+                          class="pf-pic-preview__img"
+                        />
+                        <div class="pf-pic-preview__meta">
+                          <span class="pf-pic-preview__label">Current picture</span>
+                          <button
+                            pButton
+                            type="button"
+                            label="Remove"
+                            icon="pi pi-trash"
+                            severity="danger"
+                            [text]="true"
+                            size="small"
+                            (click)="clearProfilePicture()"
+                          ></button>
+                        </div>
+                      </div>
+                    } @else {
+                      <div class="pf-pic-empty">
+                        <i class="pi pi-user" aria-hidden="true"></i>
+                        <span>No picture uploaded yet</span>
+                      </div>
+                    }
+                    <div class="pf-pic-upload-row">
+                      <label class="pf-file-btn">
+                        <i class="pi pi-upload" aria-hidden="true"></i>
+                        Choose image
+                        <input
+                          type="file"
+                          accept="image/*"
+                          class="pf-file-hidden"
+                          (change)="onProfilePictureSelected($event)"
+                        />
+                      </label>
+                      <span class="pf-pic-hint">PNG or JPEG · shown in the app header</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="pf-card__actions">
+                <button
+                  pButton
+                  type="button"
+                  label="Save preferences"
+                  icon="pi pi-check"
+                  severity="success"
+                  class="hms-toolbar-solid"
+                  [loading]="preferencesSaving"
+                  (click)="savePreferences()"
+                ></button>
+              </div>
+              @if (!preferencesAvailable) {
+                <p class="pf-hint">
+                  Saving requires Users edit permission on your account.
+                </p>
+              }
             }
+          </section>
+        </aside>
+
+        <!-- Main -->
+        <main class="pf-main">
+          <section class="pf-card" aria-labelledby="pf-access-title">
+            <header class="pf-card__head">
+              <span class="pf-card__icon pf-card__icon--access" aria-hidden="true">
+                <i class="pi pi-key"></i>
+              </span>
+              <div class="pf-card__head-text">
+                <h3 id="pf-access-title" class="pf-card__title">Access scope</h3>
+                <p class="pf-card__subtitle">Hospital, branch, and department reach</p>
+              </div>
+            </header>
+            <div class="pf-stat-grid">
+              <div class="pf-stat">
+                <span class="pf-stat__label">Hospital</span>
+                <span class="pf-stat__value">
+                  @if (data.hospitalId) {
+                    Hospital #{{ data.hospitalId }}
+                  } @else {
+                    Platform (all hospitals)
+                  }
+                </span>
+              </div>
+              <div class="pf-stat">
+                <span class="pf-stat__label">Active branch</span>
+                <span class="pf-stat__value">{{ activeBranchName ?? '—' }}</span>
+              </div>
+              <div class="pf-stat">
+                <span class="pf-stat__label">Branches</span>
+                <span class="pf-stat__value">{{ data.branches.length }}</span>
+              </div>
+              <div class="pf-stat">
+                <span class="pf-stat__label">Departments</span>
+                <span class="pf-stat__value">{{ data.departments.length }}</span>
+              </div>
+            </div>
+          </section>
+
+          @if (data.branches.length) {
+            <section class="pf-card" aria-labelledby="pf-branches-title">
+              <header class="pf-card__head">
+                <span class="pf-card__icon pf-card__icon--branch" aria-hidden="true">
+                  <i class="pi pi-sitemap"></i>
+                </span>
+                <div class="pf-card__head-text">
+                  <h3 id="pf-branches-title" class="pf-card__title">Branches</h3>
+                  <p class="pf-card__subtitle">Locations available on your account</p>
+                </div>
+                <span class="pf-count-badge">{{ data.branches.length }}</span>
+              </header>
+              <div class="pf-branch-list">
+                @for (branch of data.branches; track branch.id) {
+                  <article
+                    class="pf-branch"
+                    [class.pf-branch--active]="isActiveBranch(branch.id)"
+                  >
+                    <div class="pf-branch__main">
+                      <span class="pf-branch__name">{{ branch.name }}</span>
+                      <span class="pf-branch__code">{{ branch.code }}</span>
+                    </div>
+                    <div class="pf-branch__flags">
+                      @if (isActiveBranch(branch.id)) {
+                        <span class="pf-flag pf-flag--active">Active</span>
+                      }
+                      @if (branch.isDefault) {
+                        <span class="pf-flag pf-flag--default">Default</span>
+                      }
+                      @if (branch.isMain) {
+                        <span class="pf-flag pf-flag--main">Main</span>
+                      }
+                    </div>
+                  </article>
+                }
+              </div>
+            </section>
+          }
+
+          <div class="pf-row">
+            <section class="pf-card" aria-labelledby="pf-departments-title">
+              <header class="pf-card__head">
+                <span class="pf-card__icon pf-card__icon--dept" aria-hidden="true">
+                  <i class="pi pi-building"></i>
+                </span>
+                <div class="pf-card__head-text">
+                  <h3 id="pf-departments-title" class="pf-card__title">Departments</h3>
+                  <p class="pf-card__subtitle">Units linked to your user</p>
+                </div>
+                @if (data.departments.length) {
+                  <span class="pf-count-badge">{{ data.departments.length }}</span>
+                }
+              </header>
+              @if (data.departments.length) {
+                <div class="pf-tags">
+                  @for (d of data.departments; track d.id) {
+                    <p-chip [label]="departmentLabel(d)" icon="pi pi-building" />
+                  }
+                </div>
+              } @else {
+                <p class="pf-empty">No departments linked to your account.</p>
+              }
+            </section>
+
+            <section class="pf-card" aria-labelledby="pf-modules-title">
+              <header class="pf-card__head">
+                <span class="pf-card__icon pf-card__icon--modules" aria-hidden="true">
+                  <i class="pi pi-th-large"></i>
+                </span>
+                <div class="pf-card__head-text">
+                  <h3 id="pf-modules-title" class="pf-card__title">Enabled modules</h3>
+                  <p class="pf-card__subtitle">Features you can open</p>
+                </div>
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-refresh"
+                  [text]="true"
+                  severity="secondary"
+                  [loading]="loadingAllowedModules"
+                  aria-label="Reload modules"
+                  (click)="loadAllowedModulesEndpoint()"
+                ></button>
+              </header>
+              @if (allowedModulesError) {
+                <p-message severity="warn" [text]="allowedModulesError" styleClass="w-full" />
+              } @else if (loadingAllowedModules && !moduleList.length) {
+                <app-hms-block-skeleton [lines]="3" ariaLabel="Loading modules" />
+              } @else if (moduleList.length) {
+                <div class="pf-tags">
+                  @for (m of moduleList; track m.id) {
+                    <p-tag severity="success" [value]="m.name" />
+                  }
+                </div>
+              } @else {
+                <p class="pf-empty">No modules assigned.</p>
+              }
+            </section>
           </div>
-        }
+
+          <section class="pf-card pf-card--security" aria-labelledby="pf-security-title">
+            <header class="pf-card__head">
+              <span class="pf-card__icon pf-card__icon--security" aria-hidden="true">
+                <i class="pi pi-lock"></i>
+              </span>
+              <div class="pf-card__head-text">
+                <h3 id="pf-security-title" class="pf-card__title">Security &amp; session</h3>
+                <p class="pf-card__subtitle">
+                  Password, hospital profile, and sign-in token
+                </p>
+              </div>
+            </header>
+            <div class="pf-security-grid">
+              <a class="pf-action-tile" routerLink="/app/account/change-password">
+                <span class="pf-action-tile__icon" aria-hidden="true">
+                  <i class="pi pi-key"></i>
+                </span>
+                <span class="pf-action-tile__body">
+                  <span class="pf-action-tile__title">Change password</span>
+                  <span class="pf-action-tile__desc">Update your sign-in credentials</span>
+                </span>
+                <i class="pi pi-angle-right pf-action-tile__chevron" aria-hidden="true"></i>
+              </a>
+              @if (data.hospitalId) {
+                <a class="pf-action-tile" routerLink="/app/account/my-hospital">
+                  <span class="pf-action-tile__icon pf-action-tile__icon--hospital" aria-hidden="true">
+                    <i class="pi pi-building"></i>
+                  </span>
+                  <span class="pf-action-tile__body">
+                    <span class="pf-action-tile__title">My hospital</span>
+                    <span class="pf-action-tile__desc">Branding, contact, and compliance</span>
+                  </span>
+                  <i class="pi pi-angle-right pf-action-tile__chevron" aria-hidden="true"></i>
+                </a>
+              }
+              <button
+                type="button"
+                class="pf-action-tile pf-action-tile--button"
+                [disabled]="refreshing"
+                (click)="refreshAccessToken()"
+              >
+                <span class="pf-action-tile__icon pf-action-tile__icon--token" aria-hidden="true">
+                  <i class="pi" [class.pi-spin]="refreshing" [class.pi-refresh]="true"></i>
+                </span>
+                <span class="pf-action-tile__body">
+                  <span class="pf-action-tile__title">Refresh access token</span>
+                  <span class="pf-action-tile__desc">Renew session if the app reports expiry</span>
+                </span>
+                <i class="pi pi-angle-right pf-action-tile__chevron" aria-hidden="true"></i>
+              </button>
+            </div>
+          </section>
+        </main>
       </div>
-    </div>
-  }
+    }
+  </div>
 </app-surface-panel>

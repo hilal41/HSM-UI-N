@@ -15,8 +15,10 @@ import type {
   MedicineImportResult,
   UpdateMedicineRequest,
 } from '../../../core/models/api-contracts';
+import { HmsCrudEmptyStateComponent } from '../../../shared/components/hms-crud-empty-state/hms-crud-empty-state.component';
 import { HmsTableLoadingBodyComponent } from '../../../shared/components/hms-table-loading-body/hms-table-loading-body.component';
 import { SurfacePanelComponent } from '../../../shared/components/surface-panel/surface-panel.component';
+import { showCrudPaginator } from '../../../shared/utils/crud-page.state';
 import { MedicineFormDialogComponent } from './medicine-form-dialog.component';
 
 @Component({
@@ -24,6 +26,7 @@ import { MedicineFormDialogComponent } from './medicine-form-dialog.component';
   imports: [
     FormsModule,
     SurfacePanelComponent,
+    HmsCrudEmptyStateComponent,
     HmsTableLoadingBodyComponent,
     TableModule,
     MessageModule,
@@ -48,17 +51,27 @@ export class MedicinesPage {
   loading = false;
   errorMessage: string | null = null;
   readonly pageSize = 20;
+  tablePageSize = this.pageSize;
+
+  get showPaginator(): boolean {
+    return showCrudPaginator(this.totalCount, this.tablePageSize);
+  }
 
   dialogOpen = false;
   saving = false;
   editingRow: Medicine | null = null;
   searchInput = '';
 
+  get hasActiveFilter(): boolean {
+    return this.searchInput.trim().length > 0;
+  }
+
   exportingExcel = false;
   importingExcel = false;
 
   onLazyLoad(event: TableLazyLoadEvent): void {
     const rows = event.rows ?? this.pageSize;
+    this.tablePageSize = rows;
     const first = event.first ?? 0;
     const page = Math.floor(first / rows) + 1;
     this.loading = true;

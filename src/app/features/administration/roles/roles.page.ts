@@ -8,13 +8,16 @@ import { TagModule } from 'primeng/tag';
 import { finalize } from 'rxjs';
 import { RolesApiService } from '../../../core/api/roles-api.service';
 import type { Role } from '../../../core/models/api-contracts';
+import { HmsCrudEmptyStateComponent } from '../../../shared/components/hms-crud-empty-state/hms-crud-empty-state.component';
 import { HmsTableLoadingBodyComponent } from '../../../shared/components/hms-table-loading-body/hms-table-loading-body.component';
 import { SurfacePanelComponent } from '../../../shared/components/surface-panel/surface-panel.component';
+import { showCrudPaginator } from '../../../shared/utils/crud-page.state';
 
 @Component({
   selector: 'app-roles-page',
   imports: [
     SurfacePanelComponent,
+    HmsCrudEmptyStateComponent,
     HmsTableLoadingBodyComponent,
     TableModule,
     TagModule,
@@ -32,6 +35,10 @@ export class RolesPage implements OnInit {
   rows: Role[] = [];
   loading = false;
   errorMessage: string | null = null;
+
+  get showPaginator(): boolean {
+    return showCrudPaginator(this.rows.length, 15);
+  }
 
   ngOnInit(): void {
     this.load();

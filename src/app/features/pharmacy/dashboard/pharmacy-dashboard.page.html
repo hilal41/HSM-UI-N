@@ -1,0 +1,56 @@
+<div class="phrmy-dash-root">
+  <header class="phrmy-dash-welcome hms-card" aria-label="Pharmacy overview">
+    <div class="phrmy-dash-welcome__brand">
+      <span class="phrmy-dash-welcome__icon" aria-hidden="true"><i class="pi pi-shopping-cart"></i></span>
+      <div class="phrmy-dash-welcome__main">
+        <h1 class="phrmy-dash-welcome__title">Pharmacy</h1>
+        <p class="phrmy-dash-welcome__sub">Today at a glance</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="dash-stat-grid" aria-label="Pharmacy metrics">
+    @if (loading) {
+      @for (i of [0, 1, 2, 3]; track i) {
+        <app-dashboard-stat-card [loading]="true" [delay]="i * 40 + 'ms'" />
+      }
+    } @else if (errorMessage) {
+      <article class="dash-panel dash-inline-error hms-card" role="alert">
+        <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+        <span>{{ errorMessage }}</span>
+      </article>
+    } @else {
+      @for (card of statCards; track card.key; let i = $index) {
+        <app-dashboard-stat-card [card]="card" [delay]="i * 40 + 'ms'" />
+      }
+    }
+  </div>
+
+  <section class="phrmy-dash-panel hms-card" aria-label="Pharmacy shortcuts">
+    <header class="phrmy-dash-panel__head">
+      <h2 class="phrmy-dash-panel__title">Quick actions</h2>
+      <p class="phrmy-dash-panel__desc">Jump to dispensing, inventory, purchases, and reports</p>
+    </header>
+
+    <div class="phrmy-links-list">
+      @for (link of quickLinks; track link.route; let i = $index) {
+        <a
+          class="phrmy-link-item"
+          [routerLink]="link.route"
+          [style.animation-delay]="i * 40 + 'ms'"
+        >
+          <span class="phrmy-link-item__icon" aria-hidden="true">
+            <i [class]="link.icon"></i>
+          </span>
+          <span class="phrmy-link-item__text">
+            <span class="phrmy-link-item__title">{{ link.title }}</span>
+            <span class="phrmy-link-item__desc">{{ link.desc }}</span>
+          </span>
+          <span class="phrmy-link-item__arrow" aria-hidden="true">
+            <i class="pi pi-arrow-right"></i>
+          </span>
+        </a>
+      }
+    </div>
+  </section>
+</div>

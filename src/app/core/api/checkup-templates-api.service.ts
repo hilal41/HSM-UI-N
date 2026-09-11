@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
+import { itemsFromPaged } from '../../shared/utils/ensure-array';
 import { API_BASE_URL } from '../tokens/api-base-url.token';
 import type {
   CheckupTemplate,
@@ -21,8 +22,13 @@ export class CheckupTemplatesApiService {
   private readonly base = inject(API_BASE_URL);
 
   /** Built-in library templates (5 per hospital), ordered. */
-  getLibrary(): Observable<CheckupTemplate[]> {
-    return this.http.get<CheckupTemplate[]>(`${this.base}/clinical/checkup-templates/library`);
+  getLibrary(pageSize = 100): Observable<CheckupTemplate[]> {
+    const params = new HttpParams()
+      .set('page', '1')
+      .set('pageSize', String(pageSize));
+    return this.http
+      .get<PagedResponse<CheckupTemplate>>(`${this.base}/clinical/checkup-templates/library`, { params })
+      .pipe(map((res) => itemsFromPaged(res)));
   }
 
   getPaged(query: CheckupTemplatesQuery = {}): Observable<PagedResponse<CheckupTemplate>> {

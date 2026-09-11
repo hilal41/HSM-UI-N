@@ -1,132 +1,101 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
-import { ChartModule } from 'primeng/chart';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { SkeletonModule } from 'primeng/skeleton';
-import { HMS_COLORS } from '../../../core/theme/hms-colors';
 import { DashboardDataService } from '../dashboard-data.service';
-import { DashboardStatCardComponent } from './dashboard-stat-card.component';
+
+interface FinancialMetrics {
+  service: number;
+  discount: number;
+  net: number;
+  received: number;
+  outstanding: number;
+}
 
 @Component({
   selector: 'app-dashboard-financial-report',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ChartModule, SkeletonModule, DashboardStatCardComponent],
-  template: `
-    <section class="dash-charts-section" aria-label="Financial report">
-      <div class="dash-stat-grid dash-stat-grid--financial">
-        @if (data.financialState() === 'loading' || data.financialState() === 'idle') {
-          @for (i of skeletonSlots; track i) {
-            <app-dashboard-stat-card [loading]="true" [delay]="stagger(i)" />
-          }
-        } @else if (data.financialError()) {
-          <div class="dash-panel dash-inline-error" role="alert">
-            <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
-            <span>{{ data.financialError() }}</span>
-          </div>
-        } @else {
-          @for (card of data.financialCards(); track card.key; let i = $index) {
-            <app-dashboard-stat-card [card]="card" [delay]="stagger(i)" />
-          }
-        }
-      </div>
-
-      <article class="dash-panel dash-chart-card">
-        <header class="dash-chart-card__head">
-          <div>
-            <h3>Revenue trend</h3>
-            <p class="dash-chart-card__desc">
-              @if (data.financialVisitCount() > 0) {
-                {{ data.financialVisitCount() }} billed visits in the last 7 days
-              } @else {
-                Net amount by day (last 7 days)
-              }
-            </p>
-          </div>
-        </header>
-        @if (data.financialState() === 'loading' || data.financialState() === 'idle') {
-          <p-skeleton width="100%" height="12rem" borderRadius="12px" />
-        } @else if (data.financialTrend(); as trend) {
-          <div class="dash-chart-card__canvas dash-chart-card__canvas--featured">
-            <p-chart type="bar" [data]="revenueChartData()" [options]="barOptions" />
-          </div>
-        }
-      </article>
-    </section>
-  `,
+  imports: [DecimalPipe, SkeletonModule],
+  templateUrl: './dashboard-financial-report.component.html',
+  styleUrl: './dashboard-financial-report.component.scss',
 })
 export class DashboardFinancialReportComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
   readonly data = inject(DashboardDataService);
-  readonly skeletonSlots = [0, 1, 2, 3, 4];
 
-  readonly revenueChartData = computed(() => {
-    const trend = this.data.financialTrend();
-    if (!trend) return { labels: [], datasets: [] };
+  readonly display = signal<FinancialMetrics>({
+    service: 0,
+    discount: 0,
+    net: 0,
+    received: 0,
+    outstanding: 0,
+  });
+
+  readonly metrics = computed((): FinancialMetrics => {
+    const cards = this.data.financialCards();
+    const byKey = new Map(cards.map((c) => [c.key, c.value]));
     return {
-      labels: trend.labels,
-      datasets: [
-        {
-          label: 'Net amount',
-          data: trend.netValues,
-          borderRadius: 8,
-          borderSkipped: false,
-          backgroundColor: 'rgba(5, 150, 105, 0.85)',
-          hoverBackgroundColor: HMS_COLORS.primaryHover,
-          maxBarThickness: 42,
-        },
-        {
-          label: 'Discount',
-          data: trend.discountValues,
-          borderRadius: 8,
-          borderSkipped: false,
-          backgroundColor: 'rgba(148, 163, 184, 0.55)',
-          hoverBackgroundColor: HMS_COLORS.textSubtle,
-          maxBarThickness: 42,
-        },
-      ],
+      service: byKey.get('service-total') ?? 0,
+      discount: byKey.get('discount-total') ?? 0,
+      net: byKey.get('net-total') ?? 0,
+      received: byKey.get('received-total') ?? 0,
+      outstanding: byKey.get('outstanding-total') ?? 0,
     };
   });
 
-  readonly barOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    animation: { duration: 900, easing: 'easeOutQuart' as const },
-    plugins: {
-      legend: {
-        position: 'bottom' as const,
-        labels: {
-          color: HMS_COLORS.textMuted,
-          boxWidth: 10,
-          boxHeight: 10,
-          padding: 14,
-          font: { size: 11, weight: '500' as const },
-          usePointStyle: true,
-          pointStyle: 'circle' as const,
-        },
-      },
-      tooltip: {
-        backgroundColor: '#0f172a',
-        padding: 10,
-        cornerRadius: 8,
-      },
-    },
-    scales: {
-      x: {
-        grid: { display: false },
-        border: { display: false },
-        ticks: { color: '#94a3b8', font: { size: 11 } },
-      },
-      y: {
-        beginAtZero: true,
-        border: { display: false },
-        grid: { color: 'rgba(148, 163, 184, 0.15)', drawTicks: false },
-        ticks: { color: '#94a3b8', font: { size: 11 }, precision: 0 },
-      },
-    },
-  };
+  readonly isLoading = computed(
+    () => this.data.financialState() === 'loading' || this.data.financialState() === 'idle',
+  );
+
+  private frameId: number | null = null;
+
+  constructor() {
+    effect(() => {
+      if (this.isLoading()) {
+        this.display.set({ service: 0, discount: 0, net: 0, received: 0, outstanding: 0 });
+        return;
+      }
+      this.animateTo(this.metrics());
+    });
+  }
 
   ngOnInit(): void {
     this.data.loadFinancial();
+    this.destroyRef.onDestroy(() => {
+      if (this.frameId != null) cancelAnimationFrame(this.frameId);
+    });
   }
 
-  stagger(index: number): string {
-    return `${index * 60}ms`;
+  private animateTo(target: FinancialMetrics): void {
+    if (this.frameId != null) cancelAnimationFrame(this.frameId);
+
+    const from = this.display();
+    const start = performance.now();
+    const duration = 680;
+
+    const step = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      this.display.set({
+        service: Math.round(from.service + (target.service - from.service) * eased),
+        discount: Math.round(from.discount + (target.discount - from.discount) * eased),
+        net: Math.round(from.net + (target.net - from.net) * eased),
+        received: Math.round(from.received + (target.received - from.received) * eased),
+        outstanding: Math.round(from.outstanding + (target.outstanding - from.outstanding) * eased),
+      });
+      if (progress < 1) {
+        this.frameId = requestAnimationFrame(step);
+      }
+    };
+
+    this.frameId = requestAnimationFrame(step);
   }
 }

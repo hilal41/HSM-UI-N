@@ -1,0 +1,125 @@
+.doc-avail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.doc-avail__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+}
+
+.doc-avail__chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.65rem;
+  padding: 0.05rem 0.3rem;
+  border-radius: 0.25rem;
+  background: #ecfdf5;
+  color: #0f766e;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.doc-avail__row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.doc-avail__summary {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #475569;
+}
+
+.doc-avail__info {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.doc-avail__info:hover {
+  background: #f1f5f9;
+  color: #0f766e;
+}
+
+.doc-avail__pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.doc-avail__pill--muted {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.doc-avail__legacy {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  color: #475569;
+}
+
+.doc-avail__popover {
+  min-width: 10rem;
+  padding: 0.15rem 0.1rem;
+}
+
+.doc-avail__popover-title {
+  margin-bottom: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.doc-avail__detail {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.doc-avail__detail li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.doc-avail__detail-days {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.doc-avail__detail-time {
+  font-size: 0.68rem;
+  color: #64748b;
+}

@@ -1,0 +1,222 @@
+<div class="plat-dash">
+  <header class="plat-hero">
+    <div class="plat-hero__copy">
+      <p class="plat-hero__eyebrow">Developer console</p>
+      <h1 class="plat-hero__title">Welcome back, {{ userName() }}</h1>
+      <p class="plat-hero__sub">
+        Manage hospitals, licenses, and platform health from one place — separate from hospital operations.
+      </p>
+    </div>
+    <div class="plat-hero__actions">
+      <button
+        pButton
+        type="button"
+        label="Refresh"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [outlined]="true"
+        class="plat-hero__btn"
+        [disabled]="loading"
+        (click)="load()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="New hospital"
+        icon="pi pi-plus"
+        class="plat-hero__btn plat-hero__btn--primary"
+        (click)="navigate('/app/admin/hospitals/new')"
+      ></button>
+    </div>
+    <div class="plat-hero__glow" aria-hidden="true"></div>
+  </header>
+
+  @if (errorMessage) {
+    <p-message severity="error" [text]="errorMessage" styleClass="w-full" />
+  }
+
+  @if (loading) {
+    <app-hms-block-skeleton [lines]="12" ariaLabel="Loading platform dashboard" />
+  } @else if (summary) {
+    <section class="plat-stats" aria-label="Platform metrics">
+      <article class="plat-stat plat-stat--hero">
+        <div class="plat-stat__icon" aria-hidden="true"><i class="pi pi-building"></i></div>
+        <div class="plat-stat__body">
+          <p class="plat-stat__label">Active hospitals</p>
+          <p class="plat-stat__value">{{ summary.activeHospitals }}</p>
+          <p class="plat-stat__hint">{{ activeShare() }}% of {{ summary.totalHospitals }} total</p>
+        </div>
+        <div class="plat-stat__meter" aria-hidden="true">
+          <span class="plat-stat__meter-fill" [style.width.%]="activeShare()"></span>
+        </div>
+      </article>
+
+      <article class="plat-stat">
+        <div class="plat-stat__icon plat-stat__icon--warn" aria-hidden="true">
+          <i class="pi pi-pause"></i>
+        </div>
+        <div class="plat-stat__body">
+          <p class="plat-stat__label">Suspended</p>
+          <p class="plat-stat__value">{{ summary.suspendedHospitals }}</p>
+          <p class="plat-stat__hint">Temporary lockouts</p>
+        </div>
+      </article>
+
+      <article class="plat-stat">
+        <div class="plat-stat__icon plat-stat__icon--muted" aria-hidden="true">
+          <i class="pi pi-minus-circle"></i>
+        </div>
+        <div class="plat-stat__body">
+          <p class="plat-stat__label">Inactive</p>
+          <p class="plat-stat__value">{{ summary.inactiveHospitals }}</p>
+          <p class="plat-stat__hint">Retired tenants</p>
+        </div>
+      </article>
+
+      <article class="plat-stat">
+        <div class="plat-stat__icon" aria-hidden="true"><i class="pi pi-users"></i></div>
+        <div class="plat-stat__body">
+          <p class="plat-stat__label">Platform users</p>
+          <p class="plat-stat__value">{{ summary.platformUserCount }}</p>
+          <p class="plat-stat__hint">Developer accounts</p>
+        </div>
+      </article>
+
+      <article class="plat-stat">
+        <div class="plat-stat__icon" aria-hidden="true"><i class="pi pi-box"></i></div>
+        <div class="plat-stat__body">
+          <p class="plat-stat__label">License packages</p>
+          <p class="plat-stat__value">{{ summary.licensePackageCount }}</p>
+          <p class="plat-stat__hint">Menu bundles</p>
+        </div>
+      </article>
+
+      <article
+        class="plat-stat plat-stat--status"
+        [class.plat-stat--alert]="summary.maintenanceMode"
+      >
+        <div class="plat-stat__icon" aria-hidden="true">
+          <i class="pi" [class.pi-wrench]="summary.maintenanceMode" [class.pi-check-circle]="!summary.maintenanceMode"></i>
+        </div>
+        <div class="plat-stat__body">
+          <p class="plat-stat__label">Maintenance</p>
+          <div class="plat-stat__status-row">
+            <p-tag
+              [value]="summary.maintenanceMode ? 'On' : 'Off'"
+              [severity]="summary.maintenanceMode ? 'warn' : 'success'"
+            />
+            <span class="plat-stat__app">{{ summary.appName }}</span>
+          </div>
+          <p class="plat-stat__hint">
+            {{ summary.maintenanceMode ? 'Hospital sign-in is blocked' : 'Hospitals can sign in normally' }}
+          </p>
+        </div>
+      </article>
+    </section>
+
+    <section class="plat-panel" aria-label="Quick actions">
+      <div class="plat-panel__head">
+        <div>
+          <h2 class="plat-panel__title">Quick actions</h2>
+          <p class="plat-panel__sub">Jump into platform tools</p>
+        </div>
+      </div>
+      <div class="plat-actions">
+        @for (action of quickActions; track action.path) {
+          <button
+            type="button"
+            class="plat-action"
+            [class.plat-action--accent]="action.tone === 'accent'"
+            (click)="navigate(action.path)"
+          >
+            <span class="plat-action__icon" aria-hidden="true"><i [class]="action.icon"></i></span>
+            <span class="plat-action__text">
+              <span class="plat-action__label">{{ action.label }}</span>
+              <span class="plat-action__hint">{{ action.hint }}</span>
+            </span>
+            <i class="pi pi-arrow-right plat-action__arrow" aria-hidden="true"></i>
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="plat-panel plat-panel--table" aria-label="Recent hospitals">
+      <div class="plat-panel__head">
+        <div>
+          <h2 class="plat-panel__title">Recent hospitals</h2>
+          <p class="plat-panel__sub">Latest onboarded or updated tenants</p>
+        </div>
+        <button
+          pButton
+          type="button"
+          label="View all"
+          icon="pi pi-building"
+          severity="secondary"
+          [outlined]="true"
+          class="plat-panel__cta"
+          (click)="navigate('/app/admin/hospitals')"
+        ></button>
+      </div>
+
+      <p-table
+        [showLoader]="false"
+        [value]="summary.recentHospitals"
+        styleClass="p-datatable-sm plat-table"
+        [tableStyle]="{ 'min-width': '100%' }"
+      >
+        <ng-template #header>
+          <tr>
+            <th>Hospital</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-row>
+          <tr>
+            <td>
+              <div class="plat-table__name">{{ row.name }}</div>
+              <div class="plat-table__meta">{{ row.code }} · #{{ row.id }}</div>
+            </td>
+            <td>
+              <p-tag [value]="row.status" [severity]="statusSeverity(row.status)" />
+            </td>
+            <td class="plat-table__date">{{ row.createdAt | date: 'mediumDate' }}</td>
+            <td class="text-end">
+              <a
+                pButton
+                [routerLink]="['/app/admin/hospitals/edit', row.id]"
+                icon="pi pi-pencil"
+                [text]="true"
+                severity="secondary"
+                aria-label="Edit hospital"
+              ></a>
+              <a
+                pButton
+                [routerLink]="['/app/admin/hospitals', row.id, 'menus']"
+                icon="pi pi-list"
+                [text]="true"
+                severity="secondary"
+                aria-label="License menus"
+              ></a>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="4" class="plat-table__empty">
+              No hospitals yet.
+              <button
+                pButton
+                type="button"
+                label="Create the first hospital"
+                [text]="true"
+                (click)="navigate('/app/admin/hospitals/new')"
+              ></button>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </section>
+  }
+</div>

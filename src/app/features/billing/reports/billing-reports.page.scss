@@ -1,0 +1,155 @@
+@import '../../dashboard/dashboard-stat.shared.scss';
+
+app-billing-reports-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+app-billing-reports-page .bill-reports {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hms-main-pad);
+}
+
+app-billing-reports-page .bill-reports-root {
+  --dash-stat-card-height: 5.75rem;
+  --dash-primary: var(--hms-color-primary);
+  --dash-primary-dark: var(--hms-color-primary-hover);
+  --dash-primary-soft: var(--hms-color-primary-soft);
+  --dash-primary-border: var(--hms-color-primary-border);
+}
+
+app-billing-reports-page .bill-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--hms-main-pad);
+  align-items: stretch;
+}
+
+app-billing-reports-page .bill-kpi-grid > app-dashboard-stat-card {
+  min-width: 0;
+  display: block;
+  height: 100%;
+}
+
+app-billing-reports-page .bill-kpi-grid .dash-stat-card {
+  height: 100%;
+  min-height: var(--dash-stat-card-height);
+}
+
+app-billing-reports-page .bill-kpi-grid .dash-stat-card__arrow,
+app-billing-reports-page .bill-kpi-grid .dash-stat-card__arrow--hidden {
+  display: none;
+}
+
+app-billing-reports-page .bill-panel {
+  border-radius: var(--hms-space);
+  border: 1px solid var(--hms-color-border);
+  background: var(--hms-color-surface);
+  box-shadow: 0 4px 14px rgb(30 64 175 / 0.05);
+  overflow: hidden;
+}
+
+app-billing-reports-page .bill-panel__head {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: var(--hms-card-padding);
+  border-bottom: 1px solid var(--hms-color-border);
+}
+
+app-billing-reports-page .bill-panel__icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: var(--hms-color-primary-hover);
+  background: var(--hms-color-primary-soft);
+  border: 1px solid var(--hms-color-primary-border);
+}
+
+app-billing-reports-page .bill-panel__title {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--hms-color-text);
+}
+
+app-billing-reports-page .bill-panel__body {
+  padding: var(--hms-card-padding);
+}
+
+app-billing-reports-page .bill-head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.85rem;
+  font-size: 0.84rem;
+  color: var(--hms-color-text);
+}
+
+app-billing-reports-page .bill-head-row code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+app-billing-reports-page .bill-head-row__muted {
+  color: var(--hms-color-text-muted);
+}
+
+app-billing-reports-page .bill-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+app-billing-reports-page .bill-empty__icon {
+  display: grid;
+  place-items: center;
+  color: var(--hms-color-text-subtle);
+}
+
+app-billing-reports-page .bill-empty__icon .pi {
+  font-size: 1.85rem;
+}
+
+app-billing-reports-page .bill-empty p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--hms-color-text-muted);
+}
+
+app-billing-reports-page .bill-date-input {
+  min-height: 1.9rem;
+  border-radius: 0.65rem;
+  border: 1px solid var(--hms-color-border-input);
+  font-size: 0.78rem;
+  padding-inline: 0.55rem;
+  color: var(--hms-color-text);
+  background: var(--hms-color-surface);
+}
+
+@media (max-width: 1100px) {
+  app-billing-reports-page .bill-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  app-billing-reports-page .bill-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}

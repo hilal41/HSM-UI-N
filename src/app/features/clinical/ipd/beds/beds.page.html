@@ -1,0 +1,77 @@
+<app-surface-panel class="hms-crud-surface" title="IPD Beds" subtitle="Bed board — availability and occupancy">
+  <div surfacePanelActions class="hms-crud-actions">
+    <p-select [(ngModel)]="filterWardId" [options]="wards" optionLabel="name" optionValue="id" placeholder="All wards" [showClear]="true" styleClass="mr-2" appendTo="body" (onChange)="load()" />
+    <p-select [(ngModel)]="filterStatus" [options]="statusOptions" optionLabel="label" optionValue="value" placeholder="All statuses" [showClear]="true" styleClass="mr-2" appendTo="body" (onChange)="load()" />
+    <button pButton type="button" label="New bed" icon="pi pi-plus" severity="secondary" class="hms-toolbar-solid" (click)="openCreate()"></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    @if (errorMessage) {
+      <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+    }
+    <p-table [showLoader]="false" [value]="rows" [loading]="loading" styleClass="p-datatable-sm hms-crud-table" [paginator]="showPaginator" [rows]="15">
+      <ng-template #header>
+        <tr>
+          <th>Bed</th>
+          <th>Ward</th>
+          <th>Department</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Patient</th>
+          <th class="w-32 text-end">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-row>
+        <tr>
+          <td class="font-mono">{{ row.bedNumber }}</td>
+          <td>{{ row.wardName ?? '—' }}</td>
+          <td>{{ row.departmentName ?? '—' }}</td>
+          <td>{{ row.bedType }}</td>
+          <td><p-tag [value]="row.status" [severity]="bedSeverity(row.status)" /></td>
+          <td>{{ row.currentPatientName ?? '—' }}</td>
+          <td class="text-end">
+            <button pButton type="button" icon="pi pi-pencil" [text]="true" severity="secondary" class="mr-1" (click)="openEdit(row)"></button>
+            <button pButton type="button" icon="pi pi-trash" [text]="true" severity="danger" (click)="confirmDelete(row)"></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="7" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state icon="pi pi-th-large" title="No beds yet" description="Add beds to wards before admitting patients." [actionable]="true" actionLabel="Add bed" (action)="openCreate()" />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog [header]="editingId == null ? 'New bed' : 'Edit bed'" [(visible)]="dialogOpen" [modal]="true" [style]="{ width: 'min(95vw, 28rem)' }" styleClass="hms-crud-dialog">
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll grid grid-cols-1 gap-3">
+      @if (editingId == null) {
+        <div class="flex flex-col gap-1">
+          <label class="hms-field-label hms-field-label--required">Ward</label>
+          <p-select [(ngModel)]="formWardId" [options]="wards" optionLabel="name" optionValue="id" styleClass="w-full" appendTo="body" />
+        </div>
+      }
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required">Bed number</label>
+        <input pInputText class="w-full" [(ngModel)]="formNumber" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label">Bed type</label>
+        <input pInputText class="w-full" [(ngModel)]="formType" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label">Status</label>
+        <p-select [(ngModel)]="formStatus" [options]="statusOptions" optionLabel="label" optionValue="value" styleClass="w-full" appendTo="body" />
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="dialogOpen = false"></button>
+      <button pButton type="button" label="Save" icon="pi pi-check" severity="success" [loading]="saving" (click)="save()"></button>
+    </div>
+  </div>
+</p-dialog>

@@ -1,4 +1,11 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  effect,
+  inject,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import type { AutoCompleteCompleteEvent, AutoCompleteSelectEvent } from 'primeng/autocomplete';
 import { MessageService } from 'primeng/api';
@@ -17,6 +24,8 @@ import { MeApiService } from '../../../core/api/me-api.service';
 import { PatientVisitsApiService } from '../../../core/api/patient-visits-api.service';
 import type { ClinicalService, CreatePatientVisitRequest, Doctor, Hospital, Patient } from '../../../core/models/api-contracts';
 import { AuthSessionService } from '../../../core/services/auth-session.service';
+import { resolveBranchTimeZone } from '../../../shared/utils/branch-calendar-date.util';
+import { newClientId } from '../../../shared/utils/client-id.util';
 import { doctorIsAvailableAt } from '../../../shared/utils/doctor-availability.util';
 import {
   PatientRegistrationSlipComponent,
@@ -28,6 +37,7 @@ import {
   type RegistrationSlipTemplate,
 } from './registration-slip-template';
 import { PatientRegisterLogDialogComponent } from './patient-register-log-dialog.component';
+import { SurfacePanelComponent } from '../../../shared/components/surface-panel/surface-panel.component';
 import { RegisterPatientFlowDialogComponent } from './register-patient-flow-dialog.component';
 
 interface VisitLineVm {
@@ -35,7 +45,10 @@ interface VisitLineVm {
   clinicalServiceId: number;
   serviceTitle: string;
   serviceCode: string;
+  consultancyType: string;
+  labTestId?: number | null;
   doctorId: number | null;
+  priority: string;
   servicePrice: number;
   serviceDiscount: number;
   remarks: string;
@@ -53,6 +66,7 @@ interface SlipSnapshot {
   selector: 'app-patient-registration-page',
   imports: [
     FormsModule,
+    SurfacePanelComponent,
     RegisterPatientFlowDialogComponent,
     ButtonModule,
     MessageModule,
@@ -68,7 +82,17 @@ interface SlipSnapshot {
   templateUrl: './patient-registration.page.html',
   styleUrl: './patient-registration.page.scss',
 })
-export class PatientRegistrationPage implements OnInit {
+export class PatientRegistrationPage implements OnInit, OnDestroy {
+  private static readonly ServiceSearchPlaceholderStatic = 'Search service…';
+
+  private static readonly ServiceSearchHints = [
+    'Search service by name here…',
+    'Search lab test or consultation…',
+    'Find service code or title…',
+    'Type service name to add…',
+    'Look up clinical service here…',
+    'Search OPD, lab, or procedure…',
+  ];
   private readonly clinicalApi = inject(ClinicalServicesApiService);
   private readonly doctorsApi = inject(DoctorsApiService);
   private readonly visitsApi = inject(PatientVisitsApiService);
@@ -84,9 +108,15 @@ export class PatientRegistrationPage implements OnInit {
 
   serviceSuggestions: ClinicalService[] = [];
   servicePick: ClinicalService | null = null;
+  serviceSearchPlaceholder = '';
+  serviceSearchFocused = false;
+  private serviceSearchQuery = '';
+  private serviceHintTimer: ReturnType<typeof setTimeout> | null = null;
+  private serviceHintPaused = false;
 
   lines: VisitLineVm[] = [];
   private allDoctors: Doctor[] = [];
+  doctorOptions: { label: string; value: number }[] = [];
 
   visitRemarks = '';
   savingVisit = false;
@@ -96,6 +126,28 @@ export class PatientRegistrationPage implements OnInit {
 
   myHospital: Hospital | null = null;
   slipTemplate: RegistrationSlipTemplate = defaultRegistrationSlipTemplate();
+
+  private doctorsLoadGen = 0;
+  private lastBranchIdForDoctors: number | null | undefined = undefined;
+
+  constructor() {
+    // Re-filter (and reload) when active branch / timezone changes.
+    effect(() => {
+      const branchId = this.session.activeBranchId();
+      this.session.activeBranch()?.timeZoneId;
+      if (this.lastBranchIdForDoctors === undefined) {
+        this.lastBranchIdForDoctors = branchId;
+        this.refreshDoctorOptions();
+        return;
+      }
+      if (this.lastBranchIdForDoctors !== branchId) {
+        this.lastBranchIdForDoctors = branchId;
+        this.loadDoctors();
+        return;
+      }
+      this.refreshDoctorOptions();
+    });
+  }
 
   ngOnInit(): void {
     this.meApi.getMyHospital().subscribe({
@@ -113,14 +165,29 @@ export class PatientRegistrationPage implements OnInit {
       },
     });
 
+    this.loadDoctors();
+    this.syncServiceHintPause();
+  }
+
+  private loadDoctors(): void {
+    const gen = ++this.doctorsLoadGen;
     this.doctorsApi
       .getPaged({ page: 1, pageSize: 500, status: 'Active' })
       .pipe(finalize(() => this.cdr.markForCheck()))
       .subscribe({
         next: (res) => {
-          this.allDoctors = res.items;
+          if (gen !== this.doctorsLoadGen) {
+            return;
+          }
+          this.allDoctors = Array.isArray(res.items) ? res.items : [];
+          this.refreshDoctorOptions();
         },
         error: () => {
+          if (gen !== this.doctorsLoadGen) {
+            return;
+          }
+          this.allDoctors = [];
+          this.refreshDoctorOptions();
           this.messages.add({
             severity: 'warn',
             summary: 'Doctors',
@@ -130,14 +197,124 @@ export class PatientRegistrationPage implements OnInit {
       });
   }
 
-  get doctorOptions(): { label: string; value: number }[] {
+  private get clinicTimeZone(): string {
+    return resolveBranchTimeZone(this.session.activeBranch()?.timeZoneId);
+  }
+
+  ngOnDestroy(): void {
+    this.clearServiceHintTimer();
+  }
+
+  onServiceSearchFocus(): void {
+    this.serviceSearchFocused = true;
+    this.syncServiceHintPause();
+  }
+
+  onServiceSearchBlur(): void {
+    this.serviceSearchFocused = false;
+    this.syncServiceHintPause();
+  }
+
+  private syncServiceHintPause(): void {
+    const shouldPause =
+      !this.currentPatient ||
+      this.serviceSearchFocused ||
+      this.serviceSearchQuery.trim().length > 0;
+    if (shouldPause === this.serviceHintPaused) {
+      return;
+    }
+    this.serviceHintPaused = shouldPause;
+    if (shouldPause) {
+      this.clearServiceHintTimer();
+      this.serviceSearchPlaceholder = PatientRegistrationPage.ServiceSearchPlaceholderStatic;
+      this.cdr.markForCheck();
+    } else {
+      this.startServiceHintAnimation();
+    }
+  }
+
+  private startServiceHintAnimation(): void {
+    this.clearServiceHintTimer();
+    this.serviceHintPaused = false;
+    this.serviceSearchPlaceholder = '';
+    this.cdr.markForCheck();
+    this.serviceHintTimer = setTimeout(() => this.runServiceHintCycle(0), 600);
+  }
+
+  private runServiceHintCycle(index: number): void {
+    if (this.serviceHintPaused) {
+      return;
+    }
+    const phrases = PatientRegistrationPage.ServiceSearchHints;
+    const text = phrases[index % phrases.length];
+    this.typeServiceHint(text, 0, () => {
+      this.serviceHintTimer = setTimeout(() => {
+        this.deleteServiceHint(text.length, () => {
+          this.serviceHintTimer = setTimeout(() => this.runServiceHintCycle(index + 1), 400);
+        });
+      }, 1800);
+    });
+  }
+
+  private typeServiceHint(text: string, i: number, done: () => void): void {
+    if (this.serviceHintPaused) {
+      return;
+    }
+    this.serviceSearchPlaceholder = text.slice(0, i);
+    this.cdr.markForCheck();
+    if (i >= text.length) {
+      done();
+      return;
+    }
+    this.serviceHintTimer = setTimeout(() => this.typeServiceHint(text, i + 1, done), 42);
+  }
+
+  private deleteServiceHint(len: number, done: () => void): void {
+    if (this.serviceHintPaused) {
+      return;
+    }
+    if (len <= 0) {
+      this.serviceSearchPlaceholder = '';
+      this.cdr.markForCheck();
+      done();
+      return;
+    }
+    this.serviceSearchPlaceholder = this.serviceSearchPlaceholder.slice(0, -1);
+    this.cdr.markForCheck();
+    this.serviceHintTimer = setTimeout(() => this.deleteServiceHint(len - 1, done), 28);
+  }
+
+  private clearServiceHintTimer(): void {
+    if (this.serviceHintTimer != null) {
+      clearTimeout(this.serviceHintTimer);
+      this.serviceHintTimer = null;
+    }
+  }
+
+  readonly priorityOptions = [
+    { label: 'Routine', value: 'Routine' },
+    { label: 'Urgent', value: 'Urgent' },
+    { label: 'STAT', value: 'STAT' },
+  ];
+
+  private refreshDoctorOptions(): void {
     const at = new Date();
-    return this.allDoctors
-      .filter((d) => doctorIsAvailableAt(d.availability, at))
-      .map((d) => ({
-        label: `${d.firstName} ${d.lastName}`.trim(),
-        value: d.id,
-      }));
+    const timeZone = this.clinicTimeZone;
+    const onDuty: { label: string; value: number }[] = [];
+    const offDuty: { label: string; value: number }[] = [];
+
+    for (const d of this.allDoctors) {
+      const name = `${d.firstName} ${d.lastName}`.trim();
+      if (doctorIsAvailableAt(d.availability, at, timeZone)) {
+        onDuty.push({ label: name, value: d.id });
+      } else {
+        offDuty.push({ label: `${name} (Off duty)`, value: d.id });
+      }
+    }
+
+    // Prefer on-duty doctors; if none match the schedule in clinic TZ, still list Active doctors.
+    this.doctorOptions = onDuty.length > 0 ? [...onDuty, ...offDuty] : offDuty;
+    this.cdr.markForCheck();
   }
 
   openRegisterDialog(): void {
@@ -150,16 +327,20 @@ export class PatientRegistrationPage implements OnInit {
     this.visitRemarks = '';
     this.slipSnapshot = null;
     this.pageError = null;
+    this.serviceSearchQuery = '';
+    this.syncServiceHintPause();
     this.cdr.markForCheck();
   }
 
   completeServices(event: AutoCompleteCompleteEvent): void {
     const q = (event.query ?? '').trim();
+    this.serviceSearchQuery = q;
+    this.syncServiceHintPause();
     // Empty query: still load first page so dropdown / search shows services (API allows no search).
     const query = q.length > 0 ? { search: q, page: 1, pageSize: 40 } : { page: 1, pageSize: 40 };
     this.clinicalApi.getPaged(query).subscribe({
       next: (res) => {
-        this.serviceSuggestions = res.items;
+        this.serviceSuggestions = Array.isArray(res.items) ? res.items : [];
         this.cdr.markForCheck();
       },
       error: () => {
@@ -176,6 +357,8 @@ export class PatientRegistrationPage implements OnInit {
     }
     queueMicrotask(() => {
       this.servicePick = null;
+      this.serviceSearchQuery = '';
+      this.syncServiceHintPause();
       this.cdr.markForCheck();
     });
   }
@@ -184,20 +367,28 @@ export class PatientRegistrationPage implements OnInit {
     this.slipSnapshot = null;
     const defaultDoctorId =
       svc.doctorId != null && this.isDoctorAvailableNow(svc.doctorId) ? svc.doctorId : null;
+
     this.lines = [
       ...this.lines,
       {
-        key: crypto.randomUUID(),
+        key: newClientId(),
         clinicalServiceId: svc.id,
         serviceTitle: svc.title,
         serviceCode: svc.code,
-        doctorId: defaultDoctorId,
+        consultancyType: svc.consultancyType,
+        labTestId: svc.labTestId ?? null,
+        doctorId: svc.consultancyType === 'Test' ? null : defaultDoctorId,
+        priority: 'Routine',
         servicePrice: svc.price,
         serviceDiscount: svc.discount,
         remarks: '',
       },
     ];
     this.cdr.markForCheck();
+  }
+
+  isTestLine(row: VisitLineVm): boolean {
+    return row.consultancyType === 'Test';
   }
 
   removeLine(key: string): void {
@@ -213,11 +404,21 @@ export class PatientRegistrationPage implements OnInit {
     return this.lines.reduce((s, l) => s + Number(l.serviceDiscount), 0);
   }
 
+  get netAmount(): number {
+    return this.totalAmount - this.discountAmount;
+  }
+
+  get canSaveVisit(): boolean {
+    return this.currentPatient != null && this.lines.length > 0 && !this.savingVisit;
+  }
+
   get slipLines(): PatientRegistrationSlipLineVm[] {
     return this.lines.map((l) => ({
       serviceTitle: l.serviceTitle,
       serviceCode: l.serviceCode,
       doctorName: this.doctorName(l.doctorId),
+      priority: l.priority,
+      isTestLine: this.isTestLine(l),
       servicePrice: l.servicePrice,
       serviceDiscount: l.serviceDiscount,
       remarks: l.remarks,
@@ -269,7 +470,9 @@ export class PatientRegistrationPage implements OnInit {
 
   private isDoctorAvailableNow(id: number): boolean {
     const doctor = this.allDoctors.find((d) => d.id === id);
-    return doctor != null && doctorIsAvailableAt(doctor.availability, new Date());
+    return (
+      doctor != null && doctorIsAvailableAt(doctor.availability, new Date(), this.clinicTimeZone)
+    );
   }
 
   /** True when the slip has at least one service line (current visit or last saved-for-print snapshot). */
@@ -332,6 +535,9 @@ export class PatientRegistrationPage implements OnInit {
       return;
     }
     for (const line of this.lines) {
+      if (this.isTestLine(line)) {
+        continue;
+      }
       if (line.doctorId == null || line.doctorId <= 0) {
         this.messages.add({
           severity: 'warn',
@@ -354,12 +560,13 @@ export class PatientRegistrationPage implements OnInit {
       patientId: this.currentPatient.id,
       totalAmount: this.totalAmount,
       discountAmount: this.discountAmount,
-      receivedAmount: 0,
+      receivedAmount: this.netAmount,
       remarks: this.visitRemarks.trim() || null,
       isPrinted: andPrint,
       visitDate: new Date().toISOString(),
       details: this.lines.map((l) => ({
-        doctorId: l.doctorId!,
+        doctorId: this.isTestLine(l) ? null : l.doctorId!,
+        priority: this.isTestLine(l) ? l.priority : null,
         clinicalServiceId: l.clinicalServiceId,
         servicePrice: l.servicePrice,
         serviceDiscount: l.serviceDiscount,

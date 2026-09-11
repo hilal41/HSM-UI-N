@@ -12,9 +12,12 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { finalize } from 'rxjs';
 import { MenusApiService } from '../../../core/api/menus-api.service';
+import { AuthSessionService } from '../../../core/services/auth-session.service';
 import type { AppMenuTree } from '../../../core/models/api-contracts';
+import { HmsCrudEmptyStateComponent } from '../../../shared/components/hms-crud-empty-state/hms-crud-empty-state.component';
 import { HmsTableLoadingBodyComponent } from '../../../shared/components/hms-table-loading-body/hms-table-loading-body.component';
 import { SurfacePanelComponent } from '../../../shared/components/surface-panel/surface-panel.component';
+import { showCrudPaginator } from '../../../shared/utils/crud-page.state';
 
 interface ParentOption {
   label: string;
@@ -26,6 +29,7 @@ interface ParentOption {
   imports: [
     FormsModule,
     SurfacePanelComponent,
+    HmsCrudEmptyStateComponent,
     HmsTableLoadingBodyComponent,
     TableModule,
     TagModule,
@@ -41,8 +45,11 @@ interface ParentOption {
 })
 export class ModulesPage implements OnInit {
   private readonly api = inject(MenusApiService);
+  private readonly session = inject(AuthSessionService);
   private readonly confirm = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
+
+  readonly isPlatformUser = this.session.isPlatformUser;
 
   rows: AppMenuTree[] = [];
   menuTree: AppMenuTree[] = [];
@@ -50,6 +57,10 @@ export class ModulesPage implements OnInit {
   loading = false;
   saving = false;
   errorMessage: string | null = null;
+
+  get showPaginator(): boolean {
+    return showCrudPaginator(this.rows.length, 20);
+  }
 
   dialogOpen = false;
   editingId: number | null = null;
@@ -71,8 +82,8 @@ export class ModulesPage implements OnInit {
   load(): void {
     this.loading = true;
     this.errorMessage = null;
-    this.api
-      .getTree(false)
+    const request$ = this.isPlatformUser() ? this.api.getTree(false) : this.api.getLicensedTree(false);
+    request$
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (data) => {

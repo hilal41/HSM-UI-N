@@ -9,12 +9,12 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import {
   catchError,
   debounceTime,
-  distinctUntilChanged,
   finalize,
   fromEvent,
   of,
@@ -46,12 +46,16 @@ export class DoctorCheckupMedicinePanelComponent {
   private readonly documentRef = inject(DOCUMENT);
   private readonly medicinesApi = inject(MedicinesApiService);
   private readonly medicineUsagesApi = inject(MedicineUsagesApiService);
+  private readonly messages = inject(MessageService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   private readonly medicineSearchAreaEl = viewChild<ElementRef<HTMLElement>>('medicineSearchArea');
 
   private readonly stagedLabels = new Map<number, string>();
   private readonly stagedUsageIds = new Map<number, number | null>();
+  private readonly stagedDoses = new Map<number, string>();
+  private readonly stagedDurations = new Map<number, number | null>();
+  private readonly stagedQuantities = new Map<number, number | null>();
   private readonly searchTrigger$ = new Subject<void>();
 
   readonly pageSizePresets = [10, 20, 50, 1000] as const;
@@ -115,6 +119,9 @@ export class DoctorCheckupMedicinePanelComponent {
     this.stagedMedicineIds = [];
     this.stagedLabels.clear();
     this.stagedUsageIds.clear();
+    this.stagedDoses.clear();
+    this.stagedDurations.clear();
+    this.stagedQuantities.clear();
     this.cdr.markForCheck();
   }
 
@@ -122,17 +129,30 @@ export class DoctorCheckupMedicinePanelComponent {
     this.stagedMedicineIds = rows.map((r) => r.medicineId);
     this.stagedLabels.clear();
     this.stagedUsageIds.clear();
+    this.stagedDoses.clear();
+    this.stagedDurations.clear();
+    this.stagedQuantities.clear();
     for (const r of rows) {
       this.stagedLabels.set(r.medicineId, `${r.medicineName} (${r.code})`);
       this.stagedUsageIds.set(r.medicineId, r.medicineUsageId ?? null);
+      this.stagedDoses.set(r.medicineId, r.dose ?? '');
+      this.stagedDurations.set(r.medicineId, r.durationDays ?? null);
+      this.stagedQuantities.set(r.medicineId, r.quantity ?? null);
     }
     this.cdr.markForCheck();
+  }
+
+  get stagedCount(): number {
+    return this.stagedMedicineIds.length;
   }
 
   getStagedMedicineLines(): SaveCheckupMedicineLine[] {
     return this.stagedMedicineIds.map((medicineId) => ({
       medicineId,
       medicineUsageId: this.stagedUsageIds.get(medicineId) ?? null,
+      dose: this.stagedDoses.get(medicineId)?.trim() || null,
+      durationDays: this.stagedDurations.get(medicineId) ?? null,
+      quantity: this.stagedQuantities.get(medicineId) ?? null,
     }));
   }
 
@@ -226,6 +246,9 @@ export class DoctorCheckupMedicinePanelComponent {
     this.stagedMedicineIds = [...this.stagedMedicineIds, m.id];
     this.stagedLabels.set(m.id, this.lineLabelFromMedicine(m));
     this.stagedUsageIds.set(m.id, null);
+    this.stagedDoses.set(m.id, '');
+    this.stagedDurations.set(m.id, null);
+    this.stagedQuantities.set(m.id, null);
     this.clearSearchAfterPick();
     this.cdr.markForCheck();
   }
@@ -247,6 +270,9 @@ export class DoctorCheckupMedicinePanelComponent {
     this.stagedMedicineIds = this.stagedMedicineIds.filter((x) => x !== id);
     this.stagedLabels.delete(id);
     this.stagedUsageIds.delete(id);
+    this.stagedDoses.delete(id);
+    this.stagedDurations.delete(id);
+    this.stagedQuantities.delete(id);
     this.cdr.markForCheck();
   }
 
@@ -256,6 +282,30 @@ export class DoctorCheckupMedicinePanelComponent {
 
   usageForStaged(id: number): number | null {
     return this.stagedUsageIds.get(id) ?? null;
+  }
+
+  doseForStaged(id: number): string {
+    return this.stagedDoses.get(id) ?? '';
+  }
+
+  setDoseForStaged(id: number, value: string): void {
+    this.stagedDoses.set(id, value ?? '');
+  }
+
+  durationForStaged(id: number): number | null {
+    return this.stagedDurations.get(id) ?? null;
+  }
+
+  setDurationForStaged(id: number, value: number | null): void {
+    this.stagedDurations.set(id, value);
+  }
+
+  quantityForStaged(id: number): number | null {
+    return this.stagedQuantities.get(id) ?? null;
+  }
+
+  setQuantityForStaged(id: number, value: number | null): void {
+    this.stagedQuantities.set(id, value);
   }
 
   setUsageForStaged(id: number, usageId: number | null): void {
@@ -285,8 +335,13 @@ export class DoctorCheckupMedicinePanelComponent {
     this.medicineUsagesApi
       .getPaged({ page: 1, pageSize: 1000 })
       .pipe(
-        catchError(() =>
-          of({
+        catchError(() => {
+          this.messages.add({
+            severity: 'error',
+            summary: 'Medicine usages',
+            detail: 'Unable to load medicine usage options.',
+          });
+          return of({
             items: [],
             page: 1,
             pageSize: 1000,
@@ -294,8 +349,8 @@ export class DoctorCheckupMedicinePanelComponent {
             totalPages: 0,
             hasNextPage: false,
             hasPreviousPage: false,
-          }),
-        ),
+          });
+        }),
         finalize(() => {
           this.usageLoading = false;
           this.cdr.markForCheck();
@@ -323,6 +378,22 @@ export class DoctorCheckupMedicinePanelComponent {
         activeOnly: true,
       })
       .pipe(
+        catchError(() => {
+          this.messages.add({
+            severity: 'error',
+            summary: 'Medicines',
+            detail: 'Unable to search medicines.',
+          });
+          return of({
+            items: [] as Medicine[],
+            page: this.searchPage,
+            pageSize: this.searchPageSize,
+            totalCount: 0,
+            totalPages: 0,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          });
+        }),
         finalize(() => {
           this.searchLoading = false;
           this.cdr.markForCheck();

@@ -1,0 +1,82 @@
+<app-surface-panel
+  class="hms-crud-surface"
+  title="Suppliers"
+  subtitle="Pharmacy vendors for purchases and goods receipts"
+>
+  <div surfacePanelActions class="hms-crud-actions">
+    <input pInputText [(ngModel)]="searchInput" placeholder="Search…" (keyup.enter)="onLazyLoad({ first: 0, rows: pageSize })" />
+    <button pButton type="button" icon="pi pi-search" class="hms-toolbar-chip" [outlined]="true" (click)="onLazyLoad({ first: 0, rows: pageSize })"></button>
+    <button pButton type="button" label="New supplier" icon="pi pi-plus" class="hms-toolbar-solid" (click)="openCreate()"></button>
+  </div>
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    <p-table
+      [value]="rows"
+      [lazy]="true"
+      [paginator]="showPaginator"
+      [alwaysShowPaginator]="false"
+      [rows]="tablePageSize"
+      [totalRecords]="totalCount"
+      [loading]="loading"
+      [showLoader]="false"
+      (onLazyLoad)="onLazyLoad($event)"
+      styleClass="p-datatable-sm hms-crud-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td class="font-mono text-sm">{{ row.code }}</td>
+          <td>{{ row.name }}</td>
+          <td>{{ row.phone || '—' }}</td>
+          <td>
+            <p-tag [value]="row.isActive ? 'Active' : 'Inactive'" [severity]="row.isActive ? 'success' : 'secondary'" />
+          </td>
+          <td class="text-right">
+            <button pButton type="button" icon="pi pi-pencil" class="p-button-text" (click)="openEdit(row)"></button>
+            <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-danger" (click)="remove(row)"></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state
+              icon="pi pi-truck"
+              [title]="hasActiveFilter ? 'No matching suppliers' : 'No suppliers yet'"
+              [description]="hasActiveFilter ? 'Try a different search or clear filters.' : 'Add vendors for pharmacy purchases and goods receipts.'"
+              [actionable]="!hasActiveFilter"
+              actionLabel="Click to add a supplier"
+              (action)="openCreate()"
+            />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog [(visible)]="dialogOpen" [header]="editing ? 'Edit supplier' : 'New supplier'" [modal]="true" [style]="{ width: '28rem' }">
+  <div class="flex flex-col gap-3">
+    <input pInputText [(ngModel)]="form.code" placeholder="Code" />
+    <input pInputText [(ngModel)]="form.name" placeholder="Name" />
+    <input pInputText [(ngModel)]="form.phone" placeholder="Phone" />
+    <input pInputText [(ngModel)]="form.email" placeholder="Email" />
+    <input pInputText [(ngModel)]="form.address" placeholder="Address" />
+    <div class="flex items-center gap-2">
+      <p-toggleswitch [(ngModel)]="form.isActive" />
+      <span>Active</span>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancel" class="p-button-text" (click)="dialogOpen = false"></button>
+    <button pButton type="button" label="Save" [loading]="saving" (click)="save()"></button>
+  </ng-template>
+</p-dialog>

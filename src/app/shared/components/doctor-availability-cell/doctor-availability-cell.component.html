@@ -1,0 +1,39 @@
+@if (view.kind === 'always') {
+  <span class="doc-avail__pill doc-avail__pill--muted">Always available</span>
+} @else if (view.kind === 'legacy') {
+  <span class="doc-avail__legacy" [title]="view.legacyText">{{ view.compactSummary }}</span>
+} @else {
+  <div class="doc-avail">
+    <div class="doc-avail__chips" aria-hidden="true">
+      @for (day of view.dayAbbrevs; track day) {
+        <span class="doc-avail__chip">{{ day }}</span>
+      }
+    </div>
+    <div class="doc-avail__row">
+      <span class="doc-avail__summary" [title]="view.compactSummary">{{ view.compactSummary }}</span>
+      @if (view.scheduleLines.length > 0) {
+        <button
+          type="button"
+          class="doc-avail__info"
+          aria-label="View weekly schedule"
+          (click)="schedulePop.toggle($event)"
+        >
+          <i class="pi pi-calendar" aria-hidden="true"></i>
+        </button>
+        <p-popover #schedulePop [dismissable]="true" appendTo="body">
+          <div class="doc-avail__popover">
+            <div class="doc-avail__popover-title">Weekly schedule</div>
+            <ul class="doc-avail__detail">
+              @for (line of view.scheduleLines; track line.daysLabel + line.timeLabel) {
+                <li>
+                  <span class="doc-avail__detail-days">{{ line.daysLabel }}</span>
+                  <span class="doc-avail__detail-time">{{ line.timeLabel }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        </p-popover>
+      }
+    </div>
+  </div>
+}

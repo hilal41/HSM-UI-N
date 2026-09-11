@@ -1,9 +1,9 @@
 /* DOB datepicker: one pill on root; icon is absolutely positioned by PrimeNG */
-$dob-pill-border: #0f172a;
+$dob-pill-border: var(--hms-color-text);
 $dob-pill-text: var(--hms-color-text);
-$dob-pill-hover-bg: #f1f5f9;
-$dob-pill-hover-border: #020617;
-$dob-pill-hover-text: #020617;
+$dob-pill-hover-bg: var(--hms-color-canvas);
+$dob-pill-hover-border: var(--hms-color-text);
+$dob-pill-hover-text: var(--hms-color-text);
 
 :host ::ng-deep .patient-dob-datepicker.p-datepicker {
   width: 100%;
@@ -11,7 +11,7 @@ $dob-pill-hover-text: #020617;
   box-sizing: border-box;
   display: flex;
   align-items: stretch;
-  background: #ffffff !important;
+  background: var(--hms-color-surface) !important;
   border: 1px solid $dob-pill-border !important;
   border-radius: 9999px !important;
   box-shadow: none !important;
@@ -89,9 +89,9 @@ $dob-pill-hover-text: #020617;
   width: 192px;
   height: 192px;
   max-width: 100%;
-  border: 1px dashed #94a3b8;
+  border: 1px dashed var(--hms-color-text-subtle);
   border-radius: 0.5rem;
-  background: #f8fafc;
+  background: var(--hms-color-primary-light);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,7 +101,7 @@ $dob-pill-hover-text: #020617;
 
 .pt-pic-preview__icon {
   font-size: 3rem;
-  color: #64748b;
+  color: var(--hms-color-text-muted);
 }
 
 .pt-pic-preview__img {

@@ -1,0 +1,110 @@
+<app-surface-panel class="hms-crud-surface" title="Active Inpatients" subtitle="Charge, rounds, transfer, and discharge">
+  <div surfacePanelActions class="hms-crud-actions">
+    <button pButton type="button" label="Refresh" icon="pi pi-refresh" severity="secondary" [outlined]="true" (click)="load()"></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    @if (errorMessage) {
+      <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+    }
+    <p-table [showLoader]="false" [value]="rows" [loading]="loading" styleClass="p-datatable-sm hms-crud-table" [paginator]="showPaginator" [rows]="15">
+      <ng-template #header>
+        <tr>
+          <th>Patient</th>
+          <th>Bed</th>
+          <th>Doctor</th>
+          <th>Days</th>
+          <th>Balance</th>
+          <th>Today visit</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-row>
+        <tr>
+          <td>
+            <div class="font-medium">{{ row.patientName }}</div>
+            <div class="text-xs text-slate-500">{{ row.admissionNumber }}</div>
+          </td>
+          <td>{{ row.wardName }} / {{ row.bedNumber }}</td>
+          <td>{{ row.doctorName }}</td>
+          <td>{{ row.daysAdmitted }}</td>
+          <td>{{ row.runningBalance | number: '1.2-2' }}</td>
+          <td>
+            <p-tag [value]="row.hasTodayVisit ? 'Yes' : 'No'" [severity]="row.hasTodayVisit ? 'success' : 'secondary'" />
+          </td>
+          <td class="text-end whitespace-nowrap">
+            <button pButton type="button" label="Charge" [text]="true" size="small" (click)="openCharge(row)"></button>
+            <button pButton type="button" label="Rounds" [text]="true" size="small" (click)="startRounds(row)"></button>
+            <button pButton type="button" label="Transfer" [text]="true" size="small" (click)="openTransfer(row)"></button>
+            <button pButton type="button" label="Discharge" [text]="true" severity="danger" size="small" (click)="openDischarge(row)"></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="7" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state icon="pi pi-users" title="No active inpatients" description="Admit a patient from the Admissions desk." />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog header="Add charge" [(visible)]="chargeOpen" [modal]="true" [style]="{ width: 'min(95vw, 28rem)' }" styleClass="hms-crud-dialog">
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll grid grid-cols-1 gap-3">
+      <p class="text-sm text-slate-600">Posts to running tab — no upfront payment.</p>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required">IPD / Test service</label>
+        <p-select [(ngModel)]="chargeServiceId" [options]="ipdServices" optionLabel="title" optionValue="id" styleClass="w-full" appendTo="body" />
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="chargeOpen = false"></button>
+      <button pButton type="button" label="Post charge" icon="pi pi-check" severity="success" [loading]="saving" (click)="submitCharge()"></button>
+    </div>
+  </div>
+</p-dialog>
+
+<p-dialog header="Transfer bed" [(visible)]="transferOpen" [modal]="true" [style]="{ width: 'min(95vw, 28rem)' }" styleClass="hms-crud-dialog">
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll grid grid-cols-1 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required">Ward</label>
+        <p-select [(ngModel)]="transferWardId" [options]="transferWards" optionLabel="name" optionValue="id" styleClass="w-full" appendTo="body" (onChange)="onTransferWardChange()" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required">Bed</label>
+        <p-select [(ngModel)]="transferBedId" [options]="transferBeds" optionLabel="bedNumber" optionValue="id" styleClass="w-full" appendTo="body" />
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="transferOpen = false"></button>
+      <button pButton type="button" label="Transfer" icon="pi pi-check" severity="success" [loading]="saving" (click)="submitTransfer()"></button>
+    </div>
+  </div>
+</p-dialog>
+
+<p-dialog header="Discharge" [(visible)]="dischargeOpen" [modal]="true" [style]="{ width: 'min(95vw, 32rem)' }" styleClass="hms-crud-dialog">
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll grid grid-cols-1 gap-3">
+      @if (selected && selected.runningBalance > 0) {
+        <p-message severity="warn" [text]="'Outstanding balance: ' + (selected.runningBalance | number: '1.2-2') + ' — collect at cashier after discharge.'" styleClass="w-full" />
+      }
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label">Discharge summary</label>
+        <textarea pTextarea rows="3" class="w-full" [(ngModel)]="dischargeSummary"></textarea>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label">Instructions</label>
+        <textarea pTextarea rows="2" class="w-full" [(ngModel)]="dischargeInstructions"></textarea>
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="dischargeOpen = false"></button>
+      <button pButton type="button" label="Discharge" icon="pi pi-check" severity="success" [loading]="saving" (click)="submitDischarge()"></button>
+    </div>
+  </div>
+</p-dialog>

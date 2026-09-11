@@ -1,0 +1,59 @@
+<app-surface-panel class="hms-crud-surface" title="Sales History" subtitle="Completed pharmacy sales">
+  <div surfacePanelActions class="hms-crud-actions">
+    <input pInputText [(ngModel)]="searchInput" placeholder="Sale no / patient…" (keyup.enter)="onLazyLoad({ first: 0, rows: pageSize })" />
+    <button pButton type="button" icon="pi pi-search" [outlined]="true" (click)="onLazyLoad({ first: 0, rows: pageSize })"></button>
+  </div>
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    <p-table
+      [value]="rows"
+      [lazy]="true"
+      [paginator]="showPaginator"
+      [alwaysShowPaginator]="false"
+      [rows]="tablePageSize"
+      [totalRecords]="totalCount"
+      [loading]="loading"
+      [showLoader]="false"
+      (onLazyLoad)="onLazyLoad($event)"
+      styleClass="p-datatable-sm hms-crud-table"
+    >
+      <ng-template pTemplate="header">
+        <tr><th>Sale</th><th>Date</th><th>Type</th><th>Patient</th><th>Total</th><th></th></tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td class="font-mono text-sm">{{ row.saleNo }}</td>
+          <td>{{ row.saleDate | date: 'short' }}</td>
+          <td>{{ row.saleType }}</td>
+          <td>{{ row.patientName || '—' }}</td>
+          <td>{{ row.total }}</td>
+          <td class="text-right">
+            <button pButton type="button" label="View" class="p-button-text" (click)="openDetail(row)"></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state
+              icon="pi pi-shopping-cart"
+              title="No sales yet"
+              description="Completed dispensary sales will appear here."
+            />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog [(visible)]="detailOpen" [header]="detail?.saleNo || 'Sale'" [modal]="true" [style]="{ width: '32rem' }" (onHide)="detail = null">
+  @if (detail) {
+    <ul class="text-sm">
+      @for (l of detail.lines; track l.id) {
+        <li>{{ l.medicineName }} · {{ l.batchNumber }} · {{ l.qty }} × {{ l.unitPrice }} = {{ l.lineTotal }}</li>
+      }
+    </ul>
+    <p class="mt-3"><strong>Total:</strong> {{ detail.total }}</p>
+  }
+</p-dialog>

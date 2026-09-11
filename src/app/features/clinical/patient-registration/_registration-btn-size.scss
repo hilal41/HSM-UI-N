@@ -1,0 +1,10 @@
+/* Uniform control height for registration page + its dialogs (matches hms-toolbar-chip). */
+$pr-btn-h: 1.9rem;
+
+@mixin pr-uniform-button-size {
+  min-height: $pr-btn-h !important;
+  height: $pr-btn-h !important;
+  max-height: $pr-btn-h !important;
+  padding-block: 0 !important;
+  line-height: 1 !important;
+}

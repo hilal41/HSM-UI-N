@@ -1,232 +1,224 @@
 <div class="qp-dialog-body">
   <div class="qp-form-scroll">
-    <div class="qp-form-wide">
-    <div class="qp-field qp-field--fn">
-      <label class="qp-label qp-label--required" for="qpf-fn">First name</label>
-      <input
-        pInputText
-        id="qpf-fn"
-        class="qp-input w-full"
-        [(ngModel)]="firstName"
-        autocomplete="given-name"
-        placeholder="First name"
-        aria-required="true"
-      />
-    </div>
-    <div class="qp-field qp-field--ln">
-      <label class="qp-label qp-label--required" for="qpf-ln">Last name</label>
-      <input
-        pInputText
-        id="qpf-ln"
-        class="qp-input w-full"
-        [(ngModel)]="lastName"
-        autocomplete="family-name"
-        placeholder="Last name"
-        aria-required="true"
-      />
-    </div>
-    <div class="qp-field qp-field--mob">
-      <label class="qp-label" for="qpf-mob">Mob</label>
-      <input
-        pInputText
-        id="qpf-mob"
-        class="qp-input w-full"
-        [(ngModel)]="phone"
-        autocomplete="tel"
-        placeholder="Phone"
-      />
-    </div>
-    <div class="qp-field qp-field--reg">
-      <label class="qp-label qp-label--required" for="qpf-reg">Reg No</label>
-      <input
-        pInputText
-        id="qpf-reg"
-        class="qp-input w-full"
-        [(ngModel)]="patientNumber"
-        placeholder="Registration #"
-        aria-required="true"
-      />
-    </div>
-    <div class="qp-field qp-field--pic">
-      <label class="qp-label" for="qpf-pic-upload">Patient picture</label>
-      <div class="qp-pic-box">
-        <button
-          type="button"
-          class="qp-pic-preview"
-          (click)="openCamera()"
-          aria-label="Open camera"
-        >
-          @if (patientPictureBase64) {
-            <img [src]="patientPictureBase64" alt="Patient preview" class="qp-pic-preview__img" />
-          } @else {
-            <i class="pi pi-camera qp-pic-preview__icon" aria-hidden="true"></i>
-          }
-        </button>
-        <div class="qp-pic-actions">
-          @if (patientPictureBase64) {
-            <button
-              type="button"
-              pButton
-              icon="pi pi-times"
-              severity="secondary"
-              [outlined]="true"
-              class="pr-pill-white qp-pic-action-icon"
-              (click)="clearPatientPicture()"
-              aria-label="Clear picture"
-            ></button>
-          }
+    <div class="hms-form-grid-3 qp-form-grid">
+      <div class="hms-form-field">
+        <label class="hms-field-label hms-field-label--required" for="qpf-fn">First name</label>
+        <input
+          pInputText
+          id="qpf-fn"
+          class="qp-input w-full"
+          [(ngModel)]="firstName"
+          autocomplete="given-name"
+          placeholder="First name"
+          aria-required="true"
+        />
+      </div>
+      <div class="hms-form-field">
+        <label class="hms-field-label hms-field-label--required" for="qpf-ln">Last name</label>
+        <input
+          pInputText
+          id="qpf-ln"
+          class="qp-input w-full"
+          [(ngModel)]="lastName"
+          autocomplete="family-name"
+          placeholder="Last name"
+          aria-required="true"
+        />
+      </div>
+      <div class="hms-form-field qp-pic-field">
+        <label class="hms-field-label" for="qpf-pic-upload">Patient picture</label>
+        <div class="qp-pic-box">
+          <button
+            type="button"
+            class="qp-pic-preview"
+            (click)="openCamera()"
+            aria-label="Open camera"
+          >
+            @if (patientPictureBase64) {
+              <img [src]="patientPictureBase64" alt="Patient preview" class="qp-pic-preview__img" />
+            } @else {
+              <i class="pi pi-camera qp-pic-preview__icon" aria-hidden="true"></i>
+            }
+          </button>
+          <div class="qp-pic-actions">
+            @if (patientPictureBase64) {
+              <button
+                type="button"
+                pButton
+                icon="pi pi-times"
+                severity="secondary"
+                [outlined]="true"
+                class="pr-pill-white qp-pic-action-icon"
+                (click)="clearPatientPicture()"
+                aria-label="Clear picture"
+              ></button>
+            }
+          </div>
         </div>
       </div>
-    </div>
-    <div class="qp-field qp-field--dob">
-      <label class="qp-label qp-label--required" for="qpf-dob">Date of birth</label>
-      <p-datepicker
-        inputId="qpf-dob"
-        [(ngModel)]="dateOfBirth"
-        (ngModelChange)="onDateOfBirthChange()"
-        [required]="true"
-        dateFormat="yy-mm-dd"
-        [showIcon]="true"
-        iconDisplay="input"
-        [fluid]="true"
-        appendTo="body"
-        [maxDate]="maxDobDate"
-        placeholder="Select date"
-        styleClass="qp-datepicker w-full"
-      />
-    </div>
-    <div class="qp-field qp-field--age-ymd">
-      <label class="qp-label" for="qpf-age">Age</label>
-      <input
-        pInputText
-        id="qpf-age"
-        class="qp-input w-full"
-        [(ngModel)]="ageYmdText"
-        (input)="onAgeYmdInput($event)"
-        (blur)="onAgeYmdBlur()"
-        autocomplete="off"
-        inputmode="text"
-        placeholder="e.g. 45-6-12 (years-months-days)"
-      />
-    </div>
 
-    <div class="qp-field qp-field--gender">
-      <label class="qp-label qp-label--required" for="qpf-gender">Gender</label>
-      <p-select
-        inputId="qpf-gender"
-        [(ngModel)]="gender"
-        [options]="genderOptions"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Gender"
-        [required]="true"
-        styleClass="qp-select w-full"
-        appendTo="body"
-      />
-    </div>
-    <div class="qp-field qp-field--blood">
-      <label class="qp-label" for="qpf-blood">Blood type</label>
-      <p-select
-        inputId="qpf-blood"
-        [(ngModel)]="bloodTypeId"
-        [options]="bloodTypeOptions"
-        optionLabel="displayName"
-        optionValue="id"
-        placeholder="Optional"
-        [showClear]="true"
-        styleClass="qp-select w-full"
-        appendTo="body"
-      />
-    </div>
-    <div class="qp-field qp-field--city">
-      <label class="qp-label" for="qpf-city">City</label>
-      <input pInputText id="qpf-city" class="qp-input w-full" [(ngModel)]="city" placeholder="City" />
-    </div>
-    <div class="qp-field qp-field--state">
-      <label class="qp-label" for="qpf-state">State</label>
-      <input pInputText id="qpf-state" class="qp-input w-full" [(ngModel)]="state" placeholder="State" />
-    </div>
+      <div class="hms-form-field">
+        <label class="hms-field-label hms-field-label--required" for="qpf-dob">Date of birth</label>
+        <p-datepicker
+          inputId="qpf-dob"
+          [(ngModel)]="dateOfBirth"
+          (ngModelChange)="onDateOfBirthChange()"
+          [required]="true"
+          dateFormat="yy-mm-dd"
+          [showIcon]="true"
+          iconDisplay="input"
+          [fluid]="true"
+          appendTo="body"
+          [maxDate]="maxDobDate"
+          placeholder="Select date"
+          styleClass="qp-datepicker w-full"
+        />
+      </div>
+      <div class="hms-form-field">
+        <label class="hms-field-label hms-field-label--required" for="qpf-gender">Gender</label>
+        <p-select
+          inputId="qpf-gender"
+          [(ngModel)]="gender"
+          [options]="genderOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Gender"
+          [required]="true"
+          styleClass="qp-select w-full"
+          appendTo="body"
+        />
+      </div>
 
-    <div class="qp-field qp-field--zip">
-      <label class="qp-label" for="qpf-zip">Zip</label>
-      <input pInputText id="qpf-zip" class="qp-input w-full" [(ngModel)]="zipCode" placeholder="Zip code" />
-    </div>
-    <div class="qp-field qp-field--em-name">
-      <label class="qp-label" for="qpf-em-name">Emergency name</label>
-      <input
-        pInputText
-        id="qpf-em-name"
-        class="qp-input w-full"
-        [(ngModel)]="emergencyContactName"
-        placeholder="Name"
-      />
-    </div>
-    <div class="qp-field qp-field--em-phone">
-      <label class="qp-label" for="qpf-em-phone">Emergency phone</label>
-      <input
-        pInputText
-        id="qpf-em-phone"
-        class="qp-input w-full"
-        [(ngModel)]="emergencyContactPhone"
-        autocomplete="tel"
-        placeholder="Phone"
-      />
-    </div>
-    <div class="qp-field qp-field--em-rel">
-      <label class="qp-label" for="qpf-em-rel">Relation</label>
-      <input
-        pInputText
-        id="qpf-em-rel"
-        class="qp-input w-full"
-        [(ngModel)]="emergencyContactRelation"
-        placeholder="e.g. Spouse"
-      />
-    </div>
+      <div class="hms-form-field">
+        <label class="hms-field-label" for="qpf-age">Age</label>
+        <input
+          pInputText
+          id="qpf-age"
+          class="qp-input w-full"
+          [(ngModel)]="ageYmdText"
+          (input)="onAgeYmdInput($event)"
+          (blur)="onAgeYmdBlur()"
+          autocomplete="off"
+          inputmode="text"
+          placeholder="e.g. 45-6-12 (years-months-days)"
+        />
+      </div>
+      <div class="hms-form-field">
+        <label class="hms-field-label" for="qpf-blood">Blood type</label>
+        <p-select
+          inputId="qpf-blood"
+          [(ngModel)]="bloodTypeId"
+          [options]="bloodTypeOptions"
+          optionLabel="displayName"
+          optionValue="id"
+          placeholder="Optional"
+          [showClear]="true"
+          styleClass="qp-select w-full"
+          appendTo="body"
+        />
+      </div>
 
-    <div class="qp-field qp-field--addr">
-      <label class="qp-label" for="qpf-addr">Address</label>
-      <input
-        pInputText
-        id="qpf-addr"
-        class="qp-input w-full"
-        [(ngModel)]="address"
-        autocomplete="street-address"
-        placeholder="Street, area…"
-      />
-    </div>
-    <div class="qp-field qp-field--email">
-      <label class="qp-label" for="qpf-email">Email</label>
-      <input
-        pInputText
-        id="qpf-email"
-        class="qp-input w-full"
-        [(ngModel)]="email"
-        type="email"
-        autocomplete="email"
-        placeholder="email@example.com"
-      />
-    </div>
+      <div class="hms-form-field">
+        <label class="hms-field-label hms-field-label--required" for="qpf-mob">Mobile</label>
+        <input
+          pInputText
+          id="qpf-mob"
+          class="qp-input w-full"
+          [(ngModel)]="phone"
+          autocomplete="tel"
+          placeholder="Phone"
+          aria-required="true"
+        />
+      </div>
+      <div class="hms-form-field">
+        <label class="hms-field-label" for="qpf-email">Email</label>
+        <input
+          pInputText
+          id="qpf-email"
+          class="qp-input w-full"
+          [(ngModel)]="email"
+          type="email"
+          autocomplete="email"
+          placeholder="email@example.com"
+        />
+      </div>
+      <div class="hms-form-field">
+        <label class="hms-field-label" for="qpf-addr">Address</label>
+        <input
+          pInputText
+          id="qpf-addr"
+          class="qp-input w-full"
+          [(ngModel)]="address"
+          autocomplete="street-address"
+          placeholder="Street, area…"
+        />
+      </div>
 
-    <div class="qp-field qp-field--ins-p">
-      <label class="qp-label" for="qpf-ins-p">Insurance provider</label>
-      <input
-        pInputText
-        id="qpf-ins-p"
-        class="qp-input w-full"
-        [(ngModel)]="insuranceProvider"
-        placeholder="Company"
-      />
-    </div>
-    <div class="qp-field qp-field--ins-n">
-      <label class="qp-label" for="qpf-ins-n">Policy number</label>
-      <input
-        pInputText
-        id="qpf-ins-n"
-        class="qp-input w-full"
-        [(ngModel)]="insurancePolicyNumber"
-        placeholder="Policy #"
-      />
-    </div>
+      <div class="hms-form-field">
+        <label class="hms-field-label" for="qpf-city">City</label>
+        <input pInputText id="qpf-city" class="qp-input w-full" [(ngModel)]="city" placeholder="City" />
+      </div>
+      <div class="hms-form-field">
+        <label class="hms-field-label" for="qpf-state">State</label>
+        <input pInputText id="qpf-state" class="qp-input w-full" [(ngModel)]="state" placeholder="State" />
+      </div>
+      <div class="hms-form-field">
+        <label class="hms-field-label" for="qpf-zip">Zip</label>
+        <input pInputText id="qpf-zip" class="qp-input w-full" [(ngModel)]="zipCode" placeholder="Zip code" />
+      </div>
+
+      <div class="hms-form-field">
+        <label class="hms-field-label" for="qpf-em-name">Emergency name</label>
+        <input
+          pInputText
+          id="qpf-em-name"
+          class="qp-input w-full"
+          [(ngModel)]="emergencyContactName"
+          placeholder="Name"
+        />
+      </div>
+      <div class="hms-form-field">
+        <label class="hms-field-label" for="qpf-em-phone">Emergency phone</label>
+        <input
+          pInputText
+          id="qpf-em-phone"
+          class="qp-input w-full"
+          [(ngModel)]="emergencyContactPhone"
+          autocomplete="tel"
+          placeholder="Phone"
+        />
+      </div>
+      <div class="hms-form-field">
+        <label class="hms-field-label" for="qpf-em-rel">Relation</label>
+        <input
+          pInputText
+          id="qpf-em-rel"
+          class="qp-input w-full"
+          [(ngModel)]="emergencyContactRelation"
+          placeholder="e.g. Spouse"
+        />
+      </div>
+
+      <div class="hms-form-field">
+        <label class="hms-field-label" for="qpf-ins-p">Insurance provider</label>
+        <input
+          pInputText
+          id="qpf-ins-p"
+          class="qp-input w-full"
+          [(ngModel)]="insuranceProvider"
+          placeholder="Company"
+        />
+      </div>
+      <div class="hms-form-field hms-form-field--span-2">
+        <label class="hms-field-label" for="qpf-ins-n">Policy number</label>
+        <input
+          pInputText
+          id="qpf-ins-n"
+          class="qp-input w-full"
+          [(ngModel)]="insurancePolicyNumber"
+          placeholder="Policy #"
+        />
+      </div>
     </div>
   </div>
 

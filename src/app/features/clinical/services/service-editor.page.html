@@ -1,4 +1,4 @@
-<app-surface-panel class="hms-crud-surface" [title]="pageTitle" [subtitle]="pageSubtitle">
+<app-surface-panel class="hms-crud-surface svc-editor-surface" [title]="pageTitle" [subtitle]="pageSubtitle">
   <div surfacePanelActions class="hms-crud-actions">
     <button
       pButton
@@ -23,113 +23,590 @@
   </div>
 
   <div class="hms-crud-body-spacer" aria-hidden="true"></div>
-  <div class="hms-crud-panel-body service-editor-body">
+  <div class="hms-crud-panel-body svc-editor-body">
     @if (loadError) {
       <p-message severity="error" [text]="loadError" styleClass="mb-3 w-full" />
     }
 
     @if (loading) {
-      <app-hms-block-skeleton [lines]="10" ariaLabel="Loading service editor" />
+      <app-hms-block-skeleton [lines]="14" ariaLabel="Loading service editor" />
     } @else {
-      <form class="service-editor-form" (ngSubmit)="save()">
-        <div class="service-editor-form__grid">
-          <div class="service-editor-form__field">
-            <label class="hms-field-label hms-field-label--required" for="sv-code">Code</label>
-            <input pInputText id="sv-code" class="w-full" [(ngModel)]="formCode" name="svCode" />
-          </div>
-
-          <div class="service-editor-form__field">
-            <label class="hms-field-label hms-field-label--required" for="sv-title">Title</label>
-            <input pInputText id="sv-title" class="w-full" [(ngModel)]="formTitle" name="svTitle" />
-          </div>
-
-          <div class="service-editor-form__field service-editor-form__field--wide">
-            <label class="hms-field-label hms-field-label--required" for="sv-ctype">Consultancy type</label>
-            <p-select
-              inputId="sv-ctype"
-              [(ngModel)]="formConsultancyType"
-              name="svConsultancyType"
-              [options]="consultancyTypeOptions"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Select"
-              styleClass="w-full"
-            />
-          </div>
-
-          <div class="service-editor-form__field service-editor-form__field--wide">
-            <label class="hms-field-label hms-field-label--required" for="sv-cat">Category</label>
-            <p-select
-              inputId="sv-cat"
-              [(ngModel)]="formCategoryId"
-              name="svCat"
-              [options]="categoryOptions"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Select"
-              styleClass="w-full"
-            />
-          </div>
-
-          <div class="service-editor-form__field">
-            <label class="hms-field-label" for="sv-disc">Discount</label>
-            <p-inputNumber
-              inputId="sv-disc"
-              [(ngModel)]="formDiscount"
-              name="svDisc"
-              [minFractionDigits]="2"
-              [maxFractionDigits]="2"
-              styleClass="w-full"
-            />
-          </div>
-
-          <div class="service-editor-form__field">
-            <label class="hms-field-label" for="sv-price">Price</label>
-            <p-inputNumber
-              inputId="sv-price"
-              [(ngModel)]="formPrice"
-              name="svPrice"
-              [minFractionDigits]="2"
-              [maxFractionDigits]="2"
-              styleClass="w-full"
-            />
-          </div>
-
-          <div class="service-editor-form__field service-editor-form__field--wide">
-            <label class="hms-field-label" for="sv-doc">Assigned doctor (optional)</label>
-            <p-select
-              inputId="sv-doc"
-              [(ngModel)]="formDoctorId"
-              name="svDoc"
-              [options]="doctorOptions"
-              optionLabel="label"
-              optionValue="value"
-              [showClear]="true"
-              placeholder="None"
-              styleClass="w-full"
-              [disabled]="formClearDoctor"
-            />
-          </div>
-
-          @if (!isCreateMode) {
-            <div class="service-editor-form__field service-editor-form__field--wide service-editor-form__check">
-              <p-checkbox inputId="sv-clr" [(ngModel)]="formClearDoctor" name="svClr" [binary]="true" />
-              <label for="sv-clr" class="text-sm text-slate-600">Clear assigned doctor</label>
+      <form class="svc-editor-layout" (ngSubmit)="save()">
+        <article class="svc-editor-card svc-editor-card--identity" aria-labelledby="svc-card-identity">
+          <header class="svc-editor-card__head">
+            <div class="svc-editor-card__head-main">
+              <h2 id="svc-card-identity" class="svc-editor-card__title">Service identity</h2>
+              <p class="svc-editor-card__sub">Code and title shown in registration search and on the printed slip.</p>
             </div>
-          }
+            <p-tag [value]="consultancyTypeLabel" [severity]="isTestService ? 'info' : 'secondary'" />
+          </header>
 
-          <div class="service-editor-form__field service-editor-form__field--wide">
-            <label class="hms-field-label" for="sv-share">Doctor share</label>
-            <p-inputNumber
-              inputId="sv-share"
-              [(ngModel)]="formDoctorShare"
-              name="svShare"
-              [minFractionDigits]="2"
-              [maxFractionDigits]="2"
-              styleClass="w-full"
-            />
+          <div class="svc-editor-identity-grid">
+            <div class="svc-editor-field">
+              <label class="hms-field-label hms-field-label--required" for="sv-code">Code</label>
+              <input
+                pInputText
+                id="sv-code"
+                class="w-full svc-editor-input"
+                [(ngModel)]="formCode"
+                name="svCode"
+                autocomplete="off"
+                placeholder="e.g. CBC"
+              />
+            </div>
+            <div class="svc-editor-field svc-editor-field--title">
+              <label class="hms-field-label hms-field-label--required" for="sv-title">Title</label>
+              <input
+                pInputText
+                id="sv-title"
+                class="w-full svc-editor-input"
+                [(ngModel)]="formTitle"
+                name="svTitle"
+                placeholder="Service display name"
+              />
+            </div>
+            <div class="svc-editor-field">
+              <label class="hms-field-label hms-field-label--required" for="sv-ctype">Consultancy type</label>
+              <p-select
+                inputId="sv-ctype"
+                [(ngModel)]="formConsultancyType"
+                name="svConsultancyType"
+                [options]="consultancyTypeOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select type"
+                styleClass="w-full"
+                appendTo="body"
+              />
+            </div>
           </div>
+        </article>
+
+        <div class="svc-editor-cards">
+          <article class="svc-editor-card svc-editor-card--fill" aria-labelledby="svc-card-billing">
+            <header class="svc-editor-card__head">
+              <h3 id="svc-card-billing" class="svc-editor-card__title">
+                <i class="pi pi-wallet" aria-hidden="true"></i>
+                Billing
+              </h3>
+              <p class="svc-editor-card__sub">Category and amounts charged at patient registration.</p>
+            </header>
+
+            <div class="svc-editor-card__stack">
+              <div class="svc-editor-field">
+                <label class="hms-field-label hms-field-label--required" for="sv-cat">Category</label>
+                <p-select
+                  inputId="sv-cat"
+                  [(ngModel)]="formCategoryId"
+                  name="svCat"
+                  [options]="categoryOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select category"
+                  styleClass="w-full"
+                  appendTo="body"
+                />
+              </div>
+
+              <div class="svc-editor-card__row-2">
+                <div class="svc-editor-field">
+                  <label class="hms-field-label" for="sv-price">Price</label>
+                  <p-inputNumber
+                    inputId="sv-price"
+                    [(ngModel)]="formPrice"
+                    name="svPrice"
+                    [minFractionDigits]="2"
+                    [maxFractionDigits]="2"
+                    styleClass="w-full"
+                  />
+                </div>
+                <div class="svc-editor-field">
+                  <label class="hms-field-label" for="sv-disc">Discount</label>
+                  <p-inputNumber
+                    inputId="sv-disc"
+                    [(ngModel)]="formDiscount"
+                    name="svDisc"
+                    [minFractionDigits]="2"
+                    [maxFractionDigits]="2"
+                    styleClass="w-full"
+                  />
+                </div>
+              </div>
+
+              <div class="svc-editor-field">
+                <label class="hms-field-label" for="sv-cpt">CPT code</label>
+                <input
+                  pInputText
+                  id="sv-cpt"
+                  class="w-full svc-editor-input"
+                  [(ngModel)]="formCptCode"
+                  name="svCpt"
+                  placeholder="Optional"
+                />
+              </div>
+
+              <div class="svc-editor-field">
+                <label class="hms-field-label" for="sv-dept">Department</label>
+                <p-select
+                  inputId="sv-dept"
+                  [(ngModel)]="formDepartmentId"
+                  name="svDept"
+                  [options]="departmentOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  [showClear]="true"
+                  placeholder="Optional"
+                  styleClass="w-full"
+                  appendTo="body"
+                  [disabled]="formClearDepartment"
+                />
+              </div>
+
+              @if (!isCreateMode) {
+                <div class="svc-editor-check">
+                  <p-checkbox
+                    inputId="sv-clr-dept"
+                    [(ngModel)]="formClearDepartment"
+                    name="svClrDept"
+                    [binary]="true"
+                  />
+                  <label for="sv-clr-dept" class="svc-editor-check__label">Clear department</label>
+                </div>
+              }
+
+              <div class="svc-editor-field">
+                <label class="hms-field-label" for="sv-duration">Duration (minutes)</label>
+                <p-inputNumber
+                  inputId="sv-duration"
+                  [(ngModel)]="formDurationMinutes"
+                  name="svDuration"
+                  [min]="1"
+                  [showButtons]="false"
+                  placeholder="Optional"
+                  inputStyleClass="w-full svc-editor-input"
+                  [disabled]="formClearDurationMinutes"
+                />
+              </div>
+
+              @if (!isCreateMode) {
+                <div class="svc-editor-check">
+                  <p-checkbox
+                    inputId="sv-clr-duration"
+                    [(ngModel)]="formClearDurationMinutes"
+                    name="svClrDuration"
+                    [binary]="true"
+                  />
+                  <label for="sv-clr-duration" class="svc-editor-check__label">Clear duration</label>
+                </div>
+              }
+            </div>
+          </article>
+
+          <article class="svc-editor-card svc-editor-card--fill" [attr.aria-labelledby]="isTestService ? 'svc-card-reporting' : 'svc-card-doctor'">
+            @if (isTestService) {
+              <header class="svc-editor-card__head">
+                <h3 id="svc-card-reporting" class="svc-editor-card__title">
+                  <i class="pi pi-clock" aria-hidden="true"></i>
+                  Reporting
+                </h3>
+                <p class="svc-editor-card__sub">Expected date and time when the lab report will be ready.</p>
+              </header>
+
+              <div class="svc-editor-card__stack">
+                <div class="svc-editor-field">
+                  <label class="hms-field-label" for="sv-reporting">Reporting time</label>
+                  <p-datepicker
+                    inputId="sv-reporting"
+                    [(ngModel)]="formReportingTime"
+                    name="svReportingTime"
+                    [showTime]="true"
+                    hourFormat="24"
+                    dateFormat="yy-mm-dd"
+                    [showIcon]="true"
+                    styleClass="w-full"
+                    appendTo="body"
+                    [disabled]="formClearReportingTime"
+                    placeholder="Select date and time"
+                  />
+                </div>
+
+                @if (!isCreateMode) {
+                  <div class="svc-editor-check">
+                    <p-checkbox
+                      inputId="sv-clr-reporting"
+                      [(ngModel)]="formClearReportingTime"
+                      name="svClrReporting"
+                      [binary]="true"
+                    />
+                    <label for="sv-clr-reporting" class="svc-editor-check__label">Clear reporting time</label>
+                  </div>
+                } @else {
+                  <p class="svc-editor-hint m-0">
+                    Optional. Expected report datetime for this test service.
+                  </p>
+                }
+              </div>
+            } @else {
+              <header class="svc-editor-card__head">
+                <h3 id="svc-card-doctor" class="svc-editor-card__title">
+                  <i class="pi pi-user" aria-hidden="true"></i>
+                  Doctor
+                </h3>
+                <p class="svc-editor-card__sub">Optional default doctor and share applied to each visit line.</p>
+              </header>
+
+              <div class="svc-editor-card__stack">
+                <div class="svc-editor-field">
+                  <label class="hms-field-label" for="sv-doc">Assigned doctor</label>
+                  <p-select
+                    inputId="sv-doc"
+                    [(ngModel)]="formDoctorId"
+                    name="svDoc"
+                    [options]="doctorOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    [showClear]="true"
+                    placeholder="None — choose at registration"
+                    styleClass="w-full"
+                    appendTo="body"
+                    [disabled]="formClearDoctor"
+                  />
+                </div>
+
+                <div class="svc-editor-field">
+                  <label class="hms-field-label" for="sv-share">Doctor share</label>
+                  <p-inputNumber
+                    inputId="sv-share"
+                    [(ngModel)]="formDoctorShare"
+                    name="svShare"
+                    [minFractionDigits]="2"
+                    [maxFractionDigits]="2"
+                    styleClass="w-full"
+                  />
+                </div>
+
+                @if (!isCreateMode) {
+                  <div class="svc-editor-check">
+                    <p-checkbox inputId="sv-clr" [(ngModel)]="formClearDoctor" name="svClr" [binary]="true" />
+                    <label for="sv-clr" class="svc-editor-check__label">Remove assigned doctor from this service</label>
+                  </div>
+                } @else {
+                  <p class="svc-editor-hint m-0">
+                    A doctor must still be selected on each registration line unless you assign one here.
+                  </p>
+                }
+              </div>
+            }
+          </article>
         </div>
+
+        @if (isTestService) {
+          <article class="svc-editor-card svc-editor-card--lab" aria-labelledby="svc-card-lab">
+            <header class="svc-editor-card__head svc-editor-card__head--lab">
+              <div class="svc-editor-card__head-main">
+                <h3 id="svc-card-lab" class="svc-editor-card__title">
+                  <i class="pi pi-flask" aria-hidden="true"></i>
+                  Lab test parameters
+                </h3>
+                <p class="svc-editor-card__sub">
+                  Panel components for the laboratory worklist (e.g. Hemoglobin, WBC for CBC).
+                </p>
+              </div>
+              <div class="svc-editor-card__head-actions">
+                <span class="svc-editor-pill">{{ labParamRows.length }} parameters</span>
+                <button
+                  pButton
+                  type="button"
+                  label="CBC template"
+                  icon="pi pi-list"
+                  severity="secondary"
+                  [outlined]="true"
+                  size="small"
+                  class="hms-toolbar-chip"
+                  (click)="loadCbcTemplate()"
+                ></button>
+                <button
+                  pButton
+                  type="button"
+                  label="Add row"
+                  icon="pi pi-plus"
+                  severity="secondary"
+                  size="small"
+                  class="hms-toolbar-chip"
+                  (click)="addParamRow()"
+                ></button>
+              </div>
+            </header>
+
+            <div class="svc-editor-field svc-editor-field--sample">
+              <label class="hms-field-label" for="sv-sample">Sample type</label>
+              <input
+                pInputText
+                id="sv-sample"
+                class="w-full svc-editor-input"
+                [(ngModel)]="formSampleType"
+                name="svSample"
+                placeholder="Blood, Urine, Stool…"
+              />
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 mb-3">
+              <div class="svc-editor-field">
+                <label class="hms-field-label" for="sv-unit">Unit (simple test)</label>
+                <input
+                  pInputText
+                  id="sv-unit"
+                  class="w-full svc-editor-input"
+                  [(ngModel)]="formLabUnit"
+                  name="svUnit"
+                  placeholder="mg/dL"
+                />
+              </div>
+              <div class="svc-editor-field">
+                <label class="hms-field-label" for="sv-ref">Reference range</label>
+                <input
+                  pInputText
+                  id="sv-ref"
+                  class="w-full svc-editor-input"
+                  [(ngModel)]="formLabReferenceRange"
+                  name="svRef"
+                  placeholder="70-140"
+                />
+              </div>
+              <div class="svc-editor-field">
+                <label class="hms-field-label" for="sv-tat">TAT hours</label>
+                <p-inputNumber
+                  inputId="sv-tat"
+                  [(ngModel)]="formTurnaroundHours"
+                  name="svTat"
+                  [min]="0"
+                  [showButtons]="false"
+                  placeholder="e.g. 2"
+                  inputStyleClass="w-full svc-editor-input"
+                />
+              </div>
+              <div class="svc-editor-field">
+                <label class="hms-field-label" for="sv-crit-low">Critical low</label>
+                <p-inputNumber
+                  inputId="sv-crit-low"
+                  [(ngModel)]="formCriticalLow"
+                  name="svCritLow"
+                  [minFractionDigits]="0"
+                  [maxFractionDigits]="4"
+                  placeholder="Optional"
+                  inputStyleClass="w-full svc-editor-input"
+                />
+              </div>
+              <div class="svc-editor-field">
+                <label class="hms-field-label" for="sv-crit-high">Critical high</label>
+                <p-inputNumber
+                  inputId="sv-crit-high"
+                  [(ngModel)]="formCriticalHigh"
+                  name="svCritHigh"
+                  [minFractionDigits]="0"
+                  [maxFractionDigits]="4"
+                  placeholder="Optional"
+                  inputStyleClass="w-full svc-editor-input"
+                />
+              </div>
+              <div class="svc-editor-field">
+                <label class="hms-field-label" for="sv-method">Method</label>
+                <input
+                  pInputText
+                  id="sv-method"
+                  class="w-full svc-editor-input"
+                  [(ngModel)]="formMethod"
+                  name="svMethod"
+                />
+              </div>
+              <div class="svc-editor-field">
+                <label class="hms-field-label" for="sv-instrument">Instrument</label>
+                <input
+                  pInputText
+                  id="sv-instrument"
+                  class="w-full svc-editor-input"
+                  [(ngModel)]="formInstrument"
+                  name="svInstrument"
+                />
+              </div>
+              <div class="svc-editor-field">
+                <label class="hms-field-label" for="sv-volume">Sample volume</label>
+                <input
+                  pInputText
+                  id="sv-volume"
+                  class="w-full svc-editor-input"
+                  [(ngModel)]="formSampleVolume"
+                  name="svVolume"
+                  placeholder="e.g. 3 ml"
+                />
+              </div>
+              <div class="svc-editor-field">
+                <label class="hms-field-label" for="sv-lab-cpt">Lab CPT code</label>
+                <input
+                  pInputText
+                  id="sv-lab-cpt"
+                  class="w-full svc-editor-input"
+                  [(ngModel)]="formLabCptCode"
+                  name="svLabCpt"
+                />
+              </div>
+              <div class="svc-editor-field">
+                <label class="hms-field-label" for="sv-loinc">LOINC code</label>
+                <input
+                  pInputText
+                  id="sv-loinc"
+                  class="w-full svc-editor-input"
+                  [(ngModel)]="formLoincCode"
+                  name="svLoinc"
+                />
+              </div>
+              <div class="svc-editor-field">
+                <label class="hms-field-label" for="sv-outsource">Outsourced lab</label>
+                <input
+                  pInputText
+                  id="sv-outsource"
+                  class="w-full svc-editor-input"
+                  [(ngModel)]="formOutsourcedLab"
+                  name="svOutsource"
+                />
+              </div>
+              <div class="svc-editor-field sm:col-span-2 lg:col-span-3">
+                <label class="hms-field-label" for="sv-prep">Preparation instructions</label>
+                <input
+                  pInputText
+                  id="sv-prep"
+                  class="w-full svc-editor-input"
+                  [(ngModel)]="formPreparationInstructions"
+                  name="svPrep"
+                />
+              </div>
+              <div class="svc-editor-check">
+                <p-checkbox
+                  inputId="sv-fasting"
+                  [(ngModel)]="formFastingRequired"
+                  name="svFasting"
+                  [binary]="true"
+                />
+                <label for="sv-fasting" class="svc-editor-check__label">Fasting required</label>
+              </div>
+              <div class="svc-editor-check">
+                <p-checkbox
+                  inputId="sv-home"
+                  [(ngModel)]="formHomeCollection"
+                  name="svHome"
+                  [binary]="true"
+                />
+                <label for="sv-home" class="svc-editor-check__label">Home collection</label>
+              </div>
+            </div>
+
+            <p-table
+              [value]="labParamRows"
+              styleClass="p-datatable-sm hms-crud-table svc-editor-params-table"
+              [tableStyle]="{ 'min-width': '100%' }"
+            >
+              <ng-template #header>
+                <tr>
+                  <th>Code</th>
+                  <th>Parameter name</th>
+                  <th>Unit</th>
+                  <th>Reference range</th>
+                  <th>Crit. low</th>
+                  <th>Crit. high</th>
+                  <th class="text-end w-16">Order</th>
+                  <th class="w-12 text-end"></th>
+                </tr>
+              </ng-template>
+              <ng-template #body let-row>
+                <tr>
+                  <td>
+                    <input
+                      pInputText
+                      class="w-full font-mono svc-editor-input svc-editor-input--table"
+                      [(ngModel)]="row.code"
+                      [name]="'pc' + row.key"
+                      placeholder="HB"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      pInputText
+                      class="w-full svc-editor-input svc-editor-input--table"
+                      [(ngModel)]="row.name"
+                      [name]="'pn' + row.key"
+                      placeholder="Hemoglobin"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      pInputText
+                      class="w-full svc-editor-input svc-editor-input--table"
+                      [(ngModel)]="row.unit"
+                      [name]="'pu' + row.key"
+                      placeholder="g/dL"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      pInputText
+                      class="w-full svc-editor-input svc-editor-input--table"
+                      [(ngModel)]="row.referenceRange"
+                      [name]="'pr' + row.key"
+                      placeholder="12–16"
+                    />
+                  </td>
+                  <td>
+                    <p-inputNumber
+                      [(ngModel)]="row.criticalLow"
+                      [name]="'pcl' + row.key"
+                      [minFractionDigits]="0"
+                      [maxFractionDigits]="4"
+                      inputStyleClass="w-full text-end svc-editor-input svc-editor-input--table"
+                    />
+                  </td>
+                  <td>
+                    <p-inputNumber
+                      [(ngModel)]="row.criticalHigh"
+                      [name]="'pch' + row.key"
+                      [minFractionDigits]="0"
+                      [maxFractionDigits]="4"
+                      inputStyleClass="w-full text-end svc-editor-input svc-editor-input--table"
+                    />
+                  </td>
+                  <td class="text-end align-middle">
+                    <p-inputNumber
+                      [(ngModel)]="row.sortOrder"
+                      [name]="'po' + row.key"
+                      [min]="1"
+                      inputStyleClass="w-full text-end svc-editor-input svc-editor-input--table"
+                    />
+                  </td>
+                  <td class="text-end align-middle">
+                    <button
+                      pButton
+                      type="button"
+                      icon="pi pi-trash"
+                      [text]="true"
+                      severity="danger"
+                      (click)="removeParamRow(row.key)"
+                      [attr.aria-label]="'Remove ' + (row.name || row.code || 'parameter')"
+                    ></button>
+                  </td>
+                </tr>
+              </ng-template>
+              <ng-template #emptymessage>
+                <tr>
+                  <td colspan="8" class="hms-table-empty-cell text-center text-sm text-slate-500">
+                    <div class="flex flex-col items-center justify-center gap-2 py-5">
+                      <i class="pi pi-flask text-3xl text-slate-300" aria-hidden="true"></i>
+                      <span>No parameters defined. Use <strong>CBC template</strong> or <strong>Add row</strong>.</span>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </article>
+        }
       </form>
     }
   </div>

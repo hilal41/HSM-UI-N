@@ -1,0 +1,220 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+.account-menu__anchor {
+  display: none;
+}
+
+.account-menu__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.4rem;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.account-menu__trigger:hover,
+.account-menu__trigger[aria-expanded='true'] {
+  background: rgb(255 255 255 / 0.14);
+}
+
+.account-menu__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.account-menu__avatar--photo {
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.35);
+}
+
+.account-menu__avatar-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.account-menu__avatar-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+  opacity: 0.95;
+}
+
+.account-menu__dropdown {
+  min-width: 17.5rem;
+  max-width: 20rem;
+  border: 1px solid var(--hms-color-border, #e2e8f0);
+  border-radius: 0.65rem;
+  box-shadow: 0 12px 32px rgb(15 23 42 / 0.14);
+  background: var(--hms-color-surface, #fff);
+  color: var(--hms-color-text, #0f172a);
+  overflow: hidden;
+}
+
+.account-menu__dropdown--body {
+  z-index: 1100;
+}
+
+.account-menu__identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.85rem 0.95rem;
+  border-bottom: 1px solid var(--hms-color-border, #e2e8f0);
+  background: linear-gradient(180deg, rgb(248 250 252), rgb(255 255 255));
+}
+
+.account-menu__identity-main {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.account-menu__identity-avatar {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 999px;
+  background: var(--hms-color-nav, #1e3a8a);
+  color: #fff;
+  font-size: 0.95rem;
+  overflow: hidden;
+}
+
+.account-menu__identity-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.account-menu__identity-text {
+  min-width: 0;
+}
+
+.account-menu__name {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-menu__username {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  color: var(--hms-color-text-muted, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-menu__role {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #1e40af;
+  background: #dbeafe;
+}
+
+.account-menu__role--platform {
+  color: #042f2e;
+  background: linear-gradient(135deg, #99f6e4, #fde68a);
+}
+
+.account-menu__section {
+  padding: 0.75rem 0.95rem;
+  border-bottom: 1px solid var(--hms-color-border, #e2e8f0);
+}
+
+.account-menu__section-label {
+  margin: 0 0 0.45rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--hms-color-text-muted, #64748b);
+}
+
+.account-menu__links {
+  display: flex;
+  flex-direction: column;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--hms-color-border, #e2e8f0);
+}
+
+.account-menu__link {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.95rem;
+  font-size: 0.8125rem;
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.12s ease;
+}
+
+.account-menu__link:hover {
+  background: rgb(241 245 249);
+}
+
+.account-menu__link i {
+  width: 1rem;
+  text-align: center;
+  color: var(--hms-color-text-muted, #64748b);
+}
+
+.account-menu__footer {
+  padding: 0.35rem 0;
+}
+
+.account-menu__sign-out {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.55rem 0.95rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.8125rem;
+  color: #b91c1c;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.account-menu__sign-out:hover {
+  background: #fef2f2;
+}
+
+.account-menu__sign-out i {
+  width: 1rem;
+  text-align: center;
+}

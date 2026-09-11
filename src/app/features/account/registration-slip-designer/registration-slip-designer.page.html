@@ -1,6 +1,6 @@
 <app-surface-panel
   class="hms-crud-surface rsd-surface--bare"
-  title="Registration slip designer"
+  title="Registration Slip Designer"
   subtitle="Pick a template, then fine-tune spacing, alignment, logo, typography, and sections. Saved for your hospital and used on patient registration printouts."
 >
   <div surfacePanelActions class="hms-crud-actions">
@@ -38,21 +38,37 @@
   <div class="rsd-layout">
     <div class="rsd-form">
       <section class="rsd-card rsd-card--templates">
-        <h2 class="rsd-card__title">Templates</h2>
-        <p class="rsd-hint">Each preset is a different starting look. Your section order and visibility are kept when you switch.</p>
-        <div class="rsd-presets">
-          @for (p of presetOptions; track p.id) {
-            <button
-              type="button"
-              class="rsd-preset"
-              [class.rsd-preset--active]="isPresetActive(p.id)"
-              (click)="applyPreset(p.id)"
-            >
-              <span class="rsd-preset__name">{{ p.name }}</span>
-              <span class="rsd-preset__blurb">{{ p.blurb }}</span>
-            </button>
-          }
+        <div class="rsd-templates-head">
+          <div>
+            <h2 class="rsd-card__title">Templates</h2>
+            <p class="rsd-hint">Pick a starting look, then fine-tune below. Section order and visibility are kept when you switch.</p>
+          </div>
+          <span class="rsd-layout-chip">{{ layoutStatusLabel }}</span>
         </div>
+        @if (canResetToTemplate) {
+          <button
+            pButton
+            type="button"
+            label="Reset to template"
+            severity="secondary"
+            [outlined]="true"
+            class="rsd-reset-template"
+            (click)="resetToTemplate()"
+          ></button>
+        }
+        <app-slip-template-gallery
+          kind="registration"
+          [presetOptions]="presetOptions"
+          [activePresetId]="galleryActivePresetId"
+          [previewHospital]="previewHospital"
+          [regPatient]="samplePatient"
+          [regLines]="sampleLines"
+          [regRemarks]="sampleRemarks"
+          [regTotal]="sampleTotal"
+          [regDiscount]="sampleDiscount"
+          [regAge]="sampleAge"
+          (presetApply)="applyPreset($event)"
+        />
       </section>
 
       <section class="rsd-card">
@@ -63,7 +79,7 @@
             <p-select
               inputId="rsd-font"
               [options]="fontChoices"
-              [(ngModel)]="draft.fontFamily"
+              [(ngModel)]="draft.fontFamily" (ngModelChange)="onManualEdit()"
               optionLabel="label"
               optionValue="value"
               styleClass="w-full"
@@ -74,7 +90,7 @@
             <label for="rsd-lh">Line height</label>
             <p-inputNumber
               inputId="rsd-lh"
-              [(ngModel)]="draft.lineHeight"
+              [(ngModel)]="draft.lineHeight" (ngModelChange)="onManualEdit()"
               [min]="1"
               [max]="2.2"
               [step]="0.05"
@@ -85,25 +101,25 @@
           </div>
           <div class="rsd-field">
             <label for="rsd-base">Body size (px)</label>
-            <p-inputNumber inputId="rsd-base" [(ngModel)]="draft.baseFontSizePx" [min]="8" [max]="22" styleClass="w-full" />
+            <p-inputNumber inputId="rsd-base" [(ngModel)]="draft.baseFontSizePx" (ngModelChange)="onManualEdit()" [min]="8" [max]="22" styleClass="w-full" />
           </div>
           <div class="rsd-field">
             <label for="rsd-title">Title size (px)</label>
-            <p-inputNumber inputId="rsd-title" [(ngModel)]="draft.titleFontSizePx" [min]="10" [max]="32" styleClass="w-full" />
+            <p-inputNumber inputId="rsd-title" [(ngModel)]="draft.titleFontSizePx" (ngModelChange)="onManualEdit()" [min]="10" [max]="32" styleClass="w-full" />
           </div>
           <div class="rsd-field">
             <label for="rsd-head">Section headings (px)</label>
-            <p-inputNumber inputId="rsd-head" [(ngModel)]="draft.headingFontSizePx" [min]="8" [max]="18" styleClass="w-full" />
+            <p-inputNumber inputId="rsd-head" [(ngModel)]="draft.headingFontSizePx" (ngModelChange)="onManualEdit()" [min]="8" [max]="18" styleClass="w-full" />
           </div>
           <div class="rsd-field">
             <label for="rsd-table">Table text (px)</label>
-            <p-inputNumber inputId="rsd-table" [(ngModel)]="draft.tableFontSizePx" [min]="8" [max]="18" styleClass="w-full" />
+            <p-inputNumber inputId="rsd-table" [(ngModel)]="draft.tableFontSizePx" (ngModelChange)="onManualEdit()" [min]="8" [max]="18" styleClass="w-full" />
           </div>
           <div class="rsd-field">
             <label for="rsd-scale">Overall text scale</label>
             <p-inputNumber
               inputId="rsd-scale"
-              [(ngModel)]="draft.globalTextScale"
+              [(ngModel)]="draft.globalTextScale" (ngModelChange)="onManualEdit()"
               [min]="0.75"
               [max]="1.35"
               [step]="0.05"
@@ -121,19 +137,19 @@
         <div class="rsd-grid2">
           <div class="rsd-field rsd-field--color">
             <label for="c-body">Body text</label>
-            <input id="c-body" type="color" [(ngModel)]="draft.bodyColor" class="rsd-color" />
+            <input id="c-body" type="color" [(ngModel)]="draft.bodyColor" (ngModelChange)="onManualEdit()" class="rsd-color" />
           </div>
           <div class="rsd-field rsd-field--color">
             <label for="c-title">Titles</label>
-            <input id="c-title" type="color" [(ngModel)]="draft.titleColor" class="rsd-color" />
+            <input id="c-title" type="color" [(ngModel)]="draft.titleColor" (ngModelChange)="onManualEdit()" class="rsd-color" />
           </div>
           <div class="rsd-field rsd-field--color">
             <label for="c-muted">Muted / labels</label>
-            <input id="c-muted" type="color" [(ngModel)]="draft.mutedColor" class="rsd-color" />
+            <input id="c-muted" type="color" [(ngModel)]="draft.mutedColor" (ngModelChange)="onManualEdit()" class="rsd-color" />
           </div>
           <div class="rsd-field rsd-field--color">
             <label for="c-border">Borders &amp; rules</label>
-            <input id="c-border" type="color" [(ngModel)]="draft.borderColor" class="rsd-color" />
+            <input id="c-border" type="color" [(ngModel)]="draft.borderColor" (ngModelChange)="onManualEdit()" class="rsd-color" />
           </div>
         </div>
       </section>
@@ -144,35 +160,35 @@
         <div class="rsd-grid2">
           <div class="rsd-field">
             <label for="rsd-pt">Padding top</label>
-            <p-inputNumber inputId="rsd-pt" [(ngModel)]="draft.paddingTopMm" [min]="0" [max]="20" styleClass="w-full" />
+            <p-inputNumber inputId="rsd-pt" [(ngModel)]="draft.paddingTopMm" (ngModelChange)="onManualEdit()" [min]="0" [max]="20" styleClass="w-full" />
           </div>
           <div class="rsd-field">
             <label for="rsd-pr">Padding right</label>
-            <p-inputNumber inputId="rsd-pr" [(ngModel)]="draft.paddingRightMm" [min]="0" [max]="20" styleClass="w-full" />
+            <p-inputNumber inputId="rsd-pr" [(ngModel)]="draft.paddingRightMm" (ngModelChange)="onManualEdit()" [min]="0" [max]="20" styleClass="w-full" />
           </div>
           <div class="rsd-field">
             <label for="rsd-pb">Padding bottom</label>
-            <p-inputNumber inputId="rsd-pb" [(ngModel)]="draft.paddingBottomMm" [min]="0" [max]="20" styleClass="w-full" />
+            <p-inputNumber inputId="rsd-pb" [(ngModel)]="draft.paddingBottomMm" (ngModelChange)="onManualEdit()" [min]="0" [max]="20" styleClass="w-full" />
           </div>
           <div class="rsd-field">
             <label for="rsd-pl">Padding left</label>
-            <p-inputNumber inputId="rsd-pl" [(ngModel)]="draft.paddingLeftMm" [min]="0" [max]="20" styleClass="w-full" />
+            <p-inputNumber inputId="rsd-pl" [(ngModel)]="draft.paddingLeftMm" (ngModelChange)="onManualEdit()" [min]="0" [max]="20" styleClass="w-full" />
           </div>
           <div class="rsd-field">
             <label for="rsd-mt">Margin top</label>
-            <p-inputNumber inputId="rsd-mt" [(ngModel)]="draft.marginTopMm" [min]="0" [max]="16" styleClass="w-full" />
+            <p-inputNumber inputId="rsd-mt" [(ngModel)]="draft.marginTopMm" (ngModelChange)="onManualEdit()" [min]="0" [max]="16" styleClass="w-full" />
           </div>
           <div class="rsd-field">
             <label for="rsd-mr">Margin right</label>
-            <p-inputNumber inputId="rsd-mr" [(ngModel)]="draft.marginRightMm" [min]="0" [max]="16" styleClass="w-full" />
+            <p-inputNumber inputId="rsd-mr" [(ngModel)]="draft.marginRightMm" (ngModelChange)="onManualEdit()" [min]="0" [max]="16" styleClass="w-full" />
           </div>
           <div class="rsd-field">
             <label for="rsd-mb">Margin bottom</label>
-            <p-inputNumber inputId="rsd-mb" [(ngModel)]="draft.marginBottomMm" [min]="0" [max]="16" styleClass="w-full" />
+            <p-inputNumber inputId="rsd-mb" [(ngModel)]="draft.marginBottomMm" (ngModelChange)="onManualEdit()" [min]="0" [max]="16" styleClass="w-full" />
           </div>
           <div class="rsd-field">
             <label for="rsd-ml">Margin left</label>
-            <p-inputNumber inputId="rsd-ml" [(ngModel)]="draft.marginLeftMm" [min]="0" [max]="16" styleClass="w-full" />
+            <p-inputNumber inputId="rsd-ml" [(ngModel)]="draft.marginLeftMm" (ngModelChange)="onManualEdit()" [min]="0" [max]="16" styleClass="w-full" />
           </div>
         </div>
       </section>
@@ -185,7 +201,7 @@
             <p-select
               inputId="rsd-halign"
               [options]="alignOptions"
-              [(ngModel)]="draft.hospitalBlockAlign"
+              [(ngModel)]="draft.hospitalBlockAlign" (ngModelChange)="onManualEdit()"
               optionLabel="label"
               optionValue="value"
               styleClass="w-full"
@@ -197,7 +213,7 @@
             <p-select
               inputId="rsd-headalign"
               [options]="alignOptions"
-              [(ngModel)]="draft.headerTextAlign"
+              [(ngModel)]="draft.headerTextAlign" (ngModelChange)="onManualEdit()"
               optionLabel="label"
               optionValue="value"
               styleClass="w-full"
@@ -209,7 +225,7 @@
             <p-select
               inputId="rsd-bodyalign"
               [options]="alignOptions"
-              [(ngModel)]="draft.bodySectionsAlign"
+              [(ngModel)]="draft.bodySectionsAlign" (ngModelChange)="onManualEdit()"
               optionLabel="label"
               optionValue="value"
               styleClass="w-full"
@@ -217,7 +233,7 @@
             />
           </div>
           <div class="rsd-field rsd-field--check rsd-field--check-block">
-            <p-checkbox inputId="rsd-showlogo" [(ngModel)]="draft.hospitalShowLogo" [binary]="true" />
+            <p-checkbox inputId="rsd-showlogo" [(ngModel)]="draft.hospitalShowLogo" (ngModelChange)="onManualEdit()" [binary]="true" />
             <label for="rsd-showlogo">Show hospital logo on slip</label>
           </div>
           <div class="rsd-field">
@@ -225,7 +241,7 @@
             <p-select
               inputId="rsd-logoplace"
               [options]="logoPlacementOptions"
-              [(ngModel)]="draft.logoPlacement"
+              [(ngModel)]="draft.logoPlacement" (ngModelChange)="onManualEdit()"
               optionLabel="label"
               optionValue="value"
               styleClass="w-full"
@@ -237,7 +253,7 @@
             <label for="rsd-logoh">Logo max height (px)</label>
             <p-inputNumber
               inputId="rsd-logoh"
-              [(ngModel)]="draft.logoMaxHeightPx"
+              [(ngModel)]="draft.logoMaxHeightPx" (ngModelChange)="onManualEdit()"
               [min]="24"
               [max]="120"
               styleClass="w-full"
@@ -253,7 +269,7 @@
       <section class="rsd-card">
         <h2 class="rsd-card__title">Table</h2>
         <div class="rsd-field rsd-field--check">
-          <p-checkbox inputId="rsd-grid" [(ngModel)]="draft.showTableGrid" [binary]="true" />
+          <p-checkbox inputId="rsd-grid" [(ngModel)]="draft.showTableGrid" (ngModelChange)="onManualEdit()" [binary]="true" />
           <label for="rsd-grid">Show service table grid lines</label>
         </div>
       </section>
@@ -262,7 +278,7 @@
         <h2 class="rsd-card__title">Text content</h2>
         <div class="rsd-field">
           <label for="rsd-slip-title">Slip title</label>
-          <input pInputText id="rsd-slip-title" class="w-full" [(ngModel)]="draft.slipTitle" maxlength="200" />
+          <input pInputText id="rsd-slip-title" class="w-full" [(ngModel)]="draft.slipTitle" (ngModelChange)="onManualEdit()" maxlength="200" />
         </div>
         <div class="rsd-field">
           <label for="rsd-footer">Footer (supports multiple lines)</label>
@@ -270,7 +286,7 @@
             pTextarea
             id="rsd-footer"
             class="w-full"
-            [(ngModel)]="draft.footerText"
+            [(ngModel)]="draft.footerText" (ngModelChange)="onManualEdit()"
             rows="5"
             maxlength="2000"
           ></textarea>
@@ -307,23 +323,23 @@
         <h2 class="rsd-card__title">Hospital block</h2>
         <div class="rsd-checklist">
           <div class="rsd-field--check">
-            <p-checkbox inputId="h-n" [(ngModel)]="draft.hospitalShowName" [binary]="true" />
+            <p-checkbox inputId="h-n" [(ngModel)]="draft.hospitalShowName" (ngModelChange)="onManualEdit()" [binary]="true" />
             <label for="h-n">Name</label>
           </div>
           <div class="rsd-field--check">
-            <p-checkbox inputId="h-c" [(ngModel)]="draft.hospitalShowCode" [binary]="true" />
+            <p-checkbox inputId="h-c" [(ngModel)]="draft.hospitalShowCode" (ngModelChange)="onManualEdit()" [binary]="true" />
             <label for="h-c">Code</label>
           </div>
           <div class="rsd-field--check">
-            <p-checkbox inputId="h-a" [(ngModel)]="draft.hospitalShowAddress" [binary]="true" />
+            <p-checkbox inputId="h-a" [(ngModel)]="draft.hospitalShowAddress" (ngModelChange)="onManualEdit()" [binary]="true" />
             <label for="h-a">Address</label>
           </div>
           <div class="rsd-field--check">
-            <p-checkbox inputId="h-p" [(ngModel)]="draft.hospitalShowPhone" [binary]="true" />
+            <p-checkbox inputId="h-p" [(ngModel)]="draft.hospitalShowPhone" (ngModelChange)="onManualEdit()" [binary]="true" />
             <label for="h-p">Phone</label>
           </div>
           <div class="rsd-field--check">
-            <p-checkbox inputId="h-e" [(ngModel)]="draft.hospitalShowEmail" [binary]="true" />
+            <p-checkbox inputId="h-e" [(ngModel)]="draft.hospitalShowEmail" (ngModelChange)="onManualEdit()" [binary]="true" />
             <label for="h-e">Email</label>
           </div>
         </div>

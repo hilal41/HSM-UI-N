@@ -1,8 +1,13 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { API_BASE_URL } from '../tokens/api-base-url.token';
-import type { CreateDepartmentRequest, Department, UpdateDepartmentRequest } from '../models/api-contracts';
+import type {
+  CreateDepartmentRequest,
+  Department,
+  PagedResponse,
+  UpdateDepartmentRequest,
+} from '../models/api-contracts';
 
 @Injectable({ providedIn: 'root' })
 export class ClinicalDepartmentsApiService {
@@ -10,7 +15,10 @@ export class ClinicalDepartmentsApiService {
   private readonly base = inject(API_BASE_URL);
 
   getAll(): Observable<Department[]> {
-    return this.http.get<Department[]>(`${this.base}/clinical/departments`);
+    const params = new HttpParams().set('page', '1').set('pageSize', '100');
+    return this.http
+      .get<PagedResponse<Department>>(`${this.base}/clinical/departments`, { params })
+      .pipe(map((res) => res.items ?? []));
   }
 
   getById(id: number): Observable<Department> {

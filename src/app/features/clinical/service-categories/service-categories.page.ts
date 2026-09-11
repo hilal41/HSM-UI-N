@@ -10,8 +10,10 @@ import { TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { finalize } from 'rxjs';
 import { ServiceCategoriesApiService } from '../../../core/api/service-categories-api.service';
 import type { ServiceCategory } from '../../../core/models/api-contracts';
+import { HmsCrudEmptyStateComponent } from '../../../shared/components/hms-crud-empty-state/hms-crud-empty-state.component';
 import { HmsTableLoadingBodyComponent } from '../../../shared/components/hms-table-loading-body/hms-table-loading-body.component';
 import { SurfacePanelComponent } from '../../../shared/components/surface-panel/surface-panel.component';
+import { showCrudPaginator } from '../../../shared/utils/crud-page.state';
 
 @Component({
   selector: 'app-service-categories-page',
@@ -19,6 +21,7 @@ import { SurfacePanelComponent } from '../../../shared/components/surface-panel/
     DatePipe,
     FormsModule,
     SurfacePanelComponent,
+    HmsCrudEmptyStateComponent,
     HmsTableLoadingBodyComponent,
     TableModule,
     MessageModule,
@@ -39,6 +42,11 @@ export class ServiceCategoriesPage {
   loading = false;
   errorMessage: string | null = null;
   readonly pageSize = 20;
+  tablePageSize = this.pageSize;
+
+  get showPaginator(): boolean {
+    return showCrudPaginator(this.totalCount, this.tablePageSize);
+  }
 
   dialogOpen = false;
   saving = false;
@@ -48,6 +56,7 @@ export class ServiceCategoriesPage {
 
   onLazyLoad(event: TableLazyLoadEvent): void {
     const rows = event.rows ?? this.pageSize;
+    this.tablePageSize = rows;
     const first = event.first ?? 0;
     const page = Math.floor(first / rows) + 1;
     this.loading = true;

@@ -1,27 +1,32 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, ViewEncapsulation } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  OnInit,
+  ViewEncapsulation,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { SkeletonModule } from 'primeng/skeleton';
 import { DashboardChartsComponent } from './components/dashboard-charts.component';
 import { DashboardFinancialReportComponent } from './components/dashboard-financial-report.component';
-import { DashboardQuickLinksComponent } from './components/dashboard-quick-links.component';
-import { DashboardRecentVisitsComponent } from './components/dashboard-recent-visits.component';
+import { DashboardServiceSalesComponent } from './components/dashboard-service-sales.component';
 import { DashboardStatCardsComponent } from './components/dashboard-stat-cards.component';
+import { DashboardWelcomeComponent } from './components/dashboard-welcome.component';
 import { DashboardDataService } from './dashboard-data.service';
-
 @Component({
   selector: 'app-dashboard-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [
-    DatePipe,
     SkeletonModule,
+    DashboardWelcomeComponent,
     DashboardStatCardsComponent,
     DashboardFinancialReportComponent,
+    DashboardServiceSalesComponent,
     DashboardChartsComponent,
-    DashboardRecentVisitsComponent,
-    DashboardQuickLinksComponent,
   ],
   templateUrl: './dashboard.page.html',
   styleUrl: './dashboard.page.scss',
@@ -31,12 +36,11 @@ export class DashboardPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly messages = inject(MessageService);
-  readonly linkPlaceholders = [0, 1, 2, 3, 4, 5];
-  readonly financialPlaceholders = [0, 1, 2, 3, 4];
+  private readonly destroyRef = inject(DestroyRef);
   readonly today = new Date();
 
   ngOnInit(): void {
-    this.route.queryParamMap.subscribe((params) => {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       if (params.get('branchRequired') === '1') {
         this.messages.add({
           severity: 'warn',

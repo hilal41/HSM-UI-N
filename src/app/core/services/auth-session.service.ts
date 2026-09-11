@@ -21,6 +21,17 @@ export class AuthSessionService {
   readonly branches = this.branchesSignal.asReadonly();
   readonly activeBranchId = this.activeBranchIdSignal.asReadonly();
   readonly isAuthenticated = computed(() => !!this.accessTokenSignal());
+  readonly isPlatformUser = computed(() => {
+    const user = this.userSignal();
+    if (user?.hospitalId != null) {
+      return false;
+    }
+    const role = user?.roleName ?? '';
+    return role === 'Developer';
+  });
+  readonly defaultAppRoute = computed(() =>
+    this.isPlatformUser() ? '/app/admin/platform-home' : '/app/dashboard',
+  );
   readonly showBranchSwitcher = computed(
     () => !!this.userSignal()?.hospitalId && this.branchesSignal().length > 0,
   );
@@ -75,11 +86,10 @@ export class AuthSessionService {
     if (!user?.hospitalId) {
       return false;
     }
-    const role = user.roleName ?? 'Staff';
-    if (role === 'SuperAdmin' || role === 'Developer' || role === 'HospitalAdmin' || role === 'DepartmentHead') {
+    if (this.activeBranchIdSignal() != null) {
       return false;
     }
-    return this.activeBranchIdSignal() == null;
+    return this.branchesSignal().length > 1;
   }
 
   applyBranchSwitch(response: LoginResponse): void {

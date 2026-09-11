@@ -1,11 +1,14 @@
 import { Location } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
+import { toPascalTitle } from '../../utils/title-case.util';
 
 /**
  * Layout shell: `hms-surface-panel` is transparent. The header band is `hms-surface-panel-inner` (global
  * styles: `--hms-card-padding` = 0.5rem on all sides, top corners rounded, bottom corners square). Body
  * projects below as sibling content.
+ *
+ * `title` is always shown in PascalCase words (e.g. "Stock Purchases").
  */
 @Component({
   selector: 'app-surface-panel',
@@ -14,17 +17,17 @@ import { ButtonModule } from 'primeng/button';
   template: `
     <section
       class="hms-surface-panel flex min-h-0 min-w-0 flex-1 flex-col bg-transparent"
-      [attr.aria-labelledby]="title() ? 'hms-surface-panel-title' : null"
+      [attr.aria-labelledby]="displayTitle() ? 'hms-surface-panel-title' : null"
     >
-      @if (title() || headerBar()) {
+      @if (displayTitle() || headerBar()) {
         <div class="hms-surface-panel-inner shrink-0 min-w-0 w-full">
           <div
             class="flex shrink-0 min-w-0 flex-nowrap gap-x-[var(--hms-page-gutter)] gap-y-0 overflow-x-auto pb-[var(--hms-page-gutter)] [-ms-overflow-style:none] [scrollbar-width:thin]"
-            [class.items-start]="!!title()"
-            [class.items-center]="!title() && headerBar()"
-            [class.justify-between]="!!title()"
+            [class.items-start]="!!displayTitle()"
+            [class.items-center]="!displayTitle() && headerBar()"
+            [class.justify-between]="!!displayTitle()"
           >
-            @if (title()) {
+            @if (displayTitle()) {
               <div class="flex min-w-0 shrink items-start gap-2 pl-0.5 pr-[var(--hms-page-gutter)] sm:flex-1">
                 <button
                   pButton
@@ -39,12 +42,12 @@ import { ButtonModule } from 'primeng/button';
                 <div class="min-w-0 flex-1">
                   <h1
                     id="hms-surface-panel-title"
-                    class="truncate text-lg font-semibold tracking-tight text-slate-900"
+                    class="truncate text-lg font-semibold tracking-tight text-[var(--hms-color-text)]"
                   >
-                    {{ title() }}
+                    {{ displayTitle() }}
                   </h1>
                   @if (subtitle()) {
-                    <p class="mt-[calc(var(--hms-page-gutter)*0.5)] truncate text-xs leading-snug text-slate-600">
+                    <p class="mt-[calc(var(--hms-page-gutter)*0.5)] truncate text-xs leading-snug text-[var(--hms-color-text-muted)]">
                       {{ subtitle() }}
                     </p>
                   }
@@ -56,10 +59,10 @@ import { ButtonModule } from 'primeng/button';
             }
             <div
               class="flex min-w-0 flex-nowrap items-end gap-[var(--hms-page-gutter)] pt-[calc(var(--hms-page-gutter)*0.5)]"
-              [class.flex-1]="!title() && headerBar()"
-              [class.justify-between]="!title() && headerBar()"
-              [class.justify-end]="!!title()"
-              [class.shrink-0]="!!title()"
+              [class.flex-1]="!displayTitle() && headerBar()"
+              [class.justify-between]="!displayTitle() && headerBar()"
+              [class.justify-end]="!!displayTitle()"
+              [class.shrink-0]="!!displayTitle()"
             >
               <ng-content select="[surfacePanelTitleExtras]" />
               <ng-content select="[surfacePanelActions]" />
@@ -84,14 +87,14 @@ import { ButtonModule } from 'primeng/button';
         margin-left: 0.05rem;
         padding: 0 !important;
         border-radius: 999px !important;
-        border: 1px solid rgb(203 213 225 / 0.9) !important;
+        border: 1px solid var(--hms-color-border-input) !important;
         background:
           radial-gradient(circle at 30% 20%, rgb(255 255 255 / 0.95), transparent 34%),
-          linear-gradient(135deg, #f8fafc, var(--hms-color-primary-light)) !important;
-        color: #0f172a !important;
+          linear-gradient(135deg, var(--hms-color-canvas), var(--hms-color-primary-light)) !important;
+        color: var(--hms-color-text) !important;
         box-shadow:
           0 1px 2px rgb(15 23 42 / 0.08),
-          0 8px 18px rgb(15 23 42 / 0.07) !important;
+          0 8px 18px rgb(37 99 235 / 0.08) !important;
         transition:
           box-shadow 0.16s ease,
           border-color 0.14s ease,
@@ -101,11 +104,11 @@ import { ButtonModule } from 'primeng/button';
 
       .hms-surface-panel-back:hover {
         border-color: var(--hms-color-primary-border) !important;
-        color: #0f172a !important;
+        color: var(--hms-color-primary-hover) !important;
         transform: translateY(-1px);
         box-shadow:
           0 2px 4px rgb(15 23 42 / 0.1),
-          0 10px 22px rgb(16 185 129 / 0.14) !important;
+          0 10px 22px rgb(37 99 235 / 0.14) !important;
       }
 
       .hms-surface-panel-back:active {
@@ -133,6 +136,13 @@ export class SurfacePanelComponent {
   readonly subtitle = input<string>();
   /** When true, render the top toolbar row even if `title` is empty (extras + actions only). */
   readonly headerBar = input(false);
+
+  /** Shared page titles always render in PascalCase words. */
+  readonly displayTitle = computed(() => {
+    const raw = this.title();
+    const formatted = toPascalTitle(raw);
+    return formatted || undefined;
+  });
 
   goBack(): void {
     this.location.back();

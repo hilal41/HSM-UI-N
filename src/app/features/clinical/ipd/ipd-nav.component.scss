@@ -1,0 +1,21 @@
+.ipd-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.ipd-nav__link {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--hms-color-text-muted, #64748b);
+  background: var(--hms-color-surface-muted, #f1f5f9);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.ipd-nav__link--active {
+  color: #fff;
+  background: var(--p-primary-color, #2563eb);
+}

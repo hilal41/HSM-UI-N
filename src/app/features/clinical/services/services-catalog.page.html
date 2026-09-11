@@ -1,18 +1,20 @@
 <app-surface-panel
   class="hms-crud-surface"
-  title="Clinical services"
+  title="Clinical Services"
   subtitle="OPD, IPD, and other billable services"
 >
   <div surfacePanelActions class="hms-crud-actions">
-    <button
-      pButton
-      type="button"
-      label="New service"
-      icon="pi pi-plus"
-      severity="secondary"
-      class="hms-toolbar-solid"
-      (click)="openCreate()"
-    ></button>
+    @if (menuPerms.can('clinical.services', 'create')) {
+      <button
+        pButton
+        type="button"
+        label="New service"
+        icon="pi pi-plus"
+        severity="secondary"
+        class="hms-toolbar-solid"
+        (click)="openCreate()"
+      ></button>
+    }
   </div>
 
   <div class="hms-crud-body-spacer" aria-hidden="true"></div>
@@ -24,8 +26,9 @@
     [showLoader]="false"
     [value]="rows"
     [lazy]="true"
-    [paginator]="true"
-    [rows]="pageSize"
+    [paginator]="list.showPaginator"
+    [alwaysShowPaginator]="false"
+    [rows]="list.tablePageSize"
     [totalRecords]="totalCount"
     [loading]="loading"
     [rowsPerPageOptions]="[10, 20, 50]"
@@ -51,35 +54,43 @@
         <td>{{ row.serviceCategoryName ?? '—' }}</td>
         <td class="text-end font-mono text-sm">{{ row.price | number: '1.2-2' }}</td>
         <td class="text-end">
-          <button
-            pButton
-            type="button"
-            icon="pi pi-pencil"
-            [text]="true"
-            severity="secondary"
-            class="mr-1"
-            (click)="openEdit(row)"
-            aria-label="Edit"
-          ></button>
-          <button
-            pButton
-            type="button"
-            icon="pi pi-trash"
-            [text]="true"
-            severity="danger"
-            (click)="confirmDelete(row)"
-            aria-label="Delete"
-          ></button>
+          @if (menuPerms.can('clinical.services', 'edit')) {
+            <button
+              pButton
+              type="button"
+              icon="pi pi-pencil"
+              [text]="true"
+              severity="secondary"
+              class="mr-1"
+              (click)="openEdit(row)"
+              aria-label="Edit"
+            ></button>
+          }
+          @if (menuPerms.can('clinical.services', 'delete')) {
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              (click)="confirmDelete(row)"
+              aria-label="Delete"
+            ></button>
+          }
         </td>
       </tr>
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="6" class="hms-table-empty-cell text-center text-sm text-slate-500">
-          <div class="flex flex-col items-center justify-center gap-2 py-4">
-            <i class="pi pi-inbox text-4xl text-slate-300" aria-hidden="true"></i>
-            <span>No services found.</span>
-          </div>
+        <td colspan="6" class="hms-table-empty-cell hms-table-empty-cell--crud">
+          <app-hms-crud-empty-state
+            icon="pi pi-list"
+            title="No services yet"
+            description="Define billable services for registration, lab, and clinical workflows."
+            [actionable]="menuPerms.can('clinical.services', 'create')"
+            actionLabel="Click to add a service"
+            (action)="openCreate()"
+          />
         </td>
       </tr>
     </ng-template>

@@ -9,60 +9,191 @@
 />
 
 <div class="print-area patient-registration-layout">
-  <div class="pr-workflow-ui no-print">
-  @if (pageError) {
-    <p-message severity="error" [text]="pageError" styleClass="no-print w-full" />
-  }
-
-  <div class="pr-main-columns flex flex-1 min-h-0 flex-col lg:flex-row lg:items-stretch">
-      <!-- Left 70%: services -->
-      <div class="pr-services-col order-2 min-w-0 lg:order-1 services-panel pr-services-lift">
-        <div class="svc-search-wrap no-print">
-          <div class="svc-search-head">
-            <div class="svc-search-input-row">
-              <span class="svc-search-icon" aria-hidden="true">
-                <i class="pi pi-search"></i>
-              </span>
-              <p-autocomplete
-                inputId="svc-search"
-                [(ngModel)]="servicePick"
-                [suggestions]="serviceSuggestions"
-                (completeMethod)="completeServices($event)"
-                (onSelect)="onServiceSelected($event)"
-                optionLabel="title"
-                [dropdown]="true"
-                [minLength]="0"
-                placeholder="Search service..."
-                [disabled]="!currentPatient"
-                appendTo="body"
-                styleClass="svc-search-autocomplete w-full"
-              >
-                <ng-template let-item pTemplate="item">
-                  <span class="font-medium">{{ item.title }}</span>
-                  <span class="ml-2 text-xs text-[var(--hms-color-text-muted)]">{{ item.code }}</span>
-                </ng-template>
-              </p-autocomplete>
-            </div>
-            <div class="svc-search-actions">
-              <button
-                pButton
-                type="button"
-                label="Recently registered patients"
-                icon="pi pi-history"
-                class="pr-pill-white"
-                (click)="showHistory()"
-              ></button>
-              <button
-                pButton
-                type="button"
-                label="Register patient"
-                icon="pi pi-user-plus"
-                class="pr-pill-white"
-                (click)="openRegisterDialog()"
-              ></button>
-            </div>
-          </div>
+  <app-surface-panel
+    class="hms-crud-surface pr-surface no-print"
+    title="Registration"
+    [subtitle]="currentPatient ? undefined : 'Select or register a patient to begin this visit'"
+  >
+    <div surfacePanelTitleExtras class="pr-header-patient-wrap">
+      <div
+        class="pr-header-patient"
+        [class.pr-header-patient--empty]="!currentPatient"
+        role="group"
+        [attr.aria-label]="currentPatient ? 'Selected patient' : 'No patient selected'"
+      >
+        <div class="pr-header-field pr-header-field--name">
+          <span id="pr-lbl-name" class="pr-header-field__lbl">Patient</span>
+          <span
+            class="pr-header-field__val pr-header-field__val--emphasis"
+            [class.pr-header-field__val--placeholder]="!currentPatient"
+            aria-labelledby="pr-lbl-name"
+          >
+            @if (currentPatient) {
+              {{ currentPatient.firstName }} {{ currentPatient.lastName }}
+            } @else {
+              —
+            }
+          </span>
         </div>
+        <div class="pr-header-field pr-header-field--reg">
+          <span id="pr-lbl-reg" class="pr-header-field__lbl">Reg. no.</span>
+          <span
+            class="pr-header-field__val pr-header-field__val--mono"
+            [class.pr-header-field__val--placeholder]="!currentPatient"
+            aria-labelledby="pr-lbl-reg"
+          >
+            {{ currentPatient?.patientNumber ?? '—' }}
+          </span>
+        </div>
+        <div class="pr-header-field pr-header-field--phone">
+          <span id="pr-lbl-phone" class="pr-header-field__lbl">Phone</span>
+          <span
+            class="pr-header-field__val"
+            [class.pr-header-field__val--placeholder]="!currentPatient"
+            aria-labelledby="pr-lbl-phone"
+          >
+            {{ currentPatient?.phone || '—' }}
+          </span>
+        </div>
+        <div class="pr-header-field pr-header-field--age">
+          <span id="pr-lbl-age" class="pr-header-field__lbl">Age</span>
+          <span
+            class="pr-header-field__val"
+            [class.pr-header-field__val--placeholder]="!currentPatient"
+            aria-labelledby="pr-lbl-age"
+          >
+            @if (currentPatient) {
+              {{ ageDisplay(currentPatient) }} yr
+            } @else {
+              —
+            }
+          </span>
+        </div>
+        <div class="pr-header-field pr-header-field--gender">
+          <span id="pr-lbl-gender" class="pr-header-field__lbl">Gender</span>
+          <span
+            class="pr-header-field__val"
+            [class.pr-header-field__val--placeholder]="!currentPatient"
+            aria-labelledby="pr-lbl-gender"
+          >
+            {{ currentPatient?.gender || '—' }}
+          </span>
+        </div>
+        <div class="pr-header-field pr-header-field--address">
+          <span id="pr-lbl-address" class="pr-header-field__lbl">Address</span>
+          <span
+            class="pr-header-field__val pr-header-field__val--truncate"
+            [class.pr-header-field__val--placeholder]="!currentPatient"
+            aria-labelledby="pr-lbl-address"
+          >
+            {{ currentPatient?.address || '—' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div surfacePanelActions class="hms-crud-actions pr-toolbar">
+      <button
+        pButton
+        type="button"
+        label="Save"
+        icon="pi pi-save"
+        severity="secondary"
+        class="hms-toolbar-chip"
+        [outlined]="true"
+        title="Save visit"
+        (click)="saveVisit(false)"
+        [loading]="savingVisit"
+        [disabled]="!canSaveVisit"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Save & print"
+        icon="pi pi-print"
+        [severity]="currentPatient ? undefined : 'secondary'"
+        [class.hms-toolbar-solid]="!!currentPatient"
+        [class.hms-toolbar-chip]="!currentPatient"
+        [outlined]="!currentPatient"
+        title="Save visit and print slip"
+        (click)="saveVisit(true)"
+        [loading]="savingVisit"
+        [disabled]="!canSaveVisit"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Register"
+        icon="pi pi-user-plus"
+        [severity]="currentPatient ? 'secondary' : undefined"
+        [class.hms-toolbar-solid]="!currentPatient"
+        [class.hms-toolbar-chip]="!!currentPatient"
+        [outlined]="!!currentPatient"
+        title="Register patient"
+        (click)="openRegisterDialog()"
+      ></button>
+    </div>
+
+    <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+    <div class="hms-crud-panel-body">
+      @if (pageError) {
+        <p-message severity="error" [text]="pageError" styleClass="no-print w-full" />
+      }
+
+      <div class="pr-workflow-ui">
+        <div class="pr-main-columns flex flex-1 min-h-0 flex-col lg:flex-row lg:items-stretch">
+          <!-- Left 70%: services -->
+          <div class="pr-services-col order-2 min-w-0 lg:order-1 services-panel pr-services-lift">
+            <div class="svc-search-wrap no-print">
+              <div class="svc-search-head">
+                <div class="svc-search-input-row" [class.is-focused]="serviceSearchFocused">
+                  <span class="svc-search-icon" aria-hidden="true">
+                    <i class="pi pi-search"></i>
+                  </span>
+                  <p-autocomplete
+                    inputId="svc-search"
+                    [(ngModel)]="servicePick"
+                    [suggestions]="serviceSuggestions"
+                    (completeMethod)="completeServices($event)"
+                    (onSelect)="onServiceSelected($event)"
+                    (onFocus)="onServiceSearchFocus()"
+                    (onBlur)="onServiceSearchBlur()"
+                    optionLabel="title"
+                    [dropdown]="true"
+                    [forceSelection]="true"
+                    [minLength]="0"
+                    [placeholder]="serviceSearchPlaceholder"
+                    [disabled]="!currentPatient"
+                    appendTo="body"
+                    styleClass="svc-search-autocomplete w-full"
+                  >
+                    <ng-template let-item pTemplate="item">
+                      <span class="font-medium">{{ item.title }}</span>
+                      <span class="ml-2 text-xs text-[var(--hms-color-text-muted)]">{{ item.code }}</span>
+                      @if (item.consultancyType === 'Test') {
+                        <span class="ml-2 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-blue-700">
+                          Lab test
+                          @if (item.parameterCount) {
+                            · {{ item.parameterCount }} params
+                          }
+                        </span>
+                      }
+                    </ng-template>
+                  </p-autocomplete>
+                </div>
+                <button
+                  pButton
+                  type="button"
+                  label="History"
+                  icon="pi pi-history"
+                  severity="secondary"
+                  class="hms-toolbar-chip svc-search-history-btn"
+                  [outlined]="true"
+                  title="Recently registered patients"
+                  (click)="showHistory()"
+                ></button>
+              </div>
+            </div>
 
         <p-table
           [value]="lines"
@@ -73,7 +204,7 @@
           <ng-template #header>
             <tr>
               <th>Service</th>
-              <th class="min-w-[8rem]">Doctor</th>
+              <th class="min-w-[8rem]">Doctor / Priority</th>
               <th class="text-end w-[5rem]">Price</th>
               <th class="text-end w-[5rem]">Discount</th>
               <th class="min-w-[5.5rem]">Remarks</th>
@@ -87,15 +218,27 @@
                 <div class="text-[11px] leading-tight text-[var(--hms-color-text-muted)]">{{ row.serviceCode }}</div>
               </td>
               <td>
-                <p-select
-                  [options]="doctorOptions"
-                  [(ngModel)]="row.doctorId"
-                  optionLabel="label"
-                  optionValue="value"
-                  placeholder="Doctor"
-                  styleClass="w-full"
-                  [appendTo]="'body'"
-                />
+                @if (isTestLine(row)) {
+                  <p-select
+                    [options]="priorityOptions"
+                    [(ngModel)]="row.priority"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Priority"
+                    styleClass="w-full"
+                    [appendTo]="'body'"
+                  />
+                } @else {
+                  <p-select
+                    [options]="doctorOptions"
+                    [(ngModel)]="row.doctorId"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Doctor"
+                    styleClass="w-full"
+                    [appendTo]="'body'"
+                  />
+                }
               </td>
               <td class="text-end align-middle">
                 <p-inputNumber
@@ -140,146 +283,81 @@
           <ng-template #emptymessage>
             <tr class="no-print">
               <td colspan="6" class="services-empty-cta-cell">
-                <button
-                  type="button"
-                  class="services-empty-cta"
-                  (click)="openRegisterDialog()"
-                  aria-label="Register patient — add services to this visit"
-                >
-                  <i class="pi pi-user-plus services-empty-cta__icon" aria-hidden="true"></i>
-                  <span class="services-empty-cta__hint">Tap to register a patient</span>
-                </button>
+                @if (!currentPatient) {
+                  <button
+                    type="button"
+                    class="services-empty-cta"
+                    (click)="openRegisterDialog()"
+                    aria-label="Register a patient to begin this visit"
+                  >
+                    <i class="pi pi-user-plus services-empty-cta__icon" aria-hidden="true"></i>
+                    <span class="services-empty-cta__hint">Register a patient to begin this visit</span>
+                  </button>
+                } @else {
+                  <div class="services-empty-hint" role="status">
+                    <i class="pi pi-search services-empty-cta__icon" aria-hidden="true"></i>
+                    <span class="services-empty-cta__hint">Search and add services above</span>
+                  </div>
+                }
               </td>
             </tr>
           </ng-template>
         </p-table>
       </div>
 
-      <!-- Right 30%: patient, remarks, visit summary & actions -->
-      <aside class="pr-aside-stack pr-aside-col order-1 w-full shrink-0 lg:order-2">
-        @if (currentPatient) {
-          <div class="patient-record-card print:border print:bg-white print:shadow-none">
-            <div class="patient-record-card__accent" aria-hidden="true"></div>
-            <div class="patient-record-card__body">
-              <h2 class="patient-record-card__title">Patient information</h2>
-              <div class="patient-record-card__row">
-                <div class="patient-record-card__field patient-record-card__field--grow">
-                  <span class="patient-record-card__label">Name</span>
-                  <div class="patient-record-card__value patient-record-card__value--name">
-                    {{ currentPatient.firstName }} {{ currentPatient.lastName }}
-                  </div>
-                </div>
-                <div class="patient-record-card__field">
-                  <span class="patient-record-card__label">Mob</span>
-                  <div class="patient-record-card__value patient-record-card__value--mono">
-                    {{ currentPatient.phone || '—' }}
-                  </div>
-                </div>
-                <div class="patient-record-card__field">
-                  <span class="patient-record-card__label">Reg No</span>
-                  <div class="patient-record-card__value patient-record-card__value--mono">
-                    {{ currentPatient.patientNumber }}
-                  </div>
-                </div>
-              </div>
-              <div class="patient-record-card__divider"></div>
-              <div class="patient-record-card__row patient-record-card__row--second">
-                <div class="patient-record-card__field patient-record-card__field--narrow">
-                  <span class="patient-record-card__label">Age</span>
-                  <div class="patient-record-card__value patient-record-card__value--age">
-                    {{ ageDisplay(currentPatient) }}<span class="patient-record-card__age-suffix">yr</span>
-                  </div>
-                </div>
-                <div class="patient-record-card__field patient-record-card__field--narrow">
-                  <span class="patient-record-card__label">Gender</span>
-                  <div class="patient-record-card__value">
-                    {{ currentPatient.gender || '—' }}
-                  </div>
-                </div>
-                <div class="patient-record-card__field patient-record-card__field--grow">
-                  <span class="patient-record-card__label">Address</span>
-                  <div class="patient-record-card__value patient-record-card__value--address">
-                    {{ currentPatient.address || '—' }}
-                  </div>
-                </div>
-              </div>
+      <!-- Right: unified visit summary -->
+      <aside class="pr-aside-stack pr-aside-col order-1 shrink-0 lg:order-2">
+        <div class="pr-visit-summary">
+          <h2 class="pr-visit-summary__title">Visit summary</h2>
+
+          <div class="pr-visit-summary__section pr-visit-summary__section--remarks">
+            <label class="pr-visit-summary__label" for="visit-remarks">Remarks</label>
+            <textarea
+              pTextarea
+              id="visit-remarks"
+              [(ngModel)]="visitRemarks"
+              rows="2"
+              class="visit-remarks-input w-full"
+              placeholder="Visit notes…"
+              [disabled]="!currentPatient"
+            ></textarea>
+          </div>
+
+          <div class="pr-visit-summary__section pr-visit-summary__totals">
+            <div class="pr-visit-summary__total-row">
+              <span class="pr-visit-summary__total-lbl">Total</span>
+              <span class="pr-visit-summary__total-val tabular-nums">{{ totalAmount }}</span>
+            </div>
+            <div class="pr-visit-summary__total-row">
+              <span class="pr-visit-summary__total-lbl">Discount</span>
+              <span class="pr-visit-summary__total-val tabular-nums">{{ discountAmount }}</span>
+            </div>
+            <div class="pr-visit-summary__total-row pr-visit-summary__total-row--net">
+              <span class="pr-visit-summary__total-lbl">Net</span>
+              <span class="pr-visit-summary__total-val pr-visit-summary__total-val--net tabular-nums">{{ netAmount }}</span>
             </div>
           </div>
-        } @else {
-          <div class="patient-record-card patient-record-card--empty">
-            <div class="patient-record-card__empty-shell">
-              <div class="patient-record-card__empty-icon-wrap" aria-hidden="true">
-                <i class="pi pi-user-plus patient-record-card__empty-icon"></i>
-              </div>
-              <h3 class="patient-record-card__empty-title">No patient selected</h3>
-              <p class="patient-record-card__empty-text">
-                Register a patient to add services and save this visit.
-              </p>
-            </div>
-          </div>
-        }
 
-        <div class="pr-raised-card pr-raised-card--remarks flex flex-col gap-[var(--hms-page-gutter)]">
-          <label class="text-xs font-medium text-[var(--hms-color-text-muted)]" for="visit-remarks">Remarks</label>
-          <textarea
-            pTextarea
-            id="visit-remarks"
-            [(ngModel)]="visitRemarks"
-            rows="2"
-            class="visit-remarks-input w-full"
-            placeholder="Visit notes…"
-            [disabled]="!currentPatient"
-          ></textarea>
-        </div>
-
-        <div class="pr-raised-card pr-raised-card--totals grid grid-cols-2 gap-[var(--hms-page-gutter)]">
-          <div>
-            <span class="text-[10px] font-medium uppercase tracking-wide text-[var(--hms-color-text-muted)]">Total</span>
-            <div class="text-base font-semibold tabular-nums text-[var(--hms-color-text)]">{{ totalAmount }}</div>
+          <div class="pr-visit-summary__section pr-visit-summary__actions no-print">
+            <button
+              pButton
+              type="button"
+              label="Print slip"
+              icon="pi pi-print"
+              severity="secondary"
+              class="hms-toolbar-chip w-full"
+              [outlined]="true"
+              (click)="printSlipOrSaveAndPrint()"
+              [loading]="savingVisit"
+              [disabled]="!canPrintSlip || savingVisit"
+            ></button>
           </div>
-          <div>
-            <span class="text-[10px] font-medium uppercase tracking-wide text-[var(--hms-color-text-muted)]">Discount</span>
-            <div class="text-base font-semibold tabular-nums text-[var(--hms-color-text)]">{{ discountAmount }}</div>
-          </div>
-        </div>
-
-        <div class="pr-raised-card pr-raised-card--actions no-print flex flex-col gap-[var(--hms-page-gutter)]">
-          <button
-            pButton
-            type="button"
-            label="Save"
-            icon="pi pi-save"
-            class="pr-pill-white w-full"
-            (click)="saveVisit(false)"
-            [loading]="savingVisit"
-            [disabled]="!currentPatient || lines.length === 0 || savingVisit"
-          ></button>
-          <button
-            pButton
-            type="button"
-            label="Save & print"
-            icon="pi pi-print"
-            class="pr-pill-white w-full"
-            (click)="saveVisit(true)"
-            [loading]="savingVisit"
-            [disabled]="!currentPatient || lines.length === 0 || savingVisit"
-          ></button>
-          <button
-            pButton
-            type="button"
-            label="Print slip"
-            icon="pi pi-print"
-            severity="secondary"
-            [outlined]="true"
-            class="pr-pill-white w-full"
-            (click)="printSlipOrSaveAndPrint()"
-            [loading]="savingVisit"
-            [disabled]="!canPrintSlip || savingVisit"
-          ></button>
         </div>
       </aside>
-  </div>
-  </div>
+        </div>
+      </div>
+    </div>
+  </app-surface-panel>
 
   <app-patient-registration-slip
     class="pr-registration-slip"

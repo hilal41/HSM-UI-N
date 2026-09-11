@@ -78,6 +78,16 @@ export class MedicineFormDialogComponent {
   expiryDate: Date | null = null;
   description = '';
   isActive = true;
+  barcode = '';
+  qrCode = '';
+  hsnCode = '';
+  taxPercent: number | null = null;
+  brand = '';
+  genericStrength = '';
+  storageTemperature = '';
+  controlledDrugClass = '';
+  purchaseUnit = '';
+  saleUnit = '';
 
   constructor() {
     effect(() => {
@@ -122,12 +132,8 @@ export class MedicineFormDialogComponent {
       this.messages.add({ severity: 'warn', summary: 'Validation', detail: 'Enter a form when Other is selected.' });
       return;
     }
-    if (!this.expiryDate) {
-      this.messages.add({ severity: 'warn', summary: 'Validation', detail: 'Expiry date is required.' });
-      return;
-    }
 
-    const expiryIso = toLocalIsoDate(this.expiryDate);
+    const expiryIso = this.expiryDate ? toLocalIsoDate(this.expiryDate) : null;
     const base = {
       medicineName: this.medicineName.trim(),
       genericName: this.genericName.trim() || null,
@@ -141,6 +147,16 @@ export class MedicineFormDialogComponent {
       batchNumber: this.batchNumber.trim() || null,
       expiryDate: expiryIso,
       description: this.description.trim() || null,
+      barcode: this.barcode.trim() || null,
+      qrCode: this.qrCode.trim() || null,
+      hsnCode: this.hsnCode.trim() || null,
+      taxPercent: this.taxPercent,
+      brand: this.brand.trim() || null,
+      genericStrength: this.genericStrength.trim() || null,
+      storageTemperature: this.storageTemperature.trim() || null,
+      controlledDrugClass: this.controlledDrugClass.trim() || null,
+      purchaseUnit: this.purchaseUnit.trim() || null,
+      saleUnit: this.saleUnit.trim() || null,
       isActive: this.isActive,
     } satisfies Omit<CreateMedicineRequest, 'hospitalId'>;
 
@@ -169,6 +185,16 @@ export class MedicineFormDialogComponent {
       this.expiryDate = null;
       this.description = '';
       this.isActive = true;
+      this.barcode = '';
+      this.qrCode = '';
+      this.hsnCode = '';
+      this.taxPercent = null;
+      this.brand = '';
+      this.genericStrength = '';
+      this.storageTemperature = '';
+      this.controlledDrugClass = '';
+      this.purchaseUnit = '';
+      this.saleUnit = '';
       return;
     }
 
@@ -184,8 +210,18 @@ export class MedicineFormDialogComponent {
     this.purchasePrice = rec.purchasePrice ?? null;
     this.salePrice = rec.salePrice ?? null;
     this.batchNumber = rec.batchNumber ?? '';
-    this.expiryDate = parseIsoDateLocal(rec.expiryDate);
+    this.expiryDate = rec.expiryDate ? parseIsoDateLocal(rec.expiryDate) : null;
     this.description = rec.description ?? '';
     this.isActive = rec.isActive;
+    this.barcode = rec.barcode ?? '';
+    this.qrCode = rec.qrCode ?? '';
+    this.hsnCode = rec.hsnCode ?? '';
+    this.taxPercent = rec.taxPercent ?? null;
+    this.brand = rec.brand ?? '';
+    this.genericStrength = rec.genericStrength ?? '';
+    this.storageTemperature = rec.storageTemperature ?? '';
+    this.controlledDrugClass = rec.controlledDrugClass ?? '';
+    this.purchaseUnit = rec.purchaseUnit ?? '';
+    this.saleUnit = rec.saleUnit ?? '';
   }
 }

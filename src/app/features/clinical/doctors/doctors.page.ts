@@ -1,8 +1,9 @@
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, inject, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
+import { DatePickerModule } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
@@ -14,23 +15,46 @@ import { TextareaModule } from 'primeng/textarea';
 import { finalize } from 'rxjs';
 import { ClinicalDepartmentsApiService } from '../../../core/api/clinical-departments-api.service';
 import { DoctorsApiService } from '../../../core/api/doctors-api.service';
-import type { Department, Doctor } from '../../../core/models/api-contracts';
+import type { Department, Doctor, DoctorImportResult } from '../../../core/models/api-contracts';
 import { AuthSessionService } from '../../../core/services/auth-session.service';
+import { HmsCrudEmptyStateComponent } from '../../../shared/components/hms-crud-empty-state/hms-crud-empty-state.component';
+import { DoctorAvailabilityCellComponent } from '../../../shared/components/doctor-availability-cell/doctor-availability-cell.component';
 import { HmsTableLoadingBodyComponent } from '../../../shared/components/hms-table-loading-body/hms-table-loading-body.component';
 import { SurfacePanelComponent } from '../../../shared/components/surface-panel/surface-panel.component';
 import {
+  apiErrorMessage,
+  CrudDialogState,
+  CrudListState,
+} from '../../../shared/utils/crud-page.state';
+import {
   availabilityDaysFromRaw,
-  availabilitySummary,
   createDefaultAvailabilityDays,
   serializeAvailabilityDays,
   type DoctorAvailabilityDay,
 } from '../../../shared/utils/doctor-availability.util';
+
+function parseIsoDateLocal(iso: string | null | undefined): Date | null {
+  if (!iso) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  if (!m) return null;
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+
+function toLocalIsoDate(d: Date | null): string | null {
+  if (!d) return null;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 @Component({
   selector: 'app-doctors-page',
   imports: [
     FormsModule,
     SurfacePanelComponent,
+    HmsCrudEmptyStateComponent,
+    DoctorAvailabilityCellComponent,
     HmsTableLoadingBodyComponent,
     TableModule,
     TagModule,
@@ -42,6 +66,7 @@ import {
     InputNumberModule,
     TextareaModule,
     SelectModule,
+    DatePickerModule,
   ],
   templateUrl: './doctors.page.html',
 })
@@ -52,17 +77,49 @@ export class DoctorsPage {
   private readonly confirm = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly doctorImportInput = viewChild<ElementRef<HTMLInputElement>>('doctorImport');
 
-  rows: Doctor[] = [];
-  totalCount = 0;
-  loading = false;
-  errorMessage: string | null = null;
-  readonly pageSize = 20;
+  readonly list = new CrudListState<Doctor>(20);
+  readonly dialog = new CrudDialogState();
+
+  get rows(): Doctor[] {
+    return this.list.rows;
+  }
+  get totalCount(): number {
+    return this.list.totalCount;
+  }
+  get loading(): boolean {
+    return this.list.loading;
+  }
+  get errorMessage(): string | null {
+    return this.list.errorMessage;
+  }
+  get pageSize(): number {
+    return this.list.pageSize;
+  }
+  get dialogOpen(): boolean {
+    return this.dialog.open;
+  }
+  set dialogOpen(v: boolean) {
+    this.dialog.open = v;
+  }
+  get saving(): boolean {
+    return this.dialog.saving;
+  }
+  set saving(v: boolean) {
+    this.dialog.saving = v;
+  }
+  get editingId(): number | null {
+    return this.dialog.editingId;
+  }
+  set editingId(v: number | null) {
+    this.dialog.editingId = v;
+  }
+
+  exportingExcel = false;
+  importingExcel = false;
 
   departmentOptions: { label: string; value: number }[] = [];
-  dialogOpen = false;
-  saving = false;
-  editingId: number | null = null;
 
   formDoctorNumber = '';
   formFirstName = '';
@@ -76,10 +133,23 @@ export class DoctorsPage {
   formQualification = '';
   formYears: number | null = null;
   formStatus = 'Active';
+  formMedicalCouncilRegistration = '';
+  formSpecialityCode = '';
+  formEmploymentType: string | null = null;
+  formJoiningDate: Date | null = null;
+  formLeavingDate: Date | null = null;
+  formSignatureBase64: string | null = null;
 
   readonly statusOptions = [
     { label: 'Active', value: 'Active' },
     { label: 'Inactive', value: 'Inactive' },
+  ];
+
+  readonly employmentTypeOptions = [
+    { label: 'Full time', value: 'FullTime' },
+    { label: 'Part time', value: 'PartTime' },
+    { label: 'Visiting', value: 'Visiting' },
+    { label: 'Consultant', value: 'Consultant' },
   ];
 
   constructor() {
@@ -89,38 +159,36 @@ export class DoctorsPage {
           label: d.name,
           value: d.id,
         }))),
-      error: () => {},
+      error: () => {
+        this.messages.add({
+          severity: 'error',
+          summary: 'Departments',
+          detail: 'Unable to load departments for the doctor form.',
+        });
+      },
     });
   }
 
   onLazyLoad(event: TableLazyLoadEvent): void {
-    const rows = event.rows ?? this.pageSize;
-    const first = event.first ?? 0;
-    const page = Math.floor(first / rows) + 1;
-    this.loading = true;
-    this.errorMessage = null;
+    const { page, pageSize } = this.list.syncLazyEvent(event);
+    this.list.beginLoad();
     this.api
-      .getPaged({ page, pageSize: rows })
-      .pipe(finalize(() => (this.loading = false)))
+      .getPaged({ page, pageSize })
+      .pipe(finalize(() => (this.list.loading = false)))
       .subscribe({
         next: (res) => {
-          this.rows = res.items;
-          this.totalCount = res.totalCount;
+          this.list.applySuccess(res.items, res.totalCount);
           this.cdr.markForCheck();
         },
         error: () => {
-          this.errorMessage = 'Unable to load doctors.';
+          this.list.applyError('Unable to load doctors.');
           this.cdr.markForCheck();
         },
       });
   }
 
-  availabilityText(row: Doctor): string {
-    return availabilitySummary(row.availability);
-  }
-
   openCreate(): void {
-    this.editingId = null;
+    this.dialog.beginCreate();
     this.formDoctorNumber = '';
     this.formFirstName = '';
     this.formLastName = '';
@@ -133,11 +201,16 @@ export class DoctorsPage {
     this.formQualification = '';
     this.formYears = null;
     this.formStatus = 'Active';
-    this.dialogOpen = true;
+    this.formMedicalCouncilRegistration = '';
+    this.formSpecialityCode = '';
+    this.formEmploymentType = null;
+    this.formJoiningDate = null;
+    this.formLeavingDate = null;
+    this.formSignatureBase64 = null;
   }
 
   openEdit(row: Doctor): void {
-    this.editingId = row.id;
+    this.dialog.beginEdit(row.id);
     this.formDoctorNumber = row.doctorNumber;
     this.formFirstName = row.firstName;
     this.formLastName = row.lastName;
@@ -150,11 +223,37 @@ export class DoctorsPage {
     this.formQualification = row.qualification ?? '';
     this.formYears = row.yearsOfExperience ?? null;
     this.formStatus = row.status;
-    this.dialogOpen = true;
+    this.formMedicalCouncilRegistration = row.medicalCouncilRegistration ?? '';
+    this.formSpecialityCode = row.specialityCode ?? '';
+    this.formEmploymentType = row.employmentType ?? null;
+    this.formJoiningDate = parseIsoDateLocal(row.joiningDate);
+    this.formLeavingDate = parseIsoDateLocal(row.leavingDate);
+    this.formSignatureBase64 = row.signatureBase64 ?? row.signatureUrl ?? null;
+  }
+
+  onSignatureSelected(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.messages.add({ severity: 'warn', summary: 'Signature', detail: 'Please select an image file.' });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.formSignatureBase64 = typeof reader.result === 'string' ? reader.result : null;
+      this.cdr.markForCheck();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearSignature(): void {
+    this.formSignatureBase64 = '';
   }
 
   closeDialog(): void {
-    this.dialogOpen = false;
+    this.dialog.close();
   }
 
   save(): void {
@@ -203,6 +302,12 @@ export class DoctorsPage {
           qualification: this.formQualification.trim() || null,
           yearsOfExperience: this.formYears,
           status: this.formStatus,
+          medicalCouncilRegistration: this.formMedicalCouncilRegistration.trim() || null,
+          specialityCode: this.formSpecialityCode.trim() || null,
+          employmentType: this.formEmploymentType || null,
+          joiningDate: toLocalIsoDate(this.formJoiningDate),
+          leavingDate: toLocalIsoDate(this.formLeavingDate),
+          signatureBase64: this.formSignatureBase64 || null,
           createdBy: uid!,
         })
         .pipe(finalize(() => (this.saving = false)))
@@ -212,11 +317,11 @@ export class DoctorsPage {
             this.closeDialog();
             this.reloadTable();
           },
-          error: (err: { error?: { message?: string } }) => {
+          error: (err: unknown) => {
             this.messages.add({
               severity: 'error',
               summary: 'Error',
-              detail: err?.error?.message ?? 'Create failed.',
+              detail: apiErrorMessage(err, 'Create failed.'),
             });
           },
         });
@@ -235,6 +340,12 @@ export class DoctorsPage {
           qualification: this.formQualification.trim() || null,
           yearsOfExperience: this.formYears,
           status: this.formStatus,
+          medicalCouncilRegistration: this.formMedicalCouncilRegistration.trim() || null,
+          specialityCode: this.formSpecialityCode.trim() || null,
+          employmentType: this.formEmploymentType || null,
+          joiningDate: toLocalIsoDate(this.formJoiningDate),
+          leavingDate: toLocalIsoDate(this.formLeavingDate),
+          signatureBase64: this.formSignatureBase64,
         })
         .pipe(finalize(() => (this.saving = false)))
         .subscribe({
@@ -243,11 +354,11 @@ export class DoctorsPage {
             this.closeDialog();
             this.reloadTable();
           },
-          error: (err: { error?: { message?: string } }) => {
+          error: (err: unknown) => {
             this.messages.add({
               severity: 'error',
               summary: 'Error',
-              detail: err?.error?.message ?? 'Update failed.',
+              detail: apiErrorMessage(err, 'Update failed.'),
             });
           },
         });
@@ -255,17 +366,85 @@ export class DoctorsPage {
   }
 
   reloadTable(): void {
-    this.loading = true;
+    this.list.beginLoad();
     this.api
       .getPaged({ page: 1, pageSize: this.pageSize })
-      .pipe(finalize(() => (this.loading = false)))
+      .pipe(finalize(() => (this.list.loading = false)))
       .subscribe({
         next: (res) => {
-          this.rows = res.items;
-          this.totalCount = res.totalCount;
+          this.list.applySuccess(res.items, res.totalCount);
           this.cdr.markForCheck();
         },
         error: () => this.cdr.markForCheck(),
+      });
+  }
+
+  exportExcel(): void {
+    this.exportingExcel = true;
+    this.api
+      .exportExcel()
+      .pipe(finalize(() => (this.exportingExcel = false)))
+      .subscribe({
+        next: (blob) => {
+          const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `doctors-${stamp}.xlsx`;
+          a.click();
+          URL.revokeObjectURL(url);
+          this.messages.add({ severity: 'success', summary: 'Export', detail: 'Excel file downloaded.' });
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.messages.add({ severity: 'error', summary: 'Export failed', detail: 'Could not download Excel.' });
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  openImportPicker(): void {
+    this.doctorImportInput()?.nativeElement.click();
+  }
+
+  onImportFileSelected(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    const u = this.session.user();
+    if (u?.hospitalId == null || u.hospitalId <= 0) {
+      this.messages.add({
+        severity: 'warn',
+        summary: 'Hospital required',
+        detail: 'Sign in with a hospital user to import doctors.',
+      });
+      return;
+    }
+
+    this.importingExcel = true;
+    this.api
+      .importExcel(file)
+      .pipe(finalize(() => (this.importingExcel = false)))
+      .subscribe({
+        next: (res: DoctorImportResult) => {
+          this.messages.add({
+            severity: res.failed > 0 ? 'warn' : 'success',
+            summary: 'Import finished',
+            detail: `Created ${res.created}, updated ${res.updated}, failed ${res.failed}.`,
+          });
+          this.reloadTable();
+          this.cdr.markForCheck();
+        },
+        error: (err: { error?: { message?: string } }) => {
+          this.messages.add({
+            severity: 'error',
+            summary: 'Import failed',
+            detail: err?.error?.message ?? 'Upload or parse failed.',
+          });
+          this.cdr.markForCheck();
+        },
       });
   }
 

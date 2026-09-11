@@ -58,7 +58,6 @@ export class QuickPatientFormComponent implements OnInit, OnDestroy {
   firstName = '';
   lastName = '';
   phone = '';
-  patientNumber = '';
   dateOfBirth: Date | null = null;
   /** Single field: years-months-days (synced with calendar DOB). */
   ageYmdText = '';
@@ -168,7 +167,6 @@ export class QuickPatientFormComponent implements OnInit, OnDestroy {
     this.firstName = '';
     this.lastName = '';
     this.phone = '';
-    this.patientNumber = '';
     this.dateOfBirth = null;
     this.ageYmdText = '';
     this.address = '';
@@ -320,15 +318,16 @@ export class QuickPatientFormComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.bloodTypeOptions = [];
+        this.messages.add({
+          severity: 'error',
+          summary: 'Blood types',
+          detail: 'Unable to load blood type options.',
+        });
       },
     });
   }
 
   save(): void {
-    if (!this.patientNumber.trim()) {
-      this.messages.add({ severity: 'warn', summary: 'Validation', detail: 'Reg. number is required.' });
-      return;
-    }
     if (!this.firstName.trim()) {
       this.messages.add({ severity: 'warn', summary: 'Validation', detail: 'First name is required.' });
       return;
@@ -357,6 +356,10 @@ export class QuickPatientFormComponent implements OnInit, OnDestroy {
       this.messages.add({ severity: 'warn', summary: 'Validation', detail: 'Choose a valid gender.' });
       return;
     }
+    if (!this.phone.trim()) {
+      this.messages.add({ severity: 'warn', summary: 'Validation', detail: 'Mobile phone is required.' });
+      return;
+    }
     const emailTrim = this.email.trim();
     if (emailTrim && !emailPattern.test(emailTrim)) {
       this.messages.add({
@@ -372,13 +375,12 @@ export class QuickPatientFormComponent implements OnInit, OnDestroy {
     this.saving = true;
     this.api
       .create({
-        patientNumber: this.patientNumber.trim(),
         firstName: this.firstName.trim(),
         lastName: this.lastName.trim(),
         dateOfBirth: dob,
         gender: this.gender,
         ...(this.bloodTypeId != null ? { bloodTypeId: this.bloodTypeId } : {}),
-        phone: this.phone.trim() || null,
+        phone: this.phone.trim(),
         email: emailTrim || null,
         address: this.address.trim() || null,
         city: this.city.trim() || null,

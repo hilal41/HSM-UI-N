@@ -1,0 +1,90 @@
+<app-surface-panel class="hms-crud-surface" title="IPD Admissions" subtitle="Admission desk — admit patients to wards and beds">
+  <div surfacePanelActions class="hms-crud-actions">
+    <p-select [(ngModel)]="statusFilter" [options]="statusOptions" optionLabel="label" optionValue="value" styleClass="mr-2" appendTo="body" (onChange)="load()" />
+    <button pButton type="button" label="Admit patient" icon="pi pi-sign-in" severity="secondary" class="hms-toolbar-solid" (click)="openAdmit()"></button>
+  </div>
+
+  <div class="hms-crud-body-spacer" aria-hidden="true"></div>
+  <div class="hms-crud-panel-body">
+    @if (errorMessage) {
+      <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full" />
+    }
+    <p-table [showLoader]="false" [value]="rows" [loading]="loading" styleClass="p-datatable-sm hms-crud-table" [paginator]="showPaginator" [rows]="15">
+      <ng-template #header>
+        <tr>
+          <th>Admission #</th>
+          <th>Patient</th>
+          <th>Doctor</th>
+          <th>Ward / Bed</th>
+          <th>Admitted</th>
+          <th>Status</th>
+          <th>Balance</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-row>
+        <tr>
+          <td class="font-mono text-xs">{{ row.admissionNumber }}</td>
+          <td>{{ row.patientName }}</td>
+          <td>{{ row.doctorName }}</td>
+          <td>{{ row.wardName }} / {{ row.bedNumber }}</td>
+          <td>{{ row.admissionDate | date: 'mediumDate' }}</td>
+          <td><p-tag [value]="row.status" [severity]="statusSeverity(row.status)" /></td>
+          <td>{{ row.runningBalance | number: '1.2-2' }}</td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="7" class="hms-table-empty-cell hms-table-empty-cell--crud">
+            <app-hms-crud-empty-state icon="pi pi-sign-in" title="No admissions yet" description="Admit a patient to start an inpatient stay." [actionable]="true" actionLabel="Admit patient" (action)="openAdmit()" />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</app-surface-panel>
+
+<p-dialog header="Admit patient" [(visible)]="admitOpen" [modal]="true" [style]="{ width: 'min(95vw, 36rem)' }" styleClass="hms-crud-dialog">
+  <div class="hms-dialog-body">
+    <div class="hms-dialog-scroll grid grid-cols-1 gap-3">
+      <app-patient-register-search (patientPicked)="onPatientPicked($event)" />
+      @if (pickedPatient) {
+        <p-message severity="info" [text]="'Selected: ' + pickedPatient.firstName + ' ' + pickedPatient.lastName" styleClass="w-full" />
+      }
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required">Department</label>
+        <p-select [(ngModel)]="formDepartmentId" [options]="departments" optionLabel="name" optionValue="id" styleClass="w-full" appendTo="body" (onChange)="onDepartmentChange()" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required">Admitting doctor</label>
+        <p-select [(ngModel)]="formDoctorId" [options]="doctors" optionLabel="firstName" optionValue="id" styleClass="w-full" appendTo="body">
+          <ng-template let-d pTemplate="item">{{ d.firstName }} {{ d.lastName }}</ng-template>
+          <ng-template let-d pTemplate="selectedItem">{{ d.firstName }} {{ d.lastName }}</ng-template>
+        </p-select>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required">Ward</label>
+        <p-select [(ngModel)]="formWardId" [options]="wards" optionLabel="name" optionValue="id" styleClass="w-full" appendTo="body" (onChange)="onWardChange()" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label hms-field-label--required">Bed</label>
+        <p-select [(ngModel)]="formBedId" [options]="availableBeds" optionLabel="bedNumber" optionValue="id" styleClass="w-full" appendTo="body" placeholder="Select available bed" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label">Expected discharge</label>
+        <p-datepicker [(ngModel)]="formExpectedDischarge" styleClass="w-full" appendTo="body" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label">Reason</label>
+        <textarea pTextarea rows="2" class="w-full" [(ngModel)]="formReason"></textarea>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="hms-field-label">Diagnosis</label>
+        <input pInputText class="w-full" [(ngModel)]="formDiagnosis" />
+      </div>
+    </div>
+    <div class="hms-dialog-footer">
+      <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="admitOpen = false"></button>
+      <button pButton type="button" label="Admit" icon="pi pi-check" severity="success" [loading]="saving" (click)="admit()"></button>
+    </div>
+  </div>
+</p-dialog>

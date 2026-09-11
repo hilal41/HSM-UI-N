@@ -1,0 +1,87 @@
+@if (user(); as u) {
+  <button
+    #accountTrigger
+    type="button"
+    class="account-menu__trigger"
+    aria-haspopup="menu"
+    [attr.aria-expanded]="menuOpen()"
+    aria-label="Account menu"
+    (click)="toggleMenu($event)"
+  >
+    <span class="account-menu__avatar" aria-hidden="true">
+      @if (profilePicture()) {
+        <img [src]="profilePicture()!" alt="" class="account-menu__avatar-photo" />
+      } @else {
+        <i class="pi pi-user account-menu__avatar-icon" aria-hidden="true"></i>
+      }
+    </span>
+  </button>
+
+  <div #dropdownAnchor class="account-menu__anchor" aria-hidden="true"></div>
+
+  @if (menuOpen()) {
+    <div
+      #accountDropdown
+      class="account-menu__dropdown"
+      role="menu"
+      [ngStyle]="panelStyle()"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="account-menu__identity">
+        <div class="account-menu__identity-main">
+          <span class="account-menu__identity-avatar" aria-hidden="true">
+            @if (profilePicture()) {
+              <img [src]="profilePicture()!" alt="" class="account-menu__identity-photo" />
+            } @else {
+              <i class="pi pi-user"></i>
+            }
+          </span>
+          <div class="account-menu__identity-text">
+            <p class="account-menu__name">{{ displayName() }}</p>
+            <p class="account-menu__username">{{ u.userName }}</p>
+          </div>
+        </div>
+        <span
+          class="account-menu__role"
+          [class.account-menu__role--platform]="isPlatformUser()"
+        >
+          {{ roleLabel() }}
+        </span>
+      </header>
+
+      @if (menuOpen() && showBranchSwitcher()) {
+        <section class="account-menu__section" aria-label="Branch">
+          <p class="account-menu__section-label">Active branch</p>
+          <app-branch-switcher appearance="panel" />
+        </section>
+      }
+
+      @if (accountLinks().length > 0) {
+        <nav class="account-menu__links" aria-label="Account pages">
+          @for (link of accountLinks(); track link.label) {
+            @if (link.routerLink) {
+              <a
+                class="account-menu__link"
+                role="menuitem"
+                [routerLink]="link.routerLink"
+                (click)="closeMenu()"
+              >
+                @if (link.icon) {
+                  <i [class]="link.icon" aria-hidden="true"></i>
+                }
+                <span>{{ link.label }}</span>
+              </a>
+            }
+          }
+        </nav>
+      }
+
+      <div class="account-menu__footer">
+        <button type="button" class="account-menu__sign-out" role="menuitem" (click)="signOut()">
+          <i class="pi pi-sign-out" aria-hidden="true"></i>
+          <span>Sign out</span>
+        </button>
+      </div>
+    </div>
+  }
+}

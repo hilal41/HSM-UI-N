@@ -1,0 +1,142 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.bill-status-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.bill-inv-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--hms-color-border);
+}
+
+.bill-inv-head__patient {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--hms-color-text);
+}
+
+.bill-inv-head__meta {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  color: var(--hms-color-text-muted);
+}
+
+.bill-inv-lines {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--hms-font-ui-sm);
+}
+
+.bill-inv-lines th {
+  padding: 0.35rem 0.25rem;
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: var(--hms-table-head-weight);
+  color: var(--hms-table-head-color);
+  border-bottom: 1px solid var(--hms-color-border);
+}
+
+.bill-inv-lines th:last-child,
+.bill-inv-lines td:last-child {
+  text-align: right;
+}
+
+.bill-inv-lines td {
+  padding: 0.55rem 0.25rem;
+  vertical-align: top;
+  border-bottom: 1px solid var(--hms-color-border);
+  color: var(--hms-color-text);
+}
+
+.bill-inv-lines__desc {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.bill-inv-lines__sub {
+  margin-top: 0.15rem;
+  font-size: 0.68rem;
+  color: var(--hms-color-text-muted);
+}
+
+.bill-inv-totals {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem 1.25rem;
+  margin-top: 0.85rem;
+  padding: 0.75rem 0.85rem;
+  background: var(--hms-color-canvas);
+  border: 1px solid var(--hms-color-border);
+  font-size: 0.82rem;
+}
+
+.bill-inv-totals__label {
+  color: var(--hms-color-text-muted);
+}
+
+.bill-inv-totals__value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--hms-color-text);
+}
+
+.bill-inv-totals__label.bill-inv-totals__row--emphasis,
+.bill-inv-totals__value.bill-inv-totals__row--emphasis {
+  font-weight: 700;
+  color: var(--hms-color-text);
+}
+
+.bill-inv-totals__label.bill-inv-totals__row--balance,
+.bill-inv-totals__value.bill-inv-totals__row--balance {
+  font-weight: 700;
+  color: var(--hms-color-primary);
+}
+
+.bill-inv-pays {
+  margin-top: 1rem;
+}
+
+.bill-inv-pays__title {
+  margin: 0 0 0.45rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--hms-color-text-muted);
+}
+
+.bill-inv-pay {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--hms-color-border);
+  font-size: 0.8rem;
+}
+
+.bill-inv-pay__meta {
+  color: var(--hms-color-text-muted);
+}
+
+.bill-inv-pay__amt {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

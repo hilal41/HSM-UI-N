@@ -1,0 +1,220 @@
+<div class="hmenus">
+  @if (loadError) {
+    <div class="hmenus-error">
+      <p-message severity="error" [text]="loadError" styleClass="w-full" />
+      <button
+        pButton
+        type="button"
+        label="Back to hospitals"
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [outlined]="true"
+        (click)="cancel()"
+      ></button>
+    </div>
+  } @else if (loading) {
+    <app-hms-block-skeleton [lines]="16" ariaLabel="Loading hospital menu licensing" />
+  } @else if (hospital) {
+    <header class="hmenus-hero">
+      <div class="hmenus-hero__main">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-arrow-left"
+          severity="secondary"
+          [text]="true"
+          class="hmenus-hero__back"
+          aria-label="Back to hospitals"
+          pTooltip="Back to hospitals"
+          (click)="cancel()"
+        ></button>
+        <div class="hmenus-hero__icon" aria-hidden="true">
+          <i class="pi pi-list-check"></i>
+        </div>
+        <div class="hmenus-hero__copy">
+          <p class="hmenus-hero__eyebrow">Menu licensing</p>
+          <h1 class="hmenus-hero__title">{{ hospital.name }}</h1>
+          <p class="hmenus-hero__sub">
+            Choose which application pages this hospital may use. Roles cannot exceed this set.
+          </p>
+          <div class="hmenus-hero__meta">
+            <span class="hmenus-chip hmenus-chip--code">{{ hospital.code }}</span>
+            <p-tag [value]="hospital.status" [severity]="statusSeverity(hospital.status)" />
+            <a
+              class="hmenus-link"
+              [routerLink]="['/app/admin/hospitals/edit', hospital.id]"
+            >
+              <i class="pi pi-pencil" aria-hidden="true"></i>
+              Edit hospital
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hmenus-hero__stats" aria-label="Selection summary">
+        <div class="hmenus-meter" aria-hidden="true">
+          <svg viewBox="0 0 36 36" class="hmenus-meter__ring">
+            <path
+              class="hmenus-meter__track"
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+            />
+            <path
+              class="hmenus-meter__fill"
+              [attr.stroke-dasharray]="selectedPercent() + ', 100'"
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+            />
+          </svg>
+          <div class="hmenus-meter__label">
+            <span class="hmenus-meter__value">{{ selectedPercent() }}%</span>
+            <span class="hmenus-meter__hint">licensed</span>
+          </div>
+        </div>
+        <div class="hmenus-stat">
+          <span class="hmenus-stat__value">{{ selectedCount() }}</span>
+          <span class="hmenus-stat__label">of {{ totalRoutable() }} pages</span>
+        </div>
+        <div class="hmenus-stat">
+          <span class="hmenus-stat__value">{{ licensedGroupCount() }}</span>
+          <span class="hmenus-stat__label">of {{ totalGroups() }} modules</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="hmenus-layout">
+      <aside class="hmenus-aside">
+        <section class="hmenus-panel">
+          <header class="hmenus-panel__head">
+            <h2 class="hmenus-panel__title">Quick select</h2>
+            <p class="hmenus-panel__sub">Bulk actions for this hospital</p>
+          </header>
+          <div class="hmenus-aside__actions">
+            <button
+              pButton
+              type="button"
+              label="Select all pages"
+              icon="pi pi-check-square"
+              severity="secondary"
+              [outlined]="true"
+              class="hmenus-aside__btn"
+              (click)="selectAll()"
+            ></button>
+            <button
+              pButton
+              type="button"
+              label="Clear all"
+              icon="pi pi-times"
+              severity="secondary"
+              [outlined]="true"
+              class="hmenus-aside__btn"
+              (click)="clearAll()"
+            ></button>
+          </div>
+        </section>
+
+        @if (packages.length > 0) {
+          <section class="hmenus-panel">
+            <header class="hmenus-panel__head">
+              <h2 class="hmenus-panel__title">License packages</h2>
+              <p class="hmenus-panel__sub">Apply a curated menu bundle</p>
+            </header>
+            <ul class="hmenus-packages">
+              @for (pkg of packages; track pkg.id) {
+                <li class="hmenus-package">
+                  <div class="hmenus-package__copy">
+                    <span class="hmenus-package__name">{{ pkg.name }}</span>
+                    <span class="hmenus-package__meta">{{ pkg.menuIds.length }} pages</span>
+                    @if (pkg.description) {
+                      <span class="hmenus-package__desc">{{ pkg.description }}</span>
+                    }
+                  </div>
+                  <div class="hmenus-package__btns">
+                    <button
+                      pButton
+                      type="button"
+                      label="Preview"
+                      [text]="true"
+                      class="hmenus-package__preview"
+                      pTooltip="Load into selection without saving"
+                      (click)="usePackageLocally(pkg)"
+                    ></button>
+                    <button
+                      pButton
+                      type="button"
+                      label="Apply"
+                      icon="pi pi-box"
+                      class="hmenus-package__apply"
+                      [loading]="applyingPackageId === pkg.id"
+                      [disabled]="applyingPackageId != null"
+                      (click)="applyPackage(pkg)"
+                    ></button>
+                  </div>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        <section class="hmenus-panel hmenus-panel--note">
+          <i class="pi pi-info-circle hmenus-note__icon" aria-hidden="true"></i>
+          <p class="hmenus-note__text">
+            Saving updates the <strong>Administrator</strong> role automatically. Custom roles keep
+            their grants but cannot exceed this license — review them under
+            <strong>Administration → Roles</strong> if needed.
+          </p>
+        </section>
+      </aside>
+
+      <main class="hmenus-main">
+        <section class="hmenus-panel hmenus-panel--picker">
+          <header class="hmenus-panel__head hmenus-panel__head--row">
+            <div>
+              <h2 class="hmenus-panel__title">Available menus</h2>
+              <p class="hmenus-panel__sub">Toggle modules or individual pages</p>
+            </div>
+            <span class="hmenus-selection-pill">
+              <i class="pi pi-check-circle" aria-hidden="true"></i>
+              {{ selectedCount() }} selected
+            </span>
+          </header>
+
+          <app-hospital-menu-picker
+            layout="page"
+            [menuTree]="menuTree"
+            [selectedMenuIds]="selectedMenuIds()"
+            [applyDefaultSelection]="false"
+            (selectedMenuIdsChange)="onSelectionChange($event)"
+          />
+        </section>
+      </main>
+    </div>
+
+    <footer class="hmenus-footer">
+      <div class="hmenus-footer__summary">
+        <span class="hmenus-footer__count">{{ selectedCount() }} pages</span>
+        <span class="hmenus-footer__sep" aria-hidden="true">·</span>
+        <span class="hmenus-footer__hint">Ready to license for {{ hospital.name }}</span>
+      </div>
+      <div class="hmenus-footer__actions">
+        <button
+          pButton
+          type="button"
+          label="Cancel"
+          severity="secondary"
+          [outlined]="true"
+          [disabled]="saving"
+          (click)="cancel()"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="Save menus"
+          icon="pi pi-check"
+          class="hmenus-footer__save"
+          [loading]="saving"
+          [disabled]="saving || selectedCount() === 0"
+          (click)="save()"
+        ></button>
+      </div>
+    </footer>
+  }
+</div>

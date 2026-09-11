@@ -11,6 +11,8 @@ export interface PatientRegistrationSlipLineVm {
   serviceTitle: string;
   serviceCode: string;
   doctorName: string;
+  priority?: string | null;
+  isTestLine?: boolean;
   servicePrice: number;
   serviceDiscount: number;
   remarks: string;
