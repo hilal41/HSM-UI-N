@@ -1,0 +1,37 @@
+name: Deploy to Contabo
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.CONTABO_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.CONTABO_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Sync source to server
+        run: |
+          rsync -az --delete \
+            --exclude '.git' --exclude '.github' --exclude '.claude' --exclude 'node_modules' \
+            --exclude '.angular' --exclude 'dist' --exclude 'design' --exclude 'e2e' \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            ./ ${{ secrets.CONTABO_USER }}@${{ secrets.CONTABO_HOST }}:/opt/hms/HMS-UI/
+
+      - name: Build and restart hms-ui
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.CONTABO_USER }}@${{ secrets.CONTABO_HOST }} \
+            'cd /opt/hms && docker compose up -d --build hms-ui'
+
+      - name: Health check
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.CONTABO_USER }}@${{ secrets.CONTABO_HOST }} \
+            'sleep 5 && docker exec hms-hms-ui-1 wget -qO- http://localhost/'
